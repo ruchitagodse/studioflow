@@ -3,6 +3,7 @@ import { connection } from "next/server";
 import { TrainerMobileNav } from "@/app/components/trainer-mobile-nav";
 import styles from "@/app/trainer/trainer-dashboard.module.css";
 import { requireWorkspace } from "@/lib/auth/server";
+import { getAdminDb } from "@/lib/firebase/admin";
 
 function initials(value: string) {
   return value.trim().split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase()).join("") || "T";
@@ -12,7 +13,8 @@ export default async function TrainerProfilePage() {
   await connection();
   let principal;
   try { principal = await requireWorkspace("/trainer"); } catch { redirect("/access-denied"); }
-  const name = principal.email?.split("@")[0] ?? "Trainer";
+  const member = await getAdminDb().doc(`studios/${principal.studioId}/members/${principal.uid}`).get();
+  const name = String(member.data()?.displayName ?? "").trim() || "Trainer";
   return <main className={`${styles.page} ${styles.profilePage}`}>
     <header className={styles.profileHeader}><p className={styles.kicker}>TRAINER WORKSPACE</p><h1>Your profile</h1><p>Account details for your StudioFlow trainer access.</p></header>
     <section className={styles.trainerProfileCard} aria-labelledby="trainer-profile-name">

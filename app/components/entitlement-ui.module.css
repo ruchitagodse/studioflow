@@ -39,12 +39,14 @@
 .planStatus { margin: 0 !important; }
 .planMeta { display: flex; gap: 8px; flex-wrap: wrap; color: var(--color-text-muted); font-size: .62rem; }
 .planMeta span { padding: 3px 6px; border-radius: 999px; background: var(--color-surface-secondary); }
-.planEditor { position: relative; justify-self: end; }
-.planEditor summary { min-height: 29px; padding: 5px 8px; border: 1px solid var(--color-border); border-radius: 7px; cursor: pointer; color: var(--color-text); font-size: .61rem; font-weight: 800; list-style: none; }
-.planEditor summary::-webkit-details-marker { display: none; }
-.planEditor[open] { z-index: 5; }
-.planEditor[open] > form { position: absolute; top: 35px; right: 0; width: min(350px, 74vw); padding: 14px; border: 1px solid var(--color-border); border-radius: 12px; background: var(--color-surface); box-shadow: 0 16px 36px color-mix(in srgb, var(--color-primary) 14%, transparent); }
-.planEditor > form + form { position: absolute; top: 100%; right: 0; }
+.planEditButton { justify-self: end; min-height: 29px; padding: 5px 8px; border: 1px solid var(--color-border); border-radius: 7px; background: var(--color-surface); color: var(--color-text); cursor: pointer; font: inherit; font-size: .61rem; font-weight: 800; }
+.planModalBackdrop { position: fixed; z-index: 100; inset: 0; display: grid; padding: 20px; place-items: center; background: color-mix(in srgb, var(--color-primary) 26%, transparent); backdrop-filter: blur(5px); }
+.planModal { width: min(100%, 520px); max-height: min(720px, calc(100vh - 40px)); overflow: auto; padding: 22px; border: 1px solid var(--color-border); border-radius: 17px; background: var(--color-surface); box-shadow: 0 22px 60px color-mix(in srgb, var(--color-primary) 26%, transparent); }
+.planModalHeader { display: flex; gap: 16px; padding-bottom: 14px; border-bottom: 1px solid var(--color-surface-secondary); align-items: flex-start; justify-content: space-between; }
+.planModalHeader h2 { margin: 4px 0; color: var(--color-text); font-family: Georgia, serif; font-size: 1.6rem; }
+.planModalHeader span { color: var(--color-text-muted); font-size: .68rem; }
+.planModalHeader button { display: grid; width: 31px; height: 31px; border: 1px solid var(--color-border); border-radius: 50%; place-items: center; background: var(--color-surface); color: var(--color-text); cursor: pointer; font-size: 1.25rem; line-height: 1; }
+.retirePlanForm { margin-top: 12px !important; padding-top: 12px; border-top: 1px solid var(--color-surface-secondary); }
 .noPlans { margin: 12px 0 0; color: var(--color-text-muted); font-size: .72rem; }
 .subscriptionLibrary { margin-top: 14px !important; }
 .subscriptionTableHead, .subscriptionRow { display: grid !important; grid-template-columns: 1.05fr .85fr .85fr .82fr .82fr .7fr .72fr .85fr !important; gap: 8px !important; align-items: center; }
@@ -72,5 +74,15 @@
 .ledgerList b { display: block; color: var(--color-text); font-size: .74rem; text-transform: capitalize; }
 .ledgerList span { display: block; margin-top: 3px; color: var(--color-text-muted); font-size: .64rem; }
 .ledgerList strong { color: var(--color-text-muted); font-size: .67rem; white-space: nowrap; }
-@media (max-width: 760px) { .entGrid { grid-template-columns: 1fr !important; } .entHeaderVisual > div { display: none; } .libraryHeader { flex-direction: column; gap: 10px; } .planFilters { width: 100%; } .libraryHeader label { width: 100%; } .planTableHead, .subscriptionTableHead { display: none; } .planLibrary .planRow, .subscriptionLibrary .subscriptionRow { grid-template-columns: 1fr 1fr !important; gap: 7px; } .planLibrary .planRow > :first-child, .planLibrary .planRow > :last-child, .subscriptionLibrary .subscriptionRow > :first-child, .subscriptionLibrary .subscriptionRow > :last-child { grid-column: 1 / -1; } .planEditor { justify-self: start; } .planEditor[open] > form, .subscriptionEditor[open] > form { position: fixed; top: 50%; right: 16px; left: 16px; width: auto; max-height: 78vh; overflow: auto; transform: translateY(-50%); } }
+@media (max-width: 760px) { .entGrid { grid-template-columns: 1fr !important; } .entHeaderVisual > div { display: none; } .libraryHeader { flex-direction: column; gap: 10px; } .planFilters { width: 100%; } .libraryHeader label { width: 100%; } .planTableHead, .subscriptionTableHead { display: none; } .planLibrary .planRow, .subscriptionLibrary .subscriptionRow { grid-template-columns: 1fr 1fr !important; gap: 7px; } .planLibrary .planRow > :first-child, .planLibrary .planRow > :last-child, .subscriptionLibrary .subscriptionRow > :first-child, .subscriptionLibrary .subscriptionRow > :last-child { grid-column: 1 / -1; } .planEditButton { justify-self: start; } .subscriptionEditor[open] > form { position: fixed; top: 50%; right: 16px; left: 16px; width: auto; max-height: 78vh; overflow: auto; transform: translateY(-50%); } }
 .selectedCustomer{margin:0;padding:8px 10px;border:1px solid var(--color-border);border-radius:8px;background:var(--color-surface-secondary);color:var(--color-text);font-size:.7rem}
+.durationSelector { display: grid; gap: 8px; margin: 0; padding: 10px; border: 1px solid var(--color-border); border-radius: 9px; }
+.durationLegend { padding: 0 3px; color: var(--color-text); font-size: .66rem; font-weight: 800; }
+.durationOptions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
+.durationOption { display: flex !important; min-height: 34px; margin: 0; padding: 7px 8px; border: 1px solid var(--color-border); border-radius: 7px; align-items: center; gap: 6px !important; background: var(--color-surface); color: var(--color-text); cursor: pointer; font-size: .64rem !important; font-weight: 700; }
+.durationOption[data-active="true"] { border-color: var(--color-primary); background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface)); }
+.durationOption input { width: auto; min-height: auto !important; margin: 0; accent-color: var(--color-primary); }
+.durationFields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.durationFields label { margin: 0; }
+.durationFields input:disabled { cursor: not-allowed; opacity: .55; background: var(--color-surface-secondary); }
+@media (max-width: 480px) { .durationOptions, .durationFields { grid-template-columns: 1fr; } }

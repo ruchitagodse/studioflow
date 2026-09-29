@@ -1,12 +1,16 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { ZodError } from "zod";
 import { requireWorkspace } from "@/lib/auth/server";
 import { adjustCredits, assignSubscription, cancelSubscription, createPlan, pauseSubscription, renewSubscription, retirePlan, updatePlan } from "@/lib/entitlements";
 
 export type EntitlementActionState = { error?: string; success?: string };
 
 function message(error: unknown) {
+  if (error instanceof ZodError) {
+    return error.issues[0]?.message ?? "Check the plan details and try again.";
+  }
   const code = error instanceof Error ? error.message : "Unable to save this entitlement change.";
   return ({
     FORBIDDEN_ENTITLEMENTS: "You do not have permission to manage plans or credits.",
@@ -18,7 +22,7 @@ function message(error: unknown) {
     ACTIVE_SUBSCRIPTION_EXISTS: "This customer already has an active subscription. Cancel it or wait for it to expire before assigning another plan.",
     SUBSCRIPTION_NOT_FOUND: "That subscription is no longer available.",
     SUBSCRIPTION_INACTIVE: "This subscription is no longer active.",
-    PLAN_DURATION_INVALID: "This plan must have either fixed-day validity or whole calendar months.",
+    PLAN_DURATION_INVALID: "Choose either fixed-day validity or calendar-month duration.",
     PAUSE_NOT_ELIGIBLE: "Only subscriptions assigned from a month-based plan can be paused.",
     PAUSE_ALLOWANCE_EXCEEDED: "This pause would exceed the subscription’s remaining pause allowance.",
     FORBIDDEN_PAUSE: "You do not have permission to pause this subscription.",

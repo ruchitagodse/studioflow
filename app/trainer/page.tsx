@@ -44,7 +44,7 @@ export default async function TrainerWorkspace() {
   const todaySlots = slots.filter((slot) => slot.localDate === todayKey);
   const todayBooked = todaySlots.reduce((total, slot) => total + slot.confirmedBookingCount, 0);
   const nextSlot = slots.find((slot) => slot.startsAt.getTime() > now.getTime()) ?? null;
-  const trainerName = String(memberSnapshot.data()?.displayName ?? "").trim() || principal.email?.split("@")[0] || "Trainer";
+  const trainerName = String(memberSnapshot.data()?.displayName ?? "").trim() || "Trainer";
   const morning = Number(new Intl.DateTimeFormat("en-US", { timeZone: timezone, hour: "numeric", hourCycle: "h23" }).format(now)) < 12;
 
   return <main className={styles.page}>

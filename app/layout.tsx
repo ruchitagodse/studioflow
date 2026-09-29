@@ -39,7 +39,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   }
   return (
     <html lang="en" data-theme={theme}>
-      <body className="min-h-full flex flex-col"><PwaSupport persistTheme={Boolean(principal?.studioId)} />{children}</body>
+      <body className="min-h-full flex flex-col" suppressHydrationWarning><PwaSupport persistTheme={Boolean(principal?.studioId)} />{children}</body>
     </html>
   );
 }
