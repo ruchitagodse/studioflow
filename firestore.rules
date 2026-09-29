@@ -1,0 +1,10 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Sprint 1 uses server-trusted Admin SDK operations only. Denying direct
+    // browser access prevents a client-provided studio ID from granting access.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
