@@ -36,14 +36,21 @@ export function PwaSupport({ persistTheme = false }: { persistTheme?: boolean })
       });
     }
 
-    const dismissed = window.localStorage.getItem(DISMISSED_INSTALL_KEY) === "1";
+    const dismissed = window.localStorage.getItem(DISMISSED_INSTALL_KEY) === "1" || isStandalone();
     const onBeforeInstall = (event: Event) => {
       event.preventDefault();
       if (!dismissed) setInstallEvent(event as InstallPromptEvent);
     };
     window.addEventListener("beforeinstallprompt", onBeforeInstall);
+    const onInstalled = () => {
+      window.localStorage.setItem(DISMISSED_INSTALL_KEY, "1");
+      setInstallEvent(null);
+      setShowIosInstall(false);
+    };
+    window.addEventListener("appinstalled", onInstalled);
     return () => {
       window.removeEventListener("beforeinstallprompt", onBeforeInstall);
+      window.removeEventListener("appinstalled", onInstalled);
     };
   }, [persistTheme]);
 
@@ -56,7 +63,8 @@ export function PwaSupport({ persistTheme = false }: { persistTheme?: boolean })
   const install = async () => {
     if (!installEvent) return;
     await installEvent.prompt();
-    await installEvent.userChoice;
+    const choice = await installEvent.userChoice;
+    if (choice.outcome === "accepted") window.localStorage.setItem(DISMISSED_INSTALL_KEY, "1");
     setInstallEvent(null);
   };
 

@@ -16,7 +16,7 @@ export default async function SchedulePage() {
     db.collection(`studios/${studioId}/slots`).orderBy("startsAt", "asc").get(),
   ]);
   const classes = classDocs.docs.map((doc) => ({ id: doc.id, name: String(doc.data().name), description: String(doc.data().description ?? ""), durationMinutes: Number(doc.data().durationMinutes), status: String(doc.data().status) }));
-  const trainers = trainerDocs.docs.map((doc) => ({ uid: doc.id, name: String(doc.data().email ?? "Trainer") }));
+  const trainers = trainerDocs.docs.map((doc) => ({ uid: doc.id, name: String(doc.data().displayName ?? "").trim() || String(doc.data().email ?? "Trainer") }));
   const slots = slotDocs.docs.map((doc) => ({
     id: doc.id, className: String(doc.data().className), trainerUid: String(doc.data().trainerUid), trainerName: String(doc.data().trainerName), localDate: String(doc.data().localDate), startTime: String(doc.data().startTime), endTime: String(doc.data().endTime), capacity: Number(doc.data().capacity), confirmedBookingCount: Number(doc.data().confirmedBookingCount ?? 0), status: String(doc.data().status), isPast: String(doc.data().status) === "completed",
   }));

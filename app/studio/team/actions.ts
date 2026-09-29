@@ -3,7 +3,7 @@
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { getCurrentPrincipal, requireWorkspace } from "@/lib/auth/server";
-import { acceptTeamInvitation, createTeamInvitation, revokeTeamInvitation, updateTeamMembership } from "@/lib/team";
+import { acceptTeamInvitation, changeTeamMemberPassword, createTeamInvitation, revokeTeamInvitation, updateTeamMembership } from "@/lib/team";
 
 export type TeamActionState = { error?: string; success?: string; invitationPath?: string; existingAccount?: boolean };
 
@@ -21,6 +21,7 @@ function message(error: unknown) {
     OWNER_MEMBERSHIP_PROTECTED: "Owner memberships are managed through the platform provisioning authority.",
     INVITATION_NOT_FOUND: "That invitation is no longer available.",
     INVITATION_NOT_PENDING: "Only a pending invitation can be revoked.",
+    AUTH_ACCOUNT_NOT_FOUND: "This member does not have a Firebase account to update.",
   } as Record<string, string>)[code] ?? code;
 }
 
@@ -48,6 +49,15 @@ export async function updateMembershipAction(_: TeamActionState, form: FormData)
     revalidatePath("/studio/team");
     revalidatePath("/studio/schedule");
     return { success: "Membership updated." };
+  } catch (error) { return { error: message(error) }; }
+}
+
+export async function changeMemberPasswordAction(_: TeamActionState, form: FormData): Promise<TeamActionState> {
+  try {
+    const principal = await requireWorkspace("/studio");
+    await changeTeamMemberPassword(principal, { uid: form.get("uid"), newPassword: form.get("newPassword"), confirmPassword: form.get("confirmPassword") });
+    revalidatePath("/studio/team");
+    return { success: "Password changed. The member will need to sign in again." };
   } catch (error) { return { error: message(error) }; }
 }
 

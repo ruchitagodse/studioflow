@@ -4,13 +4,14 @@ import { useEffect, useRef } from "react";
 import { LogoutButton } from "./logout-button";
 import styles from "./workspace-shell.module.css";
 
-type WorkspaceProfileMenuProps = { name: string; role: string; studioName: string; customerProfile?: boolean };
+type WorkspaceLink = { href: string; label: string };
+type WorkspaceProfileMenuProps = { name: string; role: string; studioName: string; customerProfile?: boolean; workspaceLinks?: WorkspaceLink[] };
 
 function initials(name: string) {
   return name.trim().split(/\s+/).filter(Boolean).slice(0, 2).map((word) => word[0]?.toUpperCase()).join("") || "S";
 }
 
-export function WorkspaceProfileMenu({ name, role, studioName, customerProfile = false }: WorkspaceProfileMenuProps) {
+export function WorkspaceProfileMenu({ name, role, studioName, customerProfile = false, workspaceLinks = [] }: WorkspaceProfileMenuProps) {
   const menuRef = useRef<HTMLDetailsElement>(null);
   useEffect(() => {
     function closeFromOutside(event: PointerEvent) {
@@ -35,6 +36,7 @@ export function WorkspaceProfileMenu({ name, role, studioName, customerProfile =
         <span><strong>{name}</strong><small>{role} · {studioName}</small></span>
       </div>
       <div className={styles.menuDivider} />
+      {workspaceLinks.map((link) => <a key={link.href} className={styles.workspaceSwitch} href={link.href}>{link.label}<span aria-hidden="true">→</span></a>)}
       <LogoutButton className={styles.logout} withIcon />
     </div>
   </details>;
