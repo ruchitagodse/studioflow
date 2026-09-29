@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { invitationSchema, membershipUpdateSchema } from "../lib/validation";
-import { createInvitationSecret, hashInvitationSecret, invitationCanBeAccepted, invitationExpiry, invitationLifetimeMs, invitationRecipientMatches, invitationTokenMatches, normalUserCanJoinStudio } from "../lib/team-logic";
+import { invitationSchema, memberPasswordChangeSchema, membershipUpdateSchema } from "../lib/validation";
+import { assertTeamPasswordAuthority, createInvitationSecret, hashInvitationSecret, invitationCanBeAccepted, invitationExpiry, invitationLifetimeMs, invitationRecipientMatches, invitationTokenMatches, normalUserCanJoinStudio } from "../lib/team-logic";
 
 describe("team invitation rules", () => {
   it("creates high-entropy secrets and persists only a stable hash", () => {
@@ -33,6 +33,15 @@ describe("team invitation rules", () => {
     expect(invitationSchema.safeParse({ email: "owner@example.com", roles: ["owner"], operationId: "5b2577c5-6648-4d46-b520-c3227605ab4b" }).success).toBe(false);
     expect(membershipUpdateSchema.safeParse({ uid: "user", action: "deactivate", reason: "Left the studio" }).success).toBe(true);
     expect(membershipUpdateSchema.safeParse({ uid: "user", action: "deactivate" }).success).toBe(false);
+  });
+  it("requires the existing eight-character password policy and matching confirmation", () => {
+    expect(memberPasswordChangeSchema.safeParse({ uid: "member", newPassword: "password", confirmPassword: "password" }).success).toBe(true);
+    expect(memberPasswordChangeSchema.safeParse({ uid: "member", newPassword: "short", confirmPassword: "short" }).success).toBe(false);
+    expect(memberPasswordChangeSchema.safeParse({ uid: "member", newPassword: "password", confirmPassword: "different" }).success).toBe(false);
+  });
+  it("rejects password management before any Firebase operation for a non-owner", () => {
+    expect(() => assertTeamPasswordAuthority({ studioId: "studio-a", roles: ["staff"] })).toThrow("FORBIDDEN_TEAM");
+    expect(assertTeamPasswordAuthority({ studioId: "studio-a", roles: ["owner"] })).toBe("studio-a");
   });
   it("does not permit a normal user with active access elsewhere to join another studio", () => {
     expect(normalUserCanJoinStudio({ studioId: "studio-a", status: "active" }, "studio-b")).toBe(false);

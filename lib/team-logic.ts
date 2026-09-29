@@ -14,3 +14,7 @@ export function invitationCanBeAccepted(status: InvitationStatus, expiresAt: Dat
 export function normalUserCanJoinStudio(existing: { studioId: string; status: string } | null, targetStudioId: string) {
   return !existing || existing.status !== "active" || existing.studioId === targetStudioId;
 }
+export function assertTeamPasswordAuthority(input: { studioId: string | null; roles: readonly string[] }) {
+  if (!input.studioId || !input.roles.includes("owner")) throw new Error("FORBIDDEN_TEAM");
+  return input.studioId;
+}

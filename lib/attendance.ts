@@ -74,7 +74,7 @@ export async function getAttendanceRoster(principal: Principal, slotId: string):
   assertActiveStudioMember(studio, member);
   const slotContext = assertAttendanceSlot(slot);
   const role = attendanceRole(principal, member.data()!, slotContext.data);
-  const bookingDocs = await db.collection(`studios/${studioId}/bookings`).where("slotId", "==", slotId).limit(100).get();
+  const [bookingDocs, trainer] = await Promise.all([db.collection(`studios/${studioId}/bookings`).where("slotId", "==", slotId).limit(100).get(), db.doc(`studios/${studioId}/members/${String(slotContext.data.trainerUid ?? "")}`).get()]);
   const eligibleBookings = bookingDocs.docs.filter((doc) => {
     const status = String(doc.data().status ?? "");
     return isAttendanceCandidate(status) || isAttendanceOutcome(status);
@@ -94,7 +94,7 @@ export async function getAttendanceRoster(principal: Principal, slotId: string):
   return {
     slotId,
     className: String(slotContext.data.className ?? "Class"),
-    trainerName: String(slotContext.data.trainerName ?? "Trainer"),
+    trainerName: String(trainer.data()?.displayName ?? "").trim() || String(slotContext.data.trainerName ?? "Trainer"),
     localDate: String(slotContext.data.localDate ?? ""),
     startTime: String(slotContext.data.startTime ?? ""),
     endTime: String(slotContext.data.endTime ?? ""),

@@ -41,6 +41,12 @@ export const membershipUpdateSchema = z.object({
   }
 });
 
+export const memberPasswordChangeSchema = z.object({
+  uid: z.string().min(1),
+  newPassword: z.string().min(8, "Password must be at least 8 characters."),
+  confirmPassword: z.string().min(1, "Confirm your new password."),
+}).refine((input) => input.newPassword === input.confirmPassword, { message: "Passwords do not match.", path: ["confirmPassword"] });
+
 const inrPriceSchema = z.coerce.number().finite().min(0, "Enter a valid INR price.").refine(
   (value) => Math.round(value * 100) === value * 100,
   "Use no more than two decimal places.",

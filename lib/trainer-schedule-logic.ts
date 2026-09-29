@@ -25,3 +25,13 @@ export function trainerCanSeeSlot(trainerUid: string, slot: Pick<TrainerSlot, "t
 export function isSlotStatus(status: string): status is SlotStatus {
   return slotStatuses.some((candidate) => candidate === status);
 }
+
+/** Upcoming classes are most useful first; recent past classes remain available below them. */
+export function orderTrainerSlots<T extends Pick<TrainerSlot, "startsAt">>(slots: T[], now = new Date()): T[] {
+  return [...slots].sort((left, right) => {
+    const leftFuture = left.startsAt.getTime() >= now.getTime();
+    const rightFuture = right.startsAt.getTime() >= now.getTime();
+    if (leftFuture !== rightFuture) return leftFuture ? -1 : 1;
+    return leftFuture ? left.startsAt.getTime() - right.startsAt.getTime() : right.startsAt.getTime() - left.startsAt.getTime();
+  });
+}

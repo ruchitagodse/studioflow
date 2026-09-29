@@ -79,6 +79,18 @@ function slotView(id: string, data: FirebaseFirestore.DocumentData, alreadyBooke
   };
 }
 
+async function currentTrainerName(studioId: string, data: FirebaseFirestore.DocumentData) {
+  const fallback = String(data.trainerName ?? "Trainer");
+  let uid = String(data.trainerUid ?? "");
+  if (!uid && data.slotId) {
+    const slot = await getAdminDb().doc(`studios/${studioId}/slots/${String(data.slotId)}`).get();
+    uid = String(slot.data()?.trainerUid ?? "");
+  }
+  if (!uid) return fallback;
+  const member = await getAdminDb().doc(`studios/${studioId}/members/${uid}`).get();
+  return String(member.data()?.displayName ?? "").trim() || fallback;
+}
+
 async function currentSubscription(studioId: string, customerUid: string): Promise<CustomerSubscriptionView> {
   const db = getAdminDb();
   const memberRef = db.doc(`studios/${studioId}/members/${customerUid}`);
@@ -117,11 +129,16 @@ export async function getCustomerSchedule(principal: Principal) {
     currentSubscription(studioId, principal.uid),
   ]);
   if (!studio.exists || studio.data()?.status !== "active") throw new Error("INACTIVE_STUDIO");
+  const visibleSlots = slots.docs.filter((doc) => doc.data().status === "published").slice(0, 60);
+  const slotViews = await Promise.all(visibleSlots.map(async (doc) => {
+    const view = slotView(doc.id, doc.data(), bookedSlotIds.has(doc.id));
+    return view ? { ...view, trainerName: await currentTrainerName(studioId, doc.data()) } : null;
+  }));
   return {
     studioName: String(studio.data()?.name ?? "Studio"),
     timezone: String(studio.data()?.timezone ?? ""),
     subscription,
-    slots: slots.docs.filter((doc) => doc.data().status === "published").slice(0, 60).map((doc) => slotView(doc.id, doc.data(), bookedSlotIds.has(doc.id))).filter((slot): slot is SlotView => slot !== null),
+    slots: slotViews.filter((slot): slot is SlotView => slot !== null),
   };
 }
 
@@ -137,7 +154,8 @@ export async function getCustomerSlot(principal: Principal, slotId: string) {
   ]);
   if (!studio.exists || studio.data()?.status !== "active") throw new Error("INACTIVE_STUDIO");
   if (!slot.exists || slot.data()?.status !== "published") return null;
-  const view = slotView(slot.id, slot.data()!, bookedSlotIds.has(slot.id));
+  const initialView = slotView(slot.id, slot.data()!, bookedSlotIds.has(slot.id));
+  const view = initialView ? { ...initialView, trainerName: await currentTrainerName(studioId, slot.data()!) } : null;
   if (!view) return null;
   return { slot: view, subscription, started: new Date(view.startsAt).getTime() <= Date.now() };
 }
@@ -147,7 +165,9 @@ export async function getCustomerBookings(principal: Principal): Promise<Custome
   const db = getAdminDb();
   const bookings = await db.collection(`studios/${studioId}/bookings`).where("customerUid", "==", principal.uid).limit(50).get();
   const now = Date.now();
-  return bookings.docs.sort((left, right) => Number(right.data().slotStartsAt?.toMillis?.() ?? 0) - Number(left.data().slotStartsAt?.toMillis?.() ?? 0)).map((doc) => {
+  const sorted = bookings.docs.sort((left, right) => Number(right.data().slotStartsAt?.toMillis?.() ?? 0) - Number(left.data().slotStartsAt?.toMillis?.() ?? 0));
+  const trainerNames = await Promise.all(sorted.map((doc) => currentTrainerName(studioId, doc.data())));
+  return sorted.map((doc, index) => {
     const data = doc.data();
     const slotStartsAt = asDate(data.slotStartsAt);
     const isConfirmed = String(data.status ?? "confirmed") === "confirmed";
@@ -156,7 +176,7 @@ export async function getCustomerBookings(principal: Principal): Promise<Custome
       id: doc.id,
       slotId: String(data.slotId ?? ""),
       className: String(data.className ?? "Class"),
-      trainerName: String(data.trainerName ?? "Trainer"),
+      trainerName: trainerNames[index],
       localDate: String(data.localDate ?? ""),
       startTime: String(data.startTime ?? ""),
       endTime: String(data.endTime ?? ""),
@@ -232,6 +252,7 @@ export async function createBooking(principal: Principal, raw: unknown): Promise
       operationId: input.operationId,
       status: "confirmed",
       className: String(slotData!.className ?? "Class"),
+      trainerUid: String(slotData!.trainerUid ?? ""),
       trainerName: String(slotData!.trainerName ?? "Trainer"),
       localDate: String(slotData!.localDate ?? ""),
       startTime: String(slotData!.startTime ?? ""),
@@ -343,7 +364,7 @@ export async function rescheduleCustomerBooking(principal: Principal, raw: unkno
     transaction.update(originalSlotRef, { confirmedBookingCount: counts.originalConfirmedBookingCount, updatedAt: FieldValue.serverTimestamp() });
     transaction.update(targetSlotRef, { confirmedBookingCount: counts.targetConfirmedBookingCount, updatedAt: FieldValue.serverTimestamp() });
     transaction.update(originalRef, { status: "cancelled-free", rescheduledAt: FieldValue.serverTimestamp(), rescheduleOperationId: input.operationId, rescheduledToBookingId: targetBookingRef.id, updatedAt: FieldValue.serverTimestamp() });
-    transaction.set(targetBookingRef, { slotId: targetSlotRef.id, customerUid: principal.uid, subscriptionId, reservationLedgerId, operationId: input.operationId, status: "confirmed", rescheduledFromBookingId: originalRef.id, className: String(targetData.className ?? "Class"), trainerName: String(targetData.trainerName ?? "Trainer"), localDate: String(targetData.localDate ?? ""), startTime: String(targetData.startTime ?? ""), endTime: String(targetData.endTime ?? ""), timezone: String(targetData.timezone ?? ""), slotStartsAt: targetData.startsAt, slotEndsAt: targetData.endsAt, createdAt: FieldValue.serverTimestamp(), confirmedAt: FieldValue.serverTimestamp() });
+    transaction.set(targetBookingRef, { slotId: targetSlotRef.id, customerUid: principal.uid, subscriptionId, reservationLedgerId, operationId: input.operationId, status: "confirmed", rescheduledFromBookingId: originalRef.id, className: String(targetData.className ?? "Class"), trainerUid: String(targetData.trainerUid ?? ""), trainerName: String(targetData.trainerName ?? "Trainer"), localDate: String(targetData.localDate ?? ""), startTime: String(targetData.startTime ?? ""), endTime: String(targetData.endTime ?? ""), timezone: String(targetData.timezone ?? ""), slotStartsAt: targetData.startsAt, slotEndsAt: targetData.endsAt, createdAt: FieldValue.serverTimestamp(), confirmedAt: FieldValue.serverTimestamp() });
     transaction.set(db.doc(`studios/${studioId}/auditEvents/${randomUUID()}`), { action: "booking.rescheduled", actorUid: principal.uid, targetId: targetBookingRef.id, createdAt: FieldValue.serverTimestamp(), result: "success", before: { bookingId: originalRef.id, slotId: originalSlotId }, after: { slotId: targetSlotRef.id, reservationLedgerId } });
     openedSlotId = originalSlotId;
     return { bookingId: targetBookingRef.id, idempotent: false };

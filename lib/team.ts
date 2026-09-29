@@ -4,13 +4,10 @@ import { randomUUID } from "node:crypto";
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import type { Principal } from "@/lib/auth/server";
 import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
-import { invitationSchema, membershipUpdateSchema } from "@/lib/validation";
-import { createInvitationSecret, hashInvitationSecret, invitationCanBeAccepted, invitationExpiry, invitationRecipientMatches, invitationTokenMatches, normalUserCanJoinStudio, type InvitationStatus } from "@/lib/team-logic";
+import { invitationSchema, memberPasswordChangeSchema, membershipUpdateSchema } from "@/lib/validation";
+import { assertTeamPasswordAuthority, createInvitationSecret, hashInvitationSecret, invitationCanBeAccepted, invitationExpiry, invitationRecipientMatches, invitationTokenMatches, normalUserCanJoinStudio, type InvitationStatus } from "@/lib/team-logic";
 
-function requireOwner(principal: Principal) {
-  if (!principal.studioId || !principal.roles.includes("owner")) throw new Error("FORBIDDEN_TEAM");
-  return principal.studioId;
-}
+function requireOwner(principal: Principal) { return assertTeamPasswordAuthority(principal); }
 
 function audit(studioId: string, action: string, actorUid: string, targetId: string, detail: Record<string, unknown> = {}) {
   return {
@@ -152,6 +149,25 @@ export async function updateTeamMembership(principal: Principal, raw: unknown) {
     if (index.exists && index.data()?.studioId === studioId) transaction.set(indexRef, { studioId, status: "inactive", roles: before?.roles ?? [], updatedAt: FieldValue.serverTimestamp() });
     transaction.set(db.doc(`studios/${studioId}/auditEvents/${randomUUID()}`), audit(studioId, input.action === "revoke" ? "membership.revoked" : "membership.deactivated", principal.uid, input.uid, { reason: input.reason }));
   });
+}
+
+/** Changes credentials only in Firebase Authentication; passwords never enter Firestore or audit details. */
+export async function changeTeamMemberPassword(principal: Principal, raw: unknown) {
+  const studioId = requireOwner(principal);
+  const input = memberPasswordChangeSchema.parse(raw);
+  const db = getAdminDb();
+  const member = await db.doc(`studios/${studioId}/members/${input.uid}`).get();
+  if (!member.exists) throw new Error("MEMBERSHIP_NOT_FOUND");
+  if ((member.data()?.roles as string[] | undefined)?.includes("owner")) throw new Error("OWNER_MEMBERSHIP_PROTECTED");
+  const auth = getAdminAuth();
+  try {
+    await auth.updateUser(input.uid, { password: input.newPassword });
+    await auth.revokeRefreshTokens(input.uid);
+  } catch (error) {
+    if (authUserMissing(error)) throw new Error("AUTH_ACCOUNT_NOT_FOUND");
+    throw error;
+  }
+  await db.collection(`studios/${studioId}/auditEvents`).add(audit(studioId, "membership.password_changed", principal.uid, input.uid));
 }
 
 export async function revokeTeamInvitation(principal: Principal, invitationId: string) {
