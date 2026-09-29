@@ -1,0 +1,38 @@
+:root {
+  --font-geist-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-size-xs: .75rem;
+  --font-size-sm: .8125rem;
+  --font-size-body: .9375rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.5rem;
+  --font-size-xl: 2rem;
+  --font-size-display: clamp(2.625rem, 3vw, 3.25rem);
+  --color-surface-elevated:var(--color-surface);--color-border-strong:var(--color-border);--color-text-subtle:var(--color-text-muted);--color-nav-active-text:var(--color-button-text);
+  --color-background:#F7F3EA;--color-surface:#FCFAF5;--color-surface-secondary:#C7D8CE;--color-primary:#163C35;--color-primary-hover:#102F2A;--color-secondary:#8FAF9F;--color-accent:#C7D8CE;--color-text:#18332E;--color-text-muted:#55736A;--color-border:#C7D8CE;--color-success:#2F7A57;--color-warning:#9A6A19;--color-danger:#A6443C;--color-input-background:#FCFAF5;--color-input-border:#A9C1B5;--color-button-background:#163C35;--color-button-text:#FCFAF5;--color-button-hover:#102F2A;--color-nav-background:#FCFAF5;--color-nav-text:#18332E;--color-nav-active:#163C35;--color-nav-active-background:#E3EEE7;--color-skeleton:#DCE9E1;--color-skeleton-highlight:#F4F8F5;--color-focus:#8FAF9F;
+  --ink:var(--color-text);--muted:var(--color-text-muted);--surface:var(--color-surface);--canvas:var(--color-background);--line:var(--color-border);--leaf:var(--color-primary);--leaf-dark:var(--color-primary-hover);--sage:var(--color-surface-secondary);--peach:var(--color-accent);--sun:var(--color-secondary);--danger:var(--color-danger);
+}
+[data-theme="warm-elegant"]{--color-background:#F6ECE3;--color-surface:#FCF8F5;--color-surface-secondary:#E9D2BC;--color-primary:#6A2E12;--color-primary-hover:#4D200C;--color-secondary:#C98964;--color-accent:#E9D2BC;--color-text:#6A2E12;--color-text-muted:#A85F38;--color-border:#E9D2BC;--color-success:#4B7E61;--color-warning:#9A661F;--color-danger:#A83E32;--color-input-background:#FCF8F5;--color-input-border:#E9D2BC;--color-button-background:#6A2E12;--color-button-text:#FCF8F5;--color-button-hover:#4D200C;--color-nav-background:#FCF8F5;--color-nav-text:#6A2E12;--color-nav-active:#6A2E12;--color-nav-active-background:#F1E1D1;--color-skeleton:#E9D2BC;--color-skeleton-highlight:#F9F1EB;--color-focus:#C98964}
+[data-theme="dark-modern"]{--color-background:#101714;--color-surface:#1B2722;--color-surface-secondary:#293A33;--color-primary:#A8D5BE;--color-primary-hover:#D1EADB;--color-secondary:#6C9983;--color-accent:#355143;--color-text:#F5F8F4;--color-text-muted:#BDD0C4;--color-border:#466354;--color-success:#86D5A8;--color-warning:#F0C56A;--color-danger:#FF968B;--color-input-background:#17211D;--color-input-border:#587866;--color-button-background:#A8D5BE;--color-button-text:#102019;--color-button-hover:#D1EADB;--color-nav-background:#17211D;--color-nav-text:#E9F2EC;--color-nav-active:#D1EADB;--color-nav-active-background:#294638;--color-skeleton:#2A3B33;--color-skeleton-highlight:#40564A;--color-focus:#D1EADB}
+[data-theme="soft-pastel"]{--color-background:#F6F2FA;--color-surface:#FFFDFE;--color-surface-secondary:#E8E0F3;--color-primary:#493965;--color-primary-hover:#35264D;--color-secondary:#9C82B5;--color-accent:#DCE8F5;--color-text:#352C45;--color-text-muted:#756887;--color-border:#D8CDE8;--color-success:#397B66;--color-warning:#956A1A;--color-danger:#A8475A;--color-input-background:#FFFDFE;--color-input-border:#D8CDE8;--color-button-background:#493965;--color-button-text:#FFFDFE;--color-button-hover:#35264D;--color-nav-background:#FFFDFE;--color-nav-text:#352C45;--color-nav-active:#493965;--color-nav-active-background:#EEE7F6;--color-skeleton:#E9E1F1;--color-skeleton-highlight:#FAF7FC;--color-focus:#9C82B5}
+
+* { box-sizing: border-box; }
+html { min-height:100%; background: var(--canvas); -webkit-text-size-adjust:100%; }
+
+body {
+  min-height:100%;
+  margin: 0;
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: var(--font-geist-sans), Arial, sans-serif;
+}
+
+button, input, select, textarea { font: inherit; }
+input, select, textarea { font-size: max(16px, 1em); }
+button { cursor: pointer; }
+
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+a { color: inherit; text-decoration: none; }

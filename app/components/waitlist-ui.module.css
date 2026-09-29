@@ -1,0 +1,48 @@
+.waitlistUi { width: min(100%, 1220px) !important; max-width: none !important; }
+.kicker { margin: 0; color: var(--color-text); font-size: .68rem; font-weight: 850; letter-spacing: .15em; }
+.waitlistHeader { display: flex; gap: 32px; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--color-border); align-items: center; justify-content: space-between; }
+.waitlistHeader h1 { margin: 5px 0 6px; color: var(--color-text); font: 400 clamp(2.3rem,4vw,3.5rem)/1 Georgia,serif; }
+.waitlistHeader p:last-child { margin: 0; color: var(--color-text-muted); font-size: .8rem; }
+.headerVisual { display: flex; gap: 14px; align-items: center; }
+.headerVisual > div { position: relative; width: 260px; height: 104px; overflow: hidden; border-radius: 13px; }
+.headerVisual img { object-fit: cover; }
+.infoGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.infoGrid section, .waitlistPanel { padding: 24px; border: 1px solid var(--color-border); border-radius: 14px; background: var(--color-surface); box-shadow: 0 9px 25px color-mix(in srgb, var(--color-primary) 3.5%, transparent); }
+.infoGrid p, .listHeader p, .removalModal p { margin: 0; color: var(--color-text-muted); font-size: .6rem; font-weight: 800; letter-spacing: .1em; }
+.infoGrid h2, .listHeader h2, .removalModal h2 { margin: 4px 0 6px; color: var(--color-text); font: 400 clamp(1.2rem,1.8vw,1.55rem)/1.1 Georgia,serif; }
+.infoGrid span { color: var(--color-text-muted); font-size: .68rem; line-height: 1.45; }
+.infoGrid ol { display: grid; gap: 6px; margin: 11px 0 0; padding: 10px 12px 10px 28px; border-radius: 8px; background: var(--color-surface-secondary); color: var(--color-text-muted); font-size: .64rem; }
+.addPanel fieldset { display: grid; gap: 10px; margin: 16px 0 0; padding: 0; border: 0; }
+.addPanel fieldset > div { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.addPanel label { display: grid; gap: 5px; color: var(--color-text); font-size: .66rem; font-weight: 800; }
+.addPanel input, .addPanel select { width: 100%; min-height: 37px; padding: 8px 10px; border: 1px solid var(--color-border); border-radius: 7px; background: var(--color-surface); color: var(--color-text); font: inherit; font-size: .65rem; }
+.addPanel fieldset[disabled] input, .addPanel fieldset[disabled] select { opacity: 1; color: var(--color-text-muted); cursor: not-allowed; }
+.addPanel fieldset[disabled] button { min-height: 39px; border: 0; border-radius: 7px; background: var(--color-text); color: var(--color-surface); cursor: not-allowed; font: inherit; font-size: .67rem; font-weight: 800; opacity: .68; }
+.addPanel small { display: block; margin-top: 9px; color: var(--color-text-muted); font-size: .59rem; line-height: 1.4; }
+.waitlistPanel { margin-top: 20px; }
+.listHeader { display: flex; gap: 18px; align-items: flex-start; justify-content: space-between; }
+.listHeader span { display: block; color: var(--color-text-muted); font-size: .66rem; }
+.listHeader label { display: flex; width: min(100%, 280px); gap: 7px; min-height: 34px; padding: 7px 9px; border: 1px solid var(--color-border); border-radius: 7px; align-items: center; color: var(--color-text-muted); }
+.listHeader input { width: 100%; border: 0; outline: 0; background: transparent; font: inherit; font-size: .64rem; }
+.waitlistTableHead, .waitlistRow { display: grid; grid-template-columns: .3fr 1.3fr 1fr .8fr .7fr 1.15fr .7fr .95fr; gap: 12px; align-items: center; }
+.waitlistTableHead { margin-top: 14px; padding: 0 0 8px; border-bottom: 1px solid var(--color-border); color: var(--color-text-muted); font-size: .55rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.waitlistRows { display: block; }
+.waitlistRow { padding: 9px 0; border-bottom: 1px solid var(--color-surface-secondary); color: var(--color-text); font-size: .63rem; }
+.clientCell { display: flex; gap: 7px; align-items: center; font-weight: 800; }
+.clientCell i { display: grid; width: 22px; height: 22px; border-radius: 50%; place-items: center; background: var(--color-border); color: var(--color-text); font-size: .61rem; font-style: normal; }
+.waitlistRow time { color: var(--color-text-muted); font-size: .6rem; }
+.waitlistRow em { width: max-content; padding: 4px 7px; border-radius: 999px; background: var(--color-surface-secondary); color: var(--color-text); font-size: .58rem; font-style: normal; }
+.waitlistRow > div { display: flex; gap: 5px; align-items: center; }
+.waitlistRow button { min-height: 28px; padding: 5px 8px; border: 1px solid var(--color-border); border-radius: 7px; background: var(--color-surface); color: var(--color-text); cursor: pointer; font: inherit; font-size: .58rem; font-weight: 800; }
+.waitlistRow button:last-child { width: 25px; padding: 0; border: 0; background: transparent; font-size: .9rem; }
+.noEntries { margin: 12px 0 0; color: var(--color-text-muted); font-size: .7rem; }
+.removalBackdrop { position: fixed; z-index: 100; inset: 0; display: grid; padding: 20px; place-items: center; background: color-mix(in srgb, var(--color-primary) 26%, transparent); backdrop-filter: blur(5px); }
+.removalModal { width: min(100%, 440px); padding: 20px; border: 1px solid var(--color-border); border-radius: 16px; background: var(--color-surface); box-shadow: 0 22px 60px color-mix(in srgb, var(--color-primary) 26%, transparent); }
+.removalModal > div { position: relative; padding-bottom: 12px; border-bottom: 1px solid var(--color-surface-secondary); }
+.removalModal span { color: var(--color-text-muted); font-size: .67rem; }
+.removalModal > div button { position: absolute; top: 0; right: 0; display: grid; width: 30px; height: 30px; border: 1px solid var(--color-border); border-radius: 50%; place-items: center; background: var(--color-surface); color: var(--color-text); cursor: pointer; font-size: 1.2rem; }
+.removalModal form { display: grid; gap: 10px; margin-top: 14px; }
+.removalModal label { display: grid; gap: 5px; color: var(--color-text); font-size: .7rem; font-weight: 800; }
+.removalModal input { min-height: 40px; padding: 8px 10px; border: 1px solid var(--color-border); border-radius: 8px; background: var(--color-surface); font: inherit; }
+.removalModal form > button { min-height: 40px; border: 0; border-radius: 8px; background: var(--color-text); color: var(--color-surface); font: inherit; font-size: .7rem; font-weight: 800; }
+@media (max-width: 760px) { .waitlistHeader, .infoGrid { display: grid; grid-template-columns: 1fr; } .headerVisual > div { display: none; } .listHeader { flex-direction: column; } .listHeader label { width: 100%; } .addPanel fieldset > div { grid-template-columns: 1fr; } .waitlistTableHead { display: none; } .waitlistRow { grid-template-columns: 1fr 1fr; gap: 8px; } .waitlistRow > :nth-child(2), .waitlistRow > :last-child { grid-column: 1 / -1; } }

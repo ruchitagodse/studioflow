@@ -1,0 +1,75 @@
+.entUi { max-width: 1280px !important; }
+.entHeader { margin-bottom: 16px !important; padding-bottom: 0 !important; border: 0 !important; }
+.entHeader h1 { margin: 4px 0 6px !important; font-size: clamp(2.3rem, 4vw, 3.5rem) !important; }
+.entHeader > div > p:last-child { color: var(--color-text-muted); font-size: .8rem; }
+.entHeaderVisual { display: flex; gap: 14px; align-items: center; }
+.entHeaderVisual > div { position: relative; width: 230px; height: 92px; overflow: hidden; border-radius: 13px; }
+.entHeaderVisual img { object-fit: cover; }
+.entGrid { grid-template-columns: 1fr 1fr !important; gap: 14px !important; }
+.entPanel { margin: 0 !important; padding: 20px !important; border: 1px solid var(--color-border) !important; border-radius: 14px !important; background: var(--color-surface) !important; box-shadow: 0 9px 25px color-mix(in srgb, var(--color-primary) 3.5%, transparent) !important; }
+.entPanel h2 { margin: 4px 0 8px !important; font-size: clamp(1.2rem,1.8vw,1.55rem) !important; }
+.entGrid .entPanel h2::before { display: inline-grid; width: 32px; height: 32px; margin-right: 8px; border-radius: 50%; place-items: center; background: var(--color-border); color: var(--color-text); content: "✦"; font: .95rem Georgia, serif; vertical-align: middle; }
+.entGrid .entPanel:nth-child(2) h2::before { content: "⌁"; }
+.entUi form { gap: 10px !important; margin-top: 10px !important; }
+.entUi form label { gap: 4px !important; font-size: .66rem !important; }
+.entUi form input, .entUi form select, .entUi form textarea { min-height: 37px !important; padding: 8px 9px !important; }
+.entUi form textarea { min-height: 55px !important; }
+.entUi form button { min-height: 40px !important; }
+.entUi .note { margin: 0 !important; padding: 8px 10px !important; border: 0 !important; background: var(--color-surface-secondary) !important; font-size: .64rem !important; }
+.planLibrary { margin-top: 14px !important; }
+.libraryHeader { display: flex; gap: 20px; align-items: flex-start; justify-content: space-between; }
+.libraryHeader h2 { margin: 4px 0 !important; }
+.libraryHeader p:last-child { margin: 0; color: var(--color-text-muted); font-size: .66rem; }
+.libraryHeader label { display: flex; width: min(100%, 260px); gap: 7px; min-height: 34px; padding: 7px 9px; border: 1px solid var(--color-border); border-radius: 7px; align-items: center; color: var(--color-text-muted); }
+.libraryHeader input { width: 100%; border: 0; outline: 0; background: transparent; font: inherit; font-size: .64rem; }
+.planFilters { display: flex; gap: 7px; width: min(100%, 350px); }
+.planFilters label { flex: 1; }
+.planFilters select { width: 96px; min-height: 34px; padding: 7px; border: 1px solid var(--color-border); border-radius: 7px; background: var(--color-surface); color: var(--color-text); font: inherit; font-size: .62rem; }
+.planLibrary .memberList { display: block !important; margin-top: 13px !important; border-top: 1px solid var(--color-border); }
+.planTableHead, .planRow { display: grid !important; grid-template-columns: 1.5fr .8fr .65fr .9fr .72fr .7fr !important; gap: 9px !important; align-items: center; }
+.planTableHead { margin-top: 14px; padding: 0 0 8px; border-bottom: 1px solid var(--color-border); color: var(--color-text-muted); font-size: .56rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.planRows { display: block !important; margin-top: 0 !important; }
+.planLibrary .memberCard { display: grid !important; grid-template-columns: 1.1fr .85fr .75fr; gap: 12px; padding: 9px 0 !important; border: 0 !important; border-bottom: 1px solid var(--color-surface-secondary) !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; align-items: center; }
+.planLibrary .planRow { grid-template-columns: 1.5fr .8fr .65fr .9fr .72fr .7fr !important; gap: 9px !important; }
+.planLibrary .memberHeading { align-items: center; }
+.planLibrary .memberHeading b { color: var(--color-text); font-size: .7rem; }
+.planLibrary .memberHeading span { font-size: .61rem; }
+.planLibrary .activeBadge, .planLibrary .inactiveBadge { width: max-content; margin-top: 4px; padding: 3px 7px; background: var(--color-surface-secondary); color: var(--color-text); font-size: .59rem; }
+.planPrice, .planCredits, .planDuration { color: var(--color-text-muted); font-size: .63rem; }
+.planStatus { margin: 0 !important; }
+.planMeta { display: flex; gap: 8px; flex-wrap: wrap; color: var(--color-text-muted); font-size: .62rem; }
+.planMeta span { padding: 3px 6px; border-radius: 999px; background: var(--color-surface-secondary); }
+.planEditor { position: relative; justify-self: end; }
+.planEditor summary { min-height: 29px; padding: 5px 8px; border: 1px solid var(--color-border); border-radius: 7px; cursor: pointer; color: var(--color-text); font-size: .61rem; font-weight: 800; list-style: none; }
+.planEditor summary::-webkit-details-marker { display: none; }
+.planEditor[open] { z-index: 5; }
+.planEditor[open] > form { position: absolute; top: 35px; right: 0; width: min(350px, 74vw); padding: 14px; border: 1px solid var(--color-border); border-radius: 12px; background: var(--color-surface); box-shadow: 0 16px 36px color-mix(in srgb, var(--color-primary) 14%, transparent); }
+.planEditor > form + form { position: absolute; top: 100%; right: 0; }
+.noPlans { margin: 12px 0 0; color: var(--color-text-muted); font-size: .72rem; }
+.subscriptionLibrary { margin-top: 14px !important; }
+.subscriptionTableHead, .subscriptionRow { display: grid !important; grid-template-columns: 1.05fr .85fr .85fr .82fr .82fr .7fr .72fr .85fr !important; gap: 8px !important; align-items: center; }
+.subscriptionTableHead { margin-top: 14px; padding: 0 0 8px; border-bottom: 1px solid var(--color-border); color: var(--color-text-muted); font-size: .53rem; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; }
+.subscriptionRows { display: block !important; margin-top: 0 !important; }
+.subscriptionLibrary .subscriptionRow { padding: 8px 0 !important; border: 0 !important; border-bottom: 1px solid var(--color-surface-secondary) !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; color: var(--color-text); font-size: .62rem; }
+.subscriptionCustomer { font-weight: 800; }
+.subscriptionRow time { color: var(--color-text-muted); font-size: .6rem; }
+.subscriptionStatus { width: max-content; margin: 0 !important; padding: 3px 7px !important; background: var(--color-surface-secondary) !important; color: var(--color-text) !important; font-size: .58rem !important; }
+.subscriptionActions { position: relative; display: flex; gap: 5px; align-items: center; }
+.subscriptionActions .textButton { min-height: 27px !important; padding: 5px 7px !important; border-radius: 6px !important; font-size: .58rem !important; }
+.subscriptionEditor summary { width: 25px; padding: 2px 0; border: 0; background: transparent; color: var(--color-text); cursor: pointer; font-size: .9rem; list-style: none; }
+.subscriptionEditor summary::-webkit-details-marker { display: none; }
+.subscriptionEditor[open] { position: relative; z-index: 7; }
+.subscriptionEditor[open] > form { position: absolute; top: 26px; right: 0; width: min(350px, 75vw); padding: 14px; border: 1px solid var(--color-border); border-radius: 11px; background: var(--color-surface); box-shadow: 0 16px 36px color-mix(in srgb, var(--color-primary) 14%, transparent); }
+.subscriptionEditor[open] > form:not(:first-of-type) { top: auto; }
+.ledgerBackdrop { position: fixed; z-index: 100; inset: 0; display: grid; padding: 20px; place-items: center; background: color-mix(in srgb, var(--color-primary) 26%, transparent); backdrop-filter: blur(5px); }
+.ledgerModal { width: min(100%, 620px); max-height: min(720px, calc(100vh - 40px)); overflow: auto; padding: 22px; border: 1px solid var(--color-border); border-radius: 17px; background: var(--color-surface); box-shadow: 0 22px 60px color-mix(in srgb, var(--color-primary) 26%, transparent); }
+.ledgerHeader { display: flex; gap: 16px; padding-bottom: 14px; border-bottom: 1px solid var(--color-surface-secondary); align-items: flex-start; justify-content: space-between; }
+.ledgerHeader h2 { margin: 4px 0; color: var(--color-text); font-family: Georgia, serif; font-size: 1.6rem; }
+.ledgerHeader span { color: var(--color-text-muted); font-size: .68rem; }
+.ledgerHeader a { display: grid; width: 31px; height: 31px; border: 1px solid var(--color-border); border-radius: 50%; place-items: center; color: var(--color-text); font-size: 1.25rem; line-height: 1; text-decoration: none; }
+.ledgerList { margin-top: 9px; }
+.ledgerList article { display: flex; padding: 13px 0; border-bottom: 1px solid var(--color-surface-secondary); align-items: flex-start; justify-content: space-between; gap: 18px; }
+.ledgerList b { display: block; color: var(--color-text); font-size: .74rem; text-transform: capitalize; }
+.ledgerList span { display: block; margin-top: 3px; color: var(--color-text-muted); font-size: .64rem; }
+.ledgerList strong { color: var(--color-text-muted); font-size: .67rem; white-space: nowrap; }
+@media (max-width: 760px) { .entGrid { grid-template-columns: 1fr !important; } .entHeaderVisual > div { display: none; } .libraryHeader { flex-direction: column; gap: 10px; } .planFilters { width: 100%; } .libraryHeader label { width: 100%; } .planTableHead, .subscriptionTableHead { display: none; } .planLibrary .planRow, .subscriptionLibrary .subscriptionRow { grid-template-columns: 1fr 1fr !important; gap: 7px; } .planLibrary .planRow > :first-child, .planLibrary .planRow > :last-child, .subscriptionLibrary .subscriptionRow > :first-child, .subscriptionLibrary .subscriptionRow > :last-child { grid-column: 1 / -1; } .planEditor { justify-self: start; } .planEditor[open] > form, .subscriptionEditor[open] > form { position: fixed; top: 50%; right: 16px; left: 16px; width: auto; max-height: 78vh; overflow: auto; transform: translateY(-50%); } }
