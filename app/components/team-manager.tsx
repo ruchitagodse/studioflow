@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useActionState, useEffect, useState } from "react";
+import { ChangeEvent, FormEvent, useActionState, useEffect, useState } from "react";
 import { changeMemberPasswordAction, createInvitationAction, revokeInvitationAction, updateMembershipAction, type TeamActionState } from "@/app/studio/team/actions";
 import styles from "./schedule.module.css";
 import teamStyles from "./team-ui.module.css";
@@ -13,6 +13,17 @@ const roles = ["customer", "trainer", "staff"] as const;
 
 function roleLabel(role: string) {
   return role === "staff" ? "Staff / admin" : role[0].toUpperCase() + role.slice(1);
+}
+
+function invitationTone(status: string) {
+  return status === "pending" ? teamStyles.pending : status === "revoked" ? teamStyles.revoked : teamStyles.accepted;
+}
+
+function initials(value: string) {
+  const parts = value.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+  return `${parts[0].charAt(0)}${parts.at(-1)?.charAt(0)}`.toUpperCase();
 }
 
 function MemberEditorModal({ member, action, pending, onClose, onChangePassword }: { member: Member; action: (payload: FormData) => void; pending: boolean; onClose: () => void; onChangePassword: () => void }) {
@@ -66,10 +77,20 @@ export function TeamManager({ members, invitations }: { members: Member[]; invit
     setCopied(true);
   }
 
+  function passwordValidation(newPassword: string, confirmPassword: string, requireBoth: boolean) {
+    return { newPassword: !newPassword ? (requireBoth ? "Enter a new password." : undefined) : newPassword.length < 8 ? "Password must be at least 8 characters." : undefined, confirmPassword: !confirmPassword ? (requireBoth ? "Confirm the new password." : undefined) : confirmPassword !== newPassword ? "Passwords do not match." : undefined };
+  }
+
   function validatePassword(event: FormEvent<HTMLFormElement>) {
     const form = new FormData(event.currentTarget); const newPassword = String(form.get("newPassword") ?? ""); const confirmPassword = String(form.get("confirmPassword") ?? "");
-    const errors = { newPassword: !newPassword ? "Enter a new password." : newPassword.length < 8 ? "Password must be at least 8 characters." : undefined, confirmPassword: !confirmPassword ? "Confirm the new password." : confirmPassword !== newPassword ? "Passwords do not match." : undefined };
+    const errors = passwordValidation(newPassword, confirmPassword, true);
     setPasswordErrors(errors); if (errors.newPassword || errors.confirmPassword) event.preventDefault();
+  }
+
+  function validatePasswordField(event: ChangeEvent<HTMLInputElement>) {
+    const form = event.currentTarget.form; if (!form) return;
+    const values = new FormData(form);
+    setPasswordErrors(passwordValidation(String(values.get("newPassword") ?? ""), String(values.get("confirmPassword") ?? ""), false));
   }
 
   return <main className={`${styles.page} ${styles.studioPolish} ${teamStyles.teamUi}`}>
@@ -100,7 +121,7 @@ export function TeamManager({ members, invitations }: { members: Member[]; invit
           <div className={`${styles.list} ${teamStyles.invitationList}`}>{invitations.map((invitation) => <article key={invitation.id} className={`${styles.item} ${teamStyles.invitationRow}`}>
             <div className={teamStyles.invitationName}><span className={teamStyles.initialAvatar}>{(invitation.displayName || invitation.email).trim().charAt(0).toUpperCase()}</span><b>{invitation.displayName || invitation.email}</b></div>
             <span className={teamStyles.invitationEmail}>{invitation.email}</span><span className={teamStyles.rolePill}>{invitation.roles.map(roleLabel).join(" · ") || "No role"}</span>
-            <span className={`${teamStyles.invitationStatus} ${invitation.status === "pending" ? teamStyles.pending : teamStyles.accepted}`}><i aria-hidden="true" />{invitation.status}</span><time dateTime={invitation.expiresAt}>{new Date(invitation.expiresAt).toLocaleDateString()}</time>
+            <span className={`${teamStyles.invitationStatus} ${invitationTone(invitation.status)}`}><i aria-hidden="true" />{invitation.status}</span><time dateTime={invitation.expiresAt}>{new Date(invitation.expiresAt).toLocaleDateString()}</time>
             <div className={teamStyles.invitationActions}><div className={teamStyles.invitationMenu}><button type="button" className={teamStyles.overflowButton} aria-label={`More actions for ${invitation.displayName || invitation.email}`} aria-expanded={openInvitationId === invitation.id} aria-controls={`invitation-actions-${invitation.id}`} onClick={() => setOpenInvitationId((current) => current === invitation.id ? null : invitation.id)}>⋮</button>{openInvitationId === invitation.id && <div id={`invitation-actions-${invitation.id}`} className={teamStyles.invitationMenuPanel}>{invitation.status === "pending" ? <form action={revokeAction}><input type="hidden" name="invitationId" value={invitation.id} /><button type="submit" disabled={revokePending} onClick={() => setOpenInvitationId(null)}>{revokePending ? "Revoking…" : "Revoke invitation"}</button></form> : <p>This invitation is {invitation.status}. Historical invitations cannot be changed or deleted.</p>}</div>}</div></div>
           </article>)}</div>
         </div>}
@@ -116,11 +137,11 @@ export function TeamManager({ members, invitations }: { members: Member[]; invit
       {members.length === 0 ? <p className={styles.empty}>Your active team will appear here after an invitation is accepted.</p> : <div className={teamStyles.membersTable}>
         <div className={teamStyles.memberTableHead} aria-hidden="true"><span>Name</span><span>Email</span><span>Roles</span><span>Status</span><span>Added on</span><span>Last active</span><span>Actions</span></div>
         <div className={`${styles.memberList} ${teamStyles.memberList}`}>{visibleMembers.map((member) => <article key={member.uid} className={`${styles.memberCard} ${teamStyles.memberRow}`}>
-          <div className={`${styles.memberHeading} ${teamStyles.memberName}`}><div><b>{member.displayName || "Name not provided"}</b><span>{member.email}</span></div></div><span className={teamStyles.memberEmail}>{member.email}</span><span className={teamStyles.rolePill}>{member.roles.map(roleLabel).join(" · ") || "No role"}</span><em className={`${member.status === "active" ? styles.activeBadge : styles.inactiveBadge} ${teamStyles.memberStatus}`}>{member.status}</em><span className={teamStyles.mutedCell}>—</span><span className={teamStyles.mutedCell}>—</span>
+          <div className={`${styles.memberHeading} ${teamStyles.memberName}`}><span className={teamStyles.initialAvatar} aria-hidden="true"><span className={teamStyles.initialAvatarText}>{initials(member.displayName || member.email)}</span></span><div><b>{member.displayName || "Name not provided"}</b><span>{member.email}</span></div></div><span className={teamStyles.memberEmail}>{member.email}</span><span className={teamStyles.rolePill}>{member.roles.map(roleLabel).join(" · ") || "No role"}</span><em className={`${member.status === "active" ? styles.activeBadge : styles.inactiveBadge} ${teamStyles.memberStatus} ${member.status === "active" ? teamStyles.memberActive : teamStyles.memberInactive}`}>{member.status}</em><span className={teamStyles.mutedCell}>—</span><span className={teamStyles.mutedCell}>—</span>
           {member.roles.includes("owner") ? <p className={styles.note}>Owner access is controlled through protected platform provisioning.</p> : <button type="button" className={teamStyles.memberEditButton} onClick={() => setEditingMember(member)}>Edit <span aria-hidden="true">···</span></button>}
         </article>)}</div>
         {visibleMembers.length === 0 && <p className={teamStyles.noResults}>No team members match those filters.</p>}
       </div>}
-    </section>{editingMember && <MemberEditorModal member={editingMember} action={memberAction} pending={memberPending} onClose={() => setEditingMember(null)} onChangePassword={() => { setEditingMember(null); setPasswordMember(editingMember); setPasswordErrors({}); }} />}{passwordMember && <div className={teamStyles.passwordBackdrop} role="presentation" onMouseDown={() => !passwordPending && setPasswordMember(null)}><section className={teamStyles.passwordModal} role="dialog" aria-modal="true" aria-labelledby="change-password-title" onMouseDown={(event) => event.stopPropagation()}><button type="button" className={teamStyles.modalClose} onClick={() => setPasswordMember(null)} disabled={passwordPending} aria-label="Close change password">×</button><p className={styles.kicker}>ACCOUNT SECURITY</p><h2 id="change-password-title">Change password</h2><p className={teamStyles.passwordIntro}>Set a new password for {passwordMember.displayName || passwordMember.email}. It is never stored in StudioFlow.</p><form action={passwordAction} onSubmit={validatePassword} className={styles.form} noValidate><input type="hidden" name="uid" value={passwordMember.uid} /><label>New password <span className={teamStyles.passwordField}><input name="newPassword" type={passwordVisible ? "text" : "password"} autoComplete="new-password" aria-invalid={Boolean(passwordErrors.newPassword)} aria-describedby={passwordErrors.newPassword ? "new-password-error" : undefined} disabled={passwordPending} onChange={() => setPasswordErrors((current) => ({ ...current, newPassword: undefined }))} /><button type="button" onClick={() => setPasswordVisible((visible) => !visible)} aria-label={passwordVisible ? "Hide new password" : "Show new password"} aria-pressed={passwordVisible} disabled={passwordPending}><span aria-hidden="true">👁</span></button></span></label>{passwordErrors.newPassword && <p id="new-password-error" className={teamStyles.passwordError} role="alert">{passwordErrors.newPassword}</p>}<label>Confirm new password <span className={teamStyles.passwordField}><input name="confirmPassword" type={confirmPasswordVisible ? "text" : "password"} autoComplete="new-password" aria-invalid={Boolean(passwordErrors.confirmPassword)} aria-describedby={passwordErrors.confirmPassword ? "confirm-password-error" : undefined} disabled={passwordPending} onChange={() => setPasswordErrors((current) => ({ ...current, confirmPassword: undefined }))} /><button type="button" onClick={() => setConfirmPasswordVisible((visible) => !visible)} aria-label={confirmPasswordVisible ? "Hide confirmed password" : "Show confirmed password"} aria-pressed={confirmPasswordVisible} disabled={passwordPending}><span aria-hidden="true">👁</span></button></span></label>{passwordErrors.confirmPassword && <p id="confirm-password-error" className={teamStyles.passwordError} role="alert">{passwordErrors.confirmPassword}</p>}{passwordState.error && <p className={styles.error} role="alert">{passwordState.error}</p>}{passwordState.success && <p className={styles.success} role="status">{passwordState.success}</p>}<button disabled={passwordPending}>{passwordPending ? "Changing password…" : "Change password"}</button></form></section></div>}
+    </section>{editingMember && <MemberEditorModal member={editingMember} action={memberAction} pending={memberPending} onClose={() => setEditingMember(null)} onChangePassword={() => { setEditingMember(null); setPasswordMember(editingMember); setPasswordErrors({}); }} />}{passwordMember && <div className={teamStyles.passwordBackdrop} role="presentation" onMouseDown={() => !passwordPending && setPasswordMember(null)}><section className={teamStyles.passwordModal} role="dialog" aria-modal="true" aria-labelledby="change-password-title" onMouseDown={(event) => event.stopPropagation()}><button type="button" className={teamStyles.modalClose} onClick={() => setPasswordMember(null)} disabled={passwordPending} aria-label="Close change password">×</button><p className={styles.kicker}>ACCOUNT SECURITY</p><h2 id="change-password-title">Change password</h2><p className={teamStyles.passwordIntro}>Set a new password for {passwordMember.displayName || passwordMember.email}. It is never stored in StudioFlow.</p><form action={passwordAction} onSubmit={validatePassword} className={styles.form} noValidate><input type="hidden" name="uid" value={passwordMember.uid} /><label>New password <span className={teamStyles.passwordField}><input name="newPassword" type={passwordVisible ? "text" : "password"} autoComplete="new-password" aria-invalid={Boolean(passwordErrors.newPassword)} aria-describedby={passwordErrors.newPassword ? "new-password-error" : undefined} disabled={passwordPending} onChange={validatePasswordField} /><button type="button" onClick={() => setPasswordVisible((visible) => !visible)} aria-label={passwordVisible ? "Hide new password" : "Show new password"} aria-pressed={passwordVisible} disabled={passwordPending}><span aria-hidden="true">👁</span></button></span></label>{passwordErrors.newPassword && <p id="new-password-error" className={teamStyles.passwordError} role="alert">{passwordErrors.newPassword}</p>}<label>Confirm new password <span className={teamStyles.passwordField}><input name="confirmPassword" type={confirmPasswordVisible ? "text" : "password"} autoComplete="new-password" aria-invalid={Boolean(passwordErrors.confirmPassword)} aria-describedby={passwordErrors.confirmPassword ? "confirm-password-error" : undefined} disabled={passwordPending} onChange={validatePasswordField} /><button type="button" onClick={() => setConfirmPasswordVisible((visible) => !visible)} aria-label={confirmPasswordVisible ? "Hide confirmed password" : "Show confirmed password"} aria-pressed={confirmPasswordVisible} disabled={passwordPending}><span aria-hidden="true">👁</span></button></span></label>{passwordErrors.confirmPassword && <p id="confirm-password-error" className={teamStyles.passwordError} role="alert">{passwordErrors.confirmPassword}</p>}{passwordState.error && <p className={styles.error} role="alert">{passwordState.error}</p>}{passwordState.success && <p className={styles.success} role="status">{passwordState.success}</p>}<button disabled={passwordPending}>{passwordPending ? "Changing password…" : "Change password"}</button></form></section></div>}
   </main>;
 }

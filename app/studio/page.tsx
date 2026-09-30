@@ -5,6 +5,7 @@ import { requireWorkspace } from "@/lib/auth/server";
 import { getAdminDb } from "@/lib/firebase/admin";
 import { studioThemeSettings } from "@/lib/studio-theme";
 import { StudioAppearance } from "@/app/components/studio-appearance";
+import { listApprovedBrandPalettes } from "@/lib/brand-palettes";
 
 export default async function StudioWorkspace() {
   await connection();
@@ -16,5 +17,6 @@ export default async function StudioWorkspace() {
   }
   if (!principal) redirect(accessError instanceof Error && accessError.message === "NO_ACTIVE_SESSION" ? "/" : "/access-denied");
   const settings = principal.studioId ? studioThemeSettings((await getAdminDb().doc(`studios/${principal.studioId}`).get()).data()) : null;
-  return <><ProtectedWorkspace name={principal.email?.split("@")[0] ?? "there"} role={principal.roles.includes("owner") ? "Studio owner" : "Studio administrator"} />{principal.roles.includes("owner") && settings?.allowOwnerThemeCustomization && <StudioAppearance theme={settings.theme} />}</>;
+  const palettes = principal.roles.includes("owner") && settings?.allowOwnerThemeCustomization ? await listApprovedBrandPalettes() : [];
+  return <><ProtectedWorkspace name={principal.email?.split("@")[0] ?? "there"} role={principal.roles.includes("owner") ? "Studio owner" : "Studio administrator"} />{principal.roles.includes("owner") && settings?.allowOwnerThemeCustomization && <StudioAppearance theme={settings.theme} brandPaletteId={settings.brandPaletteId} palettes={palettes} />}</>;
 }

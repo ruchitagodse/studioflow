@@ -1,3 +1,5 @@
 import { WorkspaceSkeleton } from "@/app/components/workspace-skeleton";
 
-export default function CustomerLoading() { return <WorkspaceSkeleton variant="customer" />; }
+export default function Loading() {
+  return <WorkspaceSkeleton variant="customer" />;
+}

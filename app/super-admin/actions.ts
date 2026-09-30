@@ -3,10 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { requireSuperAdmin } from "@/lib/auth/server";
-import { provisionStudio, updateStudioLifecycle } from "@/lib/provisioning";
+import { provisionStudio, updateStudioLifecycle, updateStudioManagement } from "@/lib/provisioning";
 import { updateStudioTheme } from "@/lib/studio-theme";
-import { resolveTheme } from "@/lib/theme";
 import { themePreferenceCookieName } from "@/lib/theme-preference";
+import { createBrandPalette } from "@/lib/brand-palettes";
 
 export type ProvisionState = { error?: string; success?: { studioId: string; ownerUid: string; ownerEmail: string | null; ownerRecoveryLink: string | null } };
 
@@ -23,9 +23,13 @@ export async function lifecycleAction(formData: FormData) {
   try { const principal = await requireSuperAdmin(); await updateStudioLifecycle(principal.uid, { studioId: String(formData.get("studioId") ?? ""), status: String(formData.get("status") ?? "") }); revalidatePath("/super-admin"); return { error: null }; } catch (error) { return { error: provisionError(error) }; }
 }
 
+export async function studioManagementAction(formData: FormData) { try { const principal = await requireSuperAdmin(); await updateStudioManagement(principal.uid, { studioId: String(formData.get("studioId") ?? ""), name: String(formData.get("name") ?? ""), status: String(formData.get("status") ?? "") }); revalidatePath("/super-admin"); return { error: null }; } catch (error) { return { error: provisionError(error) }; } }
+
 export async function studioThemeAction(formData: FormData) {
-  try { const principal = await requireSuperAdmin(); const theme = resolveTheme(formData.get("theme")); await updateStudioTheme(principal, { studioId: String(formData.get("studioId") ?? ""), theme, allowOwnerThemeCustomization: formData.get("allowOwnerThemeCustomization") === "on" }); (await cookies()).set(themePreferenceCookieName, theme, { path: "/", sameSite: "lax", maxAge: 60 * 60 * 24 * 365 }); revalidatePath("/"); revalidatePath("/super-admin"); return { error: null }; } catch (error) { return { error: provisionError(error) }; }
+  try { const principal = await requireSuperAdmin(); const selected = String(formData.get("theme") ?? "nature-minimal"); const [kind, brandPaletteId] = selected.split(":", 2); const theme = kind === "custom-brand" ? kind : selected; await updateStudioTheme(principal, { studioId: String(formData.get("studioId") ?? ""), theme, brandPaletteId, allowOwnerThemeCustomization: formData.get("allowOwnerThemeCustomization") === "on" }); (await cookies()).set(themePreferenceCookieName, selected, { path: "/", sameSite: "lax", maxAge: 60 * 60 * 24 * 365 }); revalidatePath("/", "layout"); revalidatePath("/super-admin"); return { error: null }; } catch (error) { return { error: provisionError(error) }; }
 }
+
+export async function createBrandPaletteAction(formData: FormData) { try { const principal = await requireSuperAdmin(); await createBrandPalette(principal.uid, Object.fromEntries(formData)); revalidatePath("/super-admin"); return { error: null }; } catch (error) { return { error: provisionError(error) }; } }
 
 function provisionError(error: unknown) {
   const message = error instanceof Error ? error.message : "Unable to complete the requested change.";
