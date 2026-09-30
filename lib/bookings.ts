@@ -80,7 +80,7 @@ function slotView(id: string, data: FirebaseFirestore.DocumentData, alreadyBooke
 }
 
 async function currentTrainerName(studioId: string, data: FirebaseFirestore.DocumentData) {
-  const fallback = String(data.trainerName ?? "Trainer");
+  const fallback = "Trainer";
   let uid = String(data.trainerUid ?? "");
   if (!uid && data.slotId) {
     const slot = await getAdminDb().doc(`studios/${studioId}/slots/${String(data.slotId)}`).get();

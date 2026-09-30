@@ -4,9 +4,9 @@ import { randomUUID } from "node:crypto";
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import type { Principal } from "@/lib/auth/server";
 import { adjustedBalance, canAssignSubscription, usableCredits } from "@/lib/entitlement-logic";
-import { addCalendarDays, addCalendarMonths, effectiveExpiry, pauseAllowanceDays } from "@/lib/subscription-lifecycle-logic";
+import { addCalendarDays, addCalendarMonths, calendarDayDifference, effectiveExpiry, pauseAllowanceDays } from "@/lib/subscription-lifecycle-logic";
 import { getAdminDb } from "@/lib/firebase/admin";
-import { creditAdjustmentSchema, planInputSchema, planUpdateSchema, subscriptionAssignmentSchema, subscriptionCancellationSchema, subscriptionPauseSchema, subscriptionRenewalSchema } from "@/lib/validation";
+import { creditAdjustmentSchema, planInputSchema, planUpdateSchema, subscriptionAssignmentSchema, subscriptionCancellationSchema, subscriptionPauseSchema, subscriptionRenewalSchema, subscriptionResumeSchema } from "@/lib/validation";
 import { promoteOneWaitlistEntry } from "@/lib/waitlist";
 
 function requireEntitlementAuthority(principal: Principal) {
@@ -29,7 +29,7 @@ async function expireSubscriptionInTransaction(studioId: string, subscriptionId:
   if (status === "paused" && pauseEndsAt && pauseEndsAt.getTime() <= now.getTime()) {
     status = "active";
     pauseEnded = true;
-    transaction.update(subscriptionRef, { status: "active", pauseEndedAt: FieldValue.serverTimestamp(), pauseEndsAt: FieldValue.delete(), updatedAt: FieldValue.serverTimestamp() });
+    transaction.update(subscriptionRef, { status: "active", pauseEndedAt: FieldValue.serverTimestamp(), pauseEndsAt: FieldValue.delete(), pauseStartedAt: FieldValue.delete(), currentPauseDays: FieldValue.delete(), updatedAt: FieldValue.serverTimestamp() });
     transaction.set(db.doc(`studios/${studioId}/auditEvents/${randomUUID()}`), audit("subscription.pause_ended", "system", subscriptionId));
   }
   const endsAt = subscriptionEnd(subscription);
@@ -132,7 +132,16 @@ export async function pauseSubscription(principal: Principal, raw: unknown) {
   await db.runTransaction(async (transaction) => {
     const [studio, subscription] = await Promise.all([transaction.get(db.doc(`studios/${studioId}`)), transaction.get(subscriptionRef)]); if (!studio.exists || studio.data()?.status !== "active") throw new Error("INACTIVE_STUDIO"); if (!subscription.exists) throw new Error("SUBSCRIPTION_NOT_FOUND"); const data = subscription.data()!; const customer = await transaction.get(db.doc(`studios/${studioId}/members/${String(data.customerUid)}`)); if (!customer.exists || customer.data()?.status !== "active" || !hasCustomerRole(customer.data())) throw new Error("CUSTOMER_NOT_ELIGIBLE"); const isOperator = principal.roles.some((role) => role === "owner" || role === "staff"); if (!isOperator && String(data.customerUid) !== principal.uid) throw new Error("FORBIDDEN_PAUSE"); if (data.status === "paused" && data.pauseOperationId === input.operationId) return; if (data.status !== "active") throw new Error("SUBSCRIPTION_INACTIVE");
     const durationMonths = Number(data.historicalTerms?.durationMonths ?? data.durationMonths ?? 0) || undefined; const allowance = pauseAllowanceDays(durationMonths); if (allowance === 0) throw new Error("PAUSE_NOT_ELIGIBLE"); const used = Number(data.pauseDaysUsed ?? 0); if (used + input.pauseDays > allowance) throw new Error("PAUSE_ALLOWANCE_EXCEEDED"); const timezone = String(studio.data()?.timezone ?? "UTC"); const now = new Date(); const historicalEndsAt = asDate(data.endsAt); if (!historicalEndsAt) throw new Error("SUBSCRIPTION_INVALID"); const pauseEndsAt = addCalendarDays(now, input.pauseDays, timezone); const effectiveEndsAt = effectiveExpiry(historicalEndsAt, used + input.pauseDays, timezone);
-    transaction.update(subscriptionRef, { status: "paused", pauseDaysUsed: used + input.pauseDays, pauseEndsAt: Timestamp.fromDate(pauseEndsAt), effectiveEndsAt: Timestamp.fromDate(effectiveEndsAt), pauseOperationId: input.operationId, pausePeriods: FieldValue.arrayUnion({ startsAt: Timestamp.fromDate(now), endsAt: Timestamp.fromDate(pauseEndsAt), days: input.pauseDays, actorUid: principal.uid }), updatedAt: FieldValue.serverTimestamp(), updatedBy: principal.uid }); transaction.set(db.doc(`studios/${studioId}/auditEvents/${randomUUID()}`), audit("subscription.pause_started", principal.uid, subscriptionRef.id, { after: { pauseDays: input.pauseDays, usedDays: used + input.pauseDays, allowance } }));
+    transaction.update(subscriptionRef, { status: "paused", pauseDaysUsed: used + input.pauseDays, pauseStartedAt: Timestamp.fromDate(now), pauseEndsAt: Timestamp.fromDate(pauseEndsAt), currentPauseDays: input.pauseDays, effectiveEndsAt: Timestamp.fromDate(effectiveEndsAt), pauseOperationId: input.operationId, pausePeriods: FieldValue.arrayUnion({ startsAt: Timestamp.fromDate(now), endsAt: Timestamp.fromDate(pauseEndsAt), days: input.pauseDays, actorUid: principal.uid }), updatedAt: FieldValue.serverTimestamp(), updatedBy: principal.uid }); transaction.set(db.doc(`studios/${studioId}/auditEvents/${randomUUID()}`), audit("subscription.pause_started", principal.uid, subscriptionRef.id, { after: { pauseDays: input.pauseDays, usedDays: used + input.pauseDays, allowance } }));
+  });
+}
+
+export async function resumeSubscription(principal: Principal, raw: unknown) {
+  const studioId = requirePauseAuthority(principal); const input = subscriptionResumeSchema.parse(raw); const db = getAdminDb(); const subscriptionRef = db.doc(`studios/${studioId}/subscriptions/${input.subscriptionId}`);
+  await db.runTransaction(async (transaction) => {
+    const [studio, subscription] = await Promise.all([transaction.get(db.doc(`studios/${studioId}`)), transaction.get(subscriptionRef)]); if (!studio.exists || studio.data()?.status !== "active") throw new Error("INACTIVE_STUDIO"); if (!subscription.exists) throw new Error("SUBSCRIPTION_NOT_FOUND"); const data = subscription.data()!; const customer = await transaction.get(db.doc(`studios/${studioId}/members/${String(data.customerUid)}`)); if (!customer.exists || customer.data()?.status !== "active" || !hasCustomerRole(customer.data())) throw new Error("CUSTOMER_NOT_ELIGIBLE"); const isOperator = principal.roles.some((role) => role === "owner" || role === "staff"); if (!isOperator && String(data.customerUid) !== principal.uid) throw new Error("FORBIDDEN_PAUSE"); if (data.status === "active" && data.resumeOperationId === input.operationId) return; if (data.status !== "paused") throw new Error("SUBSCRIPTION_NOT_PAUSED");
+    const timezone = String(studio.data()?.timezone ?? "UTC"); const now = new Date(); const pausePeriods = Array.isArray(data.pausePeriods) ? data.pausePeriods : []; const lastPausePeriod = pausePeriods[pausePeriods.length - 1] as Record<string, unknown> | undefined; const scheduledDays = Number(data.currentPauseDays ?? lastPausePeriod?.days ?? 0); const pauseStartedAt = asDate(data.pauseStartedAt) ?? asDate(lastPausePeriod?.startsAt); if (!pauseStartedAt || scheduledDays < 1) throw new Error("SUBSCRIPTION_INVALID"); const actualDays = Math.min(scheduledDays, calendarDayDifference(pauseStartedAt, now, timezone)); const totalUsed = Number(data.pauseDaysUsed ?? 0); const usedDays = Math.max(0, totalUsed - scheduledDays + actualDays); const historicalEndsAt = asDate(data.endsAt); if (!historicalEndsAt) throw new Error("SUBSCRIPTION_INVALID"); const effectiveEndsAt = effectiveExpiry(historicalEndsAt, usedDays, timezone);
+    transaction.update(subscriptionRef, { status: "active", pauseDaysUsed: usedDays, effectiveEndsAt: Timestamp.fromDate(effectiveEndsAt), pauseResumedAt: Timestamp.fromDate(now), resumeOperationId: input.operationId, pauseEndsAt: FieldValue.delete(), pauseStartedAt: FieldValue.delete(), currentPauseDays: FieldValue.delete(), updatedAt: FieldValue.serverTimestamp(), updatedBy: principal.uid }); transaction.set(db.doc(`studios/${studioId}/auditEvents/${randomUUID()}`), audit("subscription.resumed", principal.uid, subscriptionRef.id, { after: { pauseDays: actualDays, usedDays } }));
   });
 }
 
@@ -157,6 +166,7 @@ export type CustomerEntitlementView = {
     durationMonths: number | null;
     pauseDaysUsed: number;
     pauseAllowanceDays: number;
+    pauseEndsAt: string | null;
   } | null;
   ledger: { id: string; action: string; amount: number; createdAt: string | null }[];
 };
@@ -195,6 +205,7 @@ export async function getCustomerEntitlement(principal: Principal): Promise<Cust
       durationMonths: Number(terms.durationMonths ?? 0) || null,
       pauseDaysUsed: Number(data.pauseDaysUsed ?? 0),
       pauseAllowanceDays: pauseAllowanceDays(Number(terms.durationMonths ?? 0) || undefined),
+      pauseEndsAt: asDate(data.pauseEndsAt)?.toISOString() ?? null,
     },
     ledger: ledger.docs.map((entry) => ({ id: entry.id, action: String(entry.data().action ?? "update"), amount: Number(entry.data().amount ?? 0), createdAt: asDate(entry.data().createdAt)?.toISOString() ?? null })),
   };

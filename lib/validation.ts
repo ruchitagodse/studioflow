@@ -17,7 +17,10 @@ export const provisionStudioSchema = z.object({
 });
 
 export const studioLifecycleSchema = z.object({ studioId: z.string().min(1), status: studioStatusSchema });
-export const studioThemeSchema = z.object({ studioId: z.string().min(1), theme: z.enum(["nature-minimal", "warm-elegant", "dark-modern", "soft-pastel"]), allowOwnerThemeCustomization: z.coerce.boolean().optional() });
+export const studioManagementSchema = z.object({ studioId: z.string().min(1), name: z.string().trim().min(2).max(100), status: studioStatusSchema });
+export const studioThemeSchema = z.object({ studioId: z.string().min(1), theme: z.enum(["nature-minimal", "warm-elegant", "dark-modern", "soft-pastel", "custom-brand"]), brandPaletteId: z.string().min(1).optional(), allowOwnerThemeCustomization: z.coerce.boolean().optional() });
+const hexColor = z.string().regex(/^#[0-9a-fA-F]{6}$/, "Use a six-digit hex colour.");
+export const brandPaletteSchema = z.object({ name: z.string().trim().min(2).max(60), background: hexColor, surface: hexColor, primary: hexColor, accent: hexColor, operationId: z.string().uuid() });
 
 export const teamRoleSchema = z.enum(["customer", "trainer", "staff"]);
 export const invitationSchema = z.object({
@@ -57,12 +60,12 @@ const planFieldsSchema = z.object({
   description: z.string().trim().max(400, "Description must be 400 characters or fewer.").optional(),
   priceInr: inrPriceSchema,
   creditAllocation: z.coerce.number().int().positive("Credit allocation must be at least one."),
-  validityDays: z.coerce.number().int().positive("Validity must be at least one day.").optional(),
-  durationMonths: z.preprocess((value) => value === "" || value === undefined ? undefined : value, z.coerce.number().int().positive("Month duration must be a positive whole number.").optional()),
+  validityDays: z.preprocess((value) => value === "" || value === undefined || value === null ? undefined : value, z.coerce.number().int().positive("Fixed-day validity must be at least 1 day.").optional()),
+  durationMonths: z.preprocess((value) => value === "" || value === undefined || value === null ? undefined : value, z.coerce.number().int().positive("Calendar duration must be at least 1 month.").optional()),
   status: z.enum(["draft", "active"]),
 }).superRefine((value, context) => {
   if (Boolean(value.validityDays) === Boolean(value.durationMonths)) {
-    context.addIssue({ code: "custom", path: ["validityDays"], message: "Choose either fixed-day validity or whole calendar months." });
+    context.addIssue({ code: "custom", path: ["validityDays"], message: "Choose either fixed-day validity or calendar-month duration." });
   }
 });
 
@@ -96,6 +99,11 @@ export const subscriptionRenewalSchema = subscriptionAssignmentSchema;
 export const subscriptionPauseSchema = z.object({
   subscriptionId: z.string().min(1),
   pauseDays: z.coerce.number().int().positive("Choose at least one pause day.").max(60),
+  operationId: z.string().uuid(),
+});
+
+export const subscriptionResumeSchema = z.object({
+  subscriptionId: z.string().min(1),
   operationId: z.string().uuid(),
 });
 

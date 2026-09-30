@@ -94,7 +94,7 @@ export async function getAttendanceRoster(principal: Principal, slotId: string):
   return {
     slotId,
     className: String(slotContext.data.className ?? "Class"),
-    trainerName: String(trainer.data()?.displayName ?? "").trim() || String(slotContext.data.trainerName ?? "Trainer"),
+    trainerName: String(trainer.data()?.displayName ?? "").trim() || "Trainer",
     localDate: String(slotContext.data.localDate ?? ""),
     startTime: String(slotContext.data.startTime ?? ""),
     endTime: String(slotContext.data.endTime ?? ""),

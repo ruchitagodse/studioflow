@@ -3,7 +3,7 @@ import "server-only";
 import { randomUUID } from "node:crypto";
 import { FieldValue } from "firebase-admin/firestore";
 import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
-import { provisionStudioSchema, studioLifecycleSchema } from "@/lib/validation";
+import { provisionStudioSchema, studioLifecycleSchema, studioManagementSchema } from "@/lib/validation";
 import type { z } from "zod";
 
 type ProvisionInput = z.infer<typeof provisionStudioSchema>;
@@ -43,4 +43,9 @@ export async function updateStudioLifecycle(actorUid: string, rawInput: unknown)
     transaction.update(studioRef, { status, updatedAt: FieldValue.serverTimestamp(), updatedBy: actorUid });
     transaction.set(db.doc(`platformAuditEvents/${randomUUID()}`), { action: `studio.${status}`, actorUid, studioId, createdAt: FieldValue.serverTimestamp() });
   });
+}
+
+export async function updateStudioManagement(actorUid: string, rawInput: unknown) {
+  const { studioId, name, status } = studioManagementSchema.parse(rawInput); const db = getAdminDb();
+  await db.runTransaction(async (transaction) => { const studioRef = db.doc(`studios/${studioId}`); const studio = await transaction.get(studioRef); if (!studio.exists) throw new Error("STUDIO_NOT_FOUND"); const before = studio.data()!; transaction.update(studioRef, { name, status, updatedAt: FieldValue.serverTimestamp(), updatedBy: actorUid }); transaction.set(db.doc(`platformAuditEvents/${randomUUID()}`), { action: "studio.updated", actorUid, studioId, createdAt: FieldValue.serverTimestamp(), result: "success", before: { name: before.name, status: before.status }, after: { name, status } }); });
 }

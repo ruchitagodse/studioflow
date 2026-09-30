@@ -54,6 +54,15 @@ export function addCalendarDays(date: Date, days: number, timezone: string) {
   }, timezone);
 }
 
+/** Returns the number of studio-local calendar boundaries crossed between two instants. */
+export function calendarDayDifference(start: Date, end: Date, timezone: string) {
+  const startParts = zonedParts(start, timezone);
+  const endParts = zonedParts(end, timezone);
+  const startDay = Date.UTC(startParts.year, startParts.month - 1, startParts.day);
+  const endDay = Date.UTC(endParts.year, endParts.month - 1, endParts.day);
+  return Math.max(0, Math.round((endDay - startDay) / (24 * 60 * 60 * 1000)));
+}
+
 export function pauseAllowanceDays(durationMonths: number | undefined) {
   return durationMonths && Number.isInteger(durationMonths) && durationMonths > 0 ? durationMonths * 5 : 0;
 }

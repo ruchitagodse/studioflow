@@ -1,5 +1,6 @@
 import "server-only";
 
+import { cache } from "react";
 import { cookies } from "next/headers";
 import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
 import { isVerifiedMembership, resolveWorkspace, type StudioRole, type Workspace } from "@/lib/access";
@@ -15,7 +16,8 @@ export type Principal = {
   roles: StudioRole[];
 };
 
-export async function getCurrentPrincipal(): Promise<Principal | null> {
+/** Reuses one trusted session/membership resolution across the layout and route during a request. */
+export const getCurrentPrincipal = cache(async (): Promise<Principal | null> => {
   const session = (await cookies()).get(sessionCookieName)?.value;
   if (!session) return null;
 
@@ -43,7 +45,7 @@ export async function getCurrentPrincipal(): Promise<Principal | null> {
   const studioStatus = verifiedMembership ? studioSnapshot?.data()?.status ?? null : null;
   const workspace = resolveWorkspace({ uid: user.uid, disabled: user.disabled, superAdmin, membership: verifiedMembership, studioStatus });
   return { uid: user.uid, email: user.email ?? null, superAdmin, workspace, studioId: verifiedMembership?.studioId ?? null, roles: verifiedMembership?.roles ?? [] };
-}
+});
 
 export async function requireSuperAdmin(): Promise<Principal> {
   const principal = await getCurrentPrincipal();

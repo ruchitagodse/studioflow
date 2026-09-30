@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { addCalendarDays, addCalendarMonths, effectiveExpiry, pauseAllowanceDays, zonedParts } from "../lib/subscription-lifecycle-logic";
-import { planInputSchema, subscriptionCancellationSchema, subscriptionPauseSchema } from "../lib/validation";
+import { addCalendarDays, addCalendarMonths, calendarDayDifference, effectiveExpiry, pauseAllowanceDays, zonedParts } from "../lib/subscription-lifecycle-logic";
+import { planInputSchema, subscriptionCancellationSchema, subscriptionPauseSchema, subscriptionResumeSchema } from "../lib/validation";
 
 const operationId = "5b2577c5-6648-4d46-b520-c3227605ab4b";
 
@@ -30,9 +30,14 @@ describe("Sprint 10 subscription lifecycle rules", () => {
   it("validates pause allowance inputs and immediate cancellation reasons", () => {
     expect(subscriptionPauseSchema.safeParse({ subscriptionId: "sub", pauseDays: "5", operationId }).success).toBe(true);
     expect(subscriptionPauseSchema.safeParse({ subscriptionId: "sub", pauseDays: "0", operationId }).success).toBe(false);
+    expect(subscriptionResumeSchema.safeParse({ subscriptionId: "sub", operationId }).success).toBe(true);
     expect(subscriptionCancellationSchema.safeParse({ subscriptionId: "sub", mode: "immediate", operationId }).success).toBe(false);
     expect(subscriptionCancellationSchema.safeParse({ subscriptionId: "sub", mode: "immediate", reason: "Requested by studio", operationId }).success).toBe(true);
     expect(subscriptionCancellationSchema.safeParse({ subscriptionId: "sub", mode: "end_of_term", operationId }).success).toBe(true);
+  });
+
+  it("counts an early resume by studio-local calendar days", () => {
+    expect(calendarDayDifference(new Date("2026-03-07T15:30:00.000Z"), new Date("2026-03-09T14:30:00.000Z"), "Asia/Kolkata")).toBe(2);
   });
 
   it("models split pauses cumulatively without credit movement", () => {

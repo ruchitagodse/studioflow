@@ -24,7 +24,7 @@ export async function getAssignedTrainerSlots(principal: Principal): Promise<Tra
       id: doc.id,
       className: String(data.className ?? "Class"),
       trainerUid: String(data.trainerUid),
-      trainerName: trainerName || String(data.trainerName ?? "Trainer"),
+      trainerName: trainerName || "Trainer",
       localDate: String(data.localDate ?? ""),
       startTime: String(data.startTime ?? ""),
       endTime: String(data.endTime ?? ""),
