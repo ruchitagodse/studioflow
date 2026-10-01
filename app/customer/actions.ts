@@ -9,6 +9,7 @@ export type BookingActionState = { error?: string; success?: string; bookingId?:
 function message(error: unknown) {
   const code = error instanceof Error ? error.message : "We could not complete that booking. Please try again.";
   if (error instanceof Error && error.name === "ZodError") return "Please choose a valid class and try again.";
+  if (code.includes("FAILED_PRECONDITION")) return "We’re updating the studio booking service. Please try again shortly.";
   return ({
     NO_ACTIVE_SESSION: "Please sign in again before booking.",
     FORBIDDEN_WORKSPACE: "You do not have access to book for this studio.",
