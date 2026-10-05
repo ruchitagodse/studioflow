@@ -9,6 +9,7 @@ import readableStyles from "@/app/components/customer-bookings-readable.module.c
 import studioImage from "@/app/assets/pilates-studio.png";
 import { requireWorkspace } from "@/lib/auth/server";
 import { getCustomerBookings, getCustomerSchedule, type CustomerBookingView } from "@/lib/bookings";
+import { displayCustomerDate } from "@/lib/customer-display";
 
 type TargetSlot = { id: string; className: string; localDate: string; startTime: string; endTime: string; trainerName: string; remainingCapacity: number; alreadyBooked: boolean };
 
@@ -26,7 +27,7 @@ function BookingList({ items, targets }: { items: CustomerBookingView[]; targets
   if (items.length === 0) return <div className={styles.empty}>Nothing to show yet.</div>;
   return <div className={`${styles.bookingTimeline} ${readableStyles.timeline}`}>{items.map((booking) => <article className={`${styles.historyCard} ${readableStyles.bookingCard}`} key={booking.id}>
     <Image className={`${styles.bookingThumb} ${readableStyles.bookingThumb}`} src={studioImage} alt="" sizes="140px" />
-    <div className={styles.bookingBody}><div className={readableStyles.bookingDate}><CalendarIcon />{booking.localDate}</div><b>{booking.className}</b><span className={readableStyles.bookingFact}><ClockIcon />{booking.startTime}–{booking.endTime}</span><span className={readableStyles.bookingFact}><PersonIcon />with {booking.trainerName}</span><em className={`${styles.status} ${readableStyles.bookingStatus} ${booking.status.startsWith("cancelled") ? readableStyles.cancelledStatus : ""}`}><i aria-hidden="true" />{bookingStatusLabel(booking.status)}</em>{booking.isUpcoming && <BookingManagementActions booking={booking} targets={targets.filter((target) => !target.alreadyBooked && target.id !== booking.slotId && target.remainingCapacity > 0)} />}</div>
+    <div className={styles.bookingBody}><div className={readableStyles.bookingDate}><CalendarIcon />{displayCustomerDate(booking.localDate)}</div><b>{booking.className}</b><span className={readableStyles.bookingFact}><ClockIcon />{booking.startTime}–{booking.endTime}</span><span className={readableStyles.bookingFact}><PersonIcon />with {booking.trainerName}</span><em className={`${styles.status} ${readableStyles.bookingStatus} ${booking.status.startsWith("cancelled") ? readableStyles.cancelledStatus : ""}`}><i aria-hidden="true" />{bookingStatusLabel(booking.status)}</em>{booking.isUpcoming && <BookingManagementActions booking={booking} targets={targets.filter((target) => !target.alreadyBooked && target.id !== booking.slotId && target.remainingCapacity > 0)} />}</div>
   </article>)}</div>;
 }
 

@@ -30,6 +30,7 @@
   font-size: .9rem;
   font-weight: 800;
   cursor: pointer;
+  transition: background-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
 }
 
 .tabList button svg {
@@ -42,7 +43,12 @@
   stroke-width: 1.9;
 }
 
-.tabList button:hover { background: color-mix(in srgb, var(--color-primary) 8%, transparent); }
+@media (hover: hover) {
+  .tabList button:not(.activeTab):hover {
+    background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));
+    color: var(--color-text);
+  }
+}
 .tabList button:focus-visible { outline: 3px solid var(--color-primary); outline-offset: 2px; }
 
 .tabList .activeTab {

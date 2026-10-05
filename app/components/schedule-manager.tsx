@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
+import Swal from "sweetalert2";
 import { cancelSlotAction, createClassAction, createSlotAction, updateClassAction, updateSlotAction, type ScheduleState } from "@/app/studio/schedule-actions";
 import studioImage from "@/app/assets/pilates-studio.png";
 import styles from "./schedule.module.css";
@@ -32,6 +33,12 @@ export function ScheduleManager({ timezone, classes, trainers, slots }: { timezo
   const [selectedClass, setSelectedClass] = useState<ClassItem | null>(null);
   const [classOperation] = useState(() => crypto.randomUUID());
   const [slotOperation] = useState(() => crypto.randomUUID());
+  const activeClasses = classes.filter((item) => item.status === "active");
+  const [slotDraft, setSlotDraft] = useState({ classId: activeClasses[0]?.id ?? "", localDate: "", startTime: "", endTime: "", capacity: "8", trainerUid: trainers[0]?.uid ?? "", status: "draft" });
+  const updateSlotDraft = (field: keyof typeof slotDraft, value: string) => setSlotDraft((current) => ({ ...current, [field]: value }));
+  useEffect(() => { if (classState.success) void Swal.fire({ icon: "success", title: "Class created", text: classState.success, confirmButtonText: "Done" }); }, [classState.success]);
+  useEffect(() => { if (editState.success) { setSelectedSlot(null); void Swal.fire({ icon: "success", title: "Slot updated", text: editState.success, confirmButtonText: "Done" }); } }, [editState.success]);
+  useEffect(() => { if (editState.error) void Swal.fire({ icon: "error", title: "Slot not updated", text: editState.error, confirmButtonText: "Review slot" }); }, [editState.error]);
 
   return <main className={`${styles.page} ${styles.studioPolish} ${scheduleStyles.scheduleUi} ${readableStyles.scheduleReadable}`}>
     <header className={`${styles.header} ${scheduleStyles.scheduleHeader}`}>
@@ -48,12 +55,12 @@ export function ScheduleManager({ timezone, classes, trainers, slots }: { timezo
 
       <section className={`${styles.panel} ${scheduleStyles.schedulePanel} ${scheduleStyles.slotPanel}`}>
         <div className={scheduleStyles.panelHeading}><div><p className={styles.kicker}>ONE-OFF SLOT</p><h2>Schedule a concrete class</h2></div></div>
-        {!classes.some((item) => item.status === "active") ? <p className={styles.empty}>Create an active class before scheduling a slot.</p> : !trainers.length ? <p className={styles.empty}>No active trainer memberships are available. A published slot requires exactly one active trainer from this studio.</p> : <form action={slotAction} className={`${styles.form} ${scheduleStyles.slotForm}`}>
+        {!activeClasses.length ? <p className={styles.empty}>Create an active class before scheduling a slot.</p> : !trainers.length ? <p className={styles.empty}>No active trainer memberships are available. A published slot requires exactly one active trainer from this studio.</p> : <form action={slotAction} className={`${styles.form} ${scheduleStyles.slotForm}`}>
           <input type="hidden" name="operationId" value={slotOperation} />
-          <label>Class<select name="classId" required disabled={slotPending}>{classes.filter((item) => item.status === "active").map((item) => <option key={item.id} value={item.id}>{item.name} · {item.durationMinutes} min</option>)}</select></label>
-          <div className={scheduleStyles.slotTimeGrid}><label>Date<input name="localDate" type="date" required disabled={slotPending} /></label><label>Start time<input name="startTime" type="time" required disabled={slotPending} /></label><label>End time<input name="endTime" type="time" required disabled={slotPending} /></label></div>
-          <div className={styles.two}><label>Capacity<input name="capacity" type="number" min="1" max="100" defaultValue="8" required disabled={slotPending} /></label><label>Trainer<select name="trainerUid" required disabled={slotPending}>{trainers.map((trainer) => <option key={trainer.uid} value={trainer.uid}>{trainer.name}</option>)}</select></label></div>
-          <label>Status<select name="status" defaultValue="draft" disabled={slotPending}><option value="draft">Draft</option><option value="published">Published</option></select></label><p className={styles.note}>ⓘ Times are interpreted in {timezone}. Same-trainer overlaps are not permitted.</p>{slotState.error && <p className={styles.error} role="alert">{slotState.error}</p>}{slotState.success && <p className={styles.success} role="status">{slotState.success}</p>}<button disabled={slotPending}>{slotPending ? "Scheduling…" : "Create one-off slot"}</button>
+          <label>Class<select name="classId" required disabled={slotPending} value={slotDraft.classId} onChange={(event) => updateSlotDraft("classId", event.target.value)} aria-invalid={Boolean(slotState.fieldErrors?.classId)} aria-describedby={slotState.fieldErrors?.classId ? "slot-class-error" : undefined}>{activeClasses.map((item) => <option key={item.id} value={item.id}>{item.name} · {item.durationMinutes} min</option>)}</select>{slotState.fieldErrors?.classId && <span id="slot-class-error" className={styles.fieldError} role="alert">{slotState.fieldErrors.classId}</span>}</label>
+          <div className={scheduleStyles.slotTimeGrid}><label>Date<input name="localDate" type="date" required disabled={slotPending} value={slotDraft.localDate} onChange={(event) => updateSlotDraft("localDate", event.target.value)} aria-invalid={Boolean(slotState.fieldErrors?.localDate)} />{slotState.fieldErrors?.localDate && <span className={styles.fieldError} role="alert">{slotState.fieldErrors.localDate}</span>}</label><label>Start time<input name="startTime" type="time" required disabled={slotPending} value={slotDraft.startTime} onChange={(event) => updateSlotDraft("startTime", event.target.value)} aria-invalid={Boolean(slotState.fieldErrors?.startTime)} />{slotState.fieldErrors?.startTime && <span className={styles.fieldError} role="alert">{slotState.fieldErrors.startTime}</span>}</label><label>End time<input name="endTime" type="time" required disabled={slotPending} value={slotDraft.endTime} onChange={(event) => updateSlotDraft("endTime", event.target.value)} aria-invalid={Boolean(slotState.fieldErrors?.endTime)} />{slotState.fieldErrors?.endTime && <span className={styles.fieldError} role="alert">{slotState.fieldErrors.endTime}</span>}</label></div>
+          <div className={styles.two}><label>Capacity<input name="capacity" type="number" min="1" max="100" required disabled={slotPending} value={slotDraft.capacity} onChange={(event) => updateSlotDraft("capacity", event.target.value)} aria-invalid={Boolean(slotState.fieldErrors?.capacity)} />{slotState.fieldErrors?.capacity && <span className={styles.fieldError} role="alert">{slotState.fieldErrors.capacity}</span>}</label><label>Trainer<select name="trainerUid" required disabled={slotPending} value={slotDraft.trainerUid} onChange={(event) => updateSlotDraft("trainerUid", event.target.value)} aria-invalid={Boolean(slotState.fieldErrors?.trainerUid)}>{trainers.map((trainer) => <option key={trainer.uid} value={trainer.uid}>{trainer.name}</option>)}</select>{slotState.fieldErrors?.trainerUid && <span className={styles.fieldError} role="alert">{slotState.fieldErrors.trainerUid}</span>}</label></div>
+          <label>Status<select name="status" disabled={slotPending} value={slotDraft.status} onChange={(event) => updateSlotDraft("status", event.target.value)}><option value="draft">Draft</option><option value="published">Published</option></select></label><p className={styles.note}>ⓘ Times are interpreted in {timezone}. Same-trainer overlaps are not permitted.</p>{slotState.error && <p className={styles.error} role="alert">{slotState.error}</p>}{slotState.success && <p className={styles.success} role="status">{slotState.success}</p>}<button disabled={slotPending}>{slotPending ? "Scheduling…" : "Create one-off slot"}</button>
         </form>}
       </section>
     </div>

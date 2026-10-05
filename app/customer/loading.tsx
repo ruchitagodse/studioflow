@@ -1,5 +1,5 @@
 import { WorkspaceSkeleton } from "@/app/components/workspace-skeleton";
 
 export default function Loading() {
-  return <WorkspaceSkeleton variant="customer" />;
+  return <WorkspaceSkeleton variant="customer" embedded />;
 }

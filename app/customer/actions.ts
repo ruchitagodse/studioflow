@@ -22,7 +22,7 @@ function message(error: unknown) {
     ALREADY_BOOKED: "You already have a booking for this class.",
     NO_ACTIVE_SUBSCRIPTION: "An active subscription is required to book a class.",
     SUBSCRIPTION_EXPIRED: "Your subscription has expired and cannot be used for a new booking.",
-    NO_AVAILABLE_CREDIT: "You do not have an available credit for this booking.",
+    NO_AVAILABLE_CREDIT: "You do not have an available class pass for this booking.",
     BOOKING_NOT_FOUND: "This booking is no longer available.",
     BOOKING_NOT_CANCELLABLE: "This booking can no longer be cancelled.",
     BOOKING_NOT_RESCHEDULABLE: "This booking can no longer be rescheduled.",
@@ -45,7 +45,7 @@ export async function createBookingAction(_: BookingActionState, form: FormData)
     revalidatePath("/customer/bookings");
     revalidatePath(`/customer/slots/${String(form.get("slotId") ?? "")}`);
     return {
-      success: result.idempotent ? "Your booking is already confirmed." : "Your class is booked. One credit has been reserved.",
+      success: result.idempotent ? "Your booking is already confirmed." : "Your class is booked. One class pass has been reserved.",
       bookingId: result.bookingId,
     };
   } catch (error) {
@@ -56,13 +56,13 @@ export async function createBookingAction(_: BookingActionState, form: FormData)
 export async function cancelBookingAction(_: BookingActionState, form: FormData): Promise<BookingActionState> {
   try {
     const principal = await requireWorkspace("/customer"); const result = await cancelCustomerBooking(principal, Object.fromEntries(form)); revalidateCustomerBookingViews();
-    return { success: result.kind === "free" ? "Your booking was cancelled and your credit was returned." : "Your booking was cancelled. This late cancellation consumed your reserved credit.", bookingId: result.bookingId };
+    return { success: result.kind === "free" ? "Your booking was cancelled and your class pass was returned." : "Your booking was cancelled. This late cancellation used your reserved class pass.", bookingId: result.bookingId };
   } catch (error) { return { error: message(error) }; }
 }
 
 export async function rescheduleBookingAction(_: BookingActionState, form: FormData): Promise<BookingActionState> {
   try {
     const principal = await requireWorkspace("/customer"); const result = await rescheduleCustomerBooking(principal, Object.fromEntries(form)); revalidateCustomerBookingViews();
-    return { success: result.idempotent ? "Your reschedule is already confirmed." : "Your booking has been rescheduled. Your reserved credit moved with it.", bookingId: result.bookingId };
+    return { success: result.idempotent ? "Your reschedule is already confirmed." : "Your booking has been rescheduled. Your reserved class pass moved with it.", bookingId: result.bookingId };
   } catch (error) { return { error: message(error) }; }
 }

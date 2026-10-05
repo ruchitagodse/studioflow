@@ -19,7 +19,7 @@ export default async function SchedulePage() {
   const trainerNames = new Map(trainerDocs.docs.map((doc) => [doc.id, String(doc.data().displayName ?? "").trim() || "Trainer"]));
   const trainers = trainerDocs.docs.filter((doc) => doc.data().status === "active").map((doc) => ({ uid: doc.id, name: trainerNames.get(doc.id) ?? "Trainer" }));
   const slots = slotDocs.docs.map((doc) => ({
-    id: doc.id, className: String(doc.data().className), trainerUid: String(doc.data().trainerUid), trainerName: trainerNames.get(String(doc.data().trainerUid)) ?? "Trainer", localDate: String(doc.data().localDate), startTime: String(doc.data().startTime), endTime: String(doc.data().endTime), capacity: Number(doc.data().capacity), confirmedBookingCount: Number(doc.data().confirmedBookingCount ?? 0), status: String(doc.data().status), isPast: String(doc.data().status) === "completed",
+    id: doc.id, className: String(doc.data().className), trainerUid: String(doc.data().trainerUid), trainerName: trainerNames.get(String(doc.data().trainerUid)) ?? "Trainer", localDate: String(doc.data().localDate), startTime: String(doc.data().startTime), endTime: String(doc.data().endTime), capacity: Number(doc.data().capacity), confirmedBookingCount: Number(doc.data().confirmedBookingCount ?? 0), status: String(doc.data().status), isPast: doc.data().startsAt.toDate().getTime() <= Date.now(),
   }));
   return <><ScheduleManager timezone={String(studio.data()?.timezone)} classes={classes} trainers={trainers} slots={slots} /><p style={{ margin: "0 auto 3rem", maxWidth: "1080px" }}><a href="/studio/waitlist">Manage active waitlists</a></p></>;
 }

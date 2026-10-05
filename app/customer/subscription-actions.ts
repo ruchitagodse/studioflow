@@ -35,7 +35,7 @@ export async function requestOwnPauseAction(_: CustomerSubscriptionActionState, 
     await pauseSubscription(principal, Object.fromEntries(form));
     revalidatePath("/customer");
     revalidatePath("/customer/entitlements");
-    return { success: "Your subscription is paused. Existing bookings and credits are unchanged." };
+    return { success: "Your subscription is paused. Existing bookings and class passes are unchanged." };
   } catch (error) {
     return { error: message(error) };
   }

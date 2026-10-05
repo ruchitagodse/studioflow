@@ -8,10 +8,10 @@ type LedgerEntry = { id: string; action: string; amount: number; createdAt: stri
 function activityDetails(action: string) {
   const normalized = action.replaceAll("_", " ").toLowerCase();
   if (normalized.includes("allocation")) return { title: "Allocation", detail: "Plan purchase", icon: "plus" as const };
-  if (normalized.includes("reservation")) return { title: "Class booking", detail: "Credit reserved for your class", icon: "calendar" as const };
-  if (normalized.includes("release") || normalized.includes("cancel")) return { title: "Booking cancelled", detail: "Credit returned to your balance", icon: "undo" as const };
-  if (normalized.includes("consumption") || normalized.includes("consume")) return { title: "Class attended", detail: "Credit used for your class", icon: "calendar" as const };
-  return { title: normalized || "Credit update", detail: "Membership credit activity", icon: "plus" as const };
+  if (normalized.includes("reservation")) return { title: "Class booking", detail: "Class pass reserved for your class", icon: "calendar" as const };
+  if (normalized.includes("release") || normalized.includes("cancel")) return { title: "Booking cancelled", detail: "Class pass returned to your balance", icon: "undo" as const };
+  if (normalized.includes("consumption") || normalized.includes("consume")) return { title: "Class attended", detail: "Class pass used for your class", icon: "calendar" as const };
+  return { title: normalized || "Class pass update", detail: "Membership class pass activity", icon: "plus" as const };
 }
 
 function ActivityIcon({ name }: { name: "plus" | "calendar" | "undo" }) {
@@ -19,7 +19,7 @@ function ActivityIcon({ name }: { name: "plus" | "calendar" | "undo" }) {
 }
 
 function displayDate(value: string | null) {
-  return value ? new Intl.DateTimeFormat("en-IN", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(value)) : "";
+  return value ? new Intl.DateTimeFormat("en-IN", { day: "2-digit", month: "short", year: "2-digit" }).format(new Date(value)) : "";
 }
 
 function CreditActivityRow({ entry }: { entry: LedgerEntry }) {
@@ -38,5 +38,5 @@ export function CustomerCreditHistory({ entries }: { entries: LedgerEntry[] }) {
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [open]);
-  return <section className={`${styles.membershipPanel} ${styles.creditHistoryPanel}`} aria-labelledby="membership-history"><div className={styles.activityHeading}><div><p className={styles.kicker}>CREDIT HISTORY</p><h2 id="membership-history">Recent activity</h2></div>{entries.length > 3 && <button type="button" onClick={() => setOpen(true)}>See all <span aria-hidden="true">→</span></button>}</div><div className={styles.activityList}>{entries.slice(0, 3).map((entry) => <CreditActivityRow key={entry.id} entry={entry} />)}</div>{open && <div className={styles.confirmationBackdrop} role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setOpen(false); }}><section ref={dialog} className={`${styles.confirmationDialog} ${styles.activityDialog}`} role="dialog" aria-modal="true" aria-labelledby="all-credit-history" tabIndex={-1}><div className={styles.activityDialogHeader}><div><p className={styles.kicker}>CREDIT HISTORY</p><h2 id="all-credit-history">All activity</h2></div><button type="button" onClick={() => setOpen(false)} aria-label="Close credit history">×</button></div><div className={styles.activityList}>{entries.map((entry) => <CreditActivityRow key={entry.id} entry={entry} />)}</div></section></div>}</section>;
+  return <section className={`${styles.membershipPanel} ${styles.creditHistoryPanel}`} aria-labelledby="membership-history"><div className={styles.activityHeading}><div><p className={styles.kicker}>CLASS PASS HISTORY</p><h2 id="membership-history">Recent activity</h2></div>{entries.length > 3 && <button type="button" onClick={() => setOpen(true)}>See all <span aria-hidden="true">→</span></button>}</div><div className={styles.activityList}>{entries.slice(0, 3).map((entry) => <CreditActivityRow key={entry.id} entry={entry} />)}</div>{open && <div className={styles.confirmationBackdrop} role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setOpen(false); }}><section ref={dialog} className={`${styles.confirmationDialog} ${styles.activityDialog}`} role="dialog" aria-modal="true" aria-labelledby="all-credit-history" tabIndex={-1}><div className={styles.activityDialogHeader}><div><p className={styles.kicker}>CLASS PASS HISTORY</p><h2 id="all-credit-history">All activity</h2></div><button type="button" onClick={() => setOpen(false)} aria-label="Close class pass history">×</button></div><div className={styles.activityList}>{entries.map((entry) => <CreditActivityRow key={entry.id} entry={entry} />)}</div></section></div>}</section>;
 }
