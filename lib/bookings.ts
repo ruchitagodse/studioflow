@@ -23,6 +23,7 @@ type SlotView = {
   confirmedBookingCount: number;
   remainingCapacity: number;
   alreadyBooked: boolean;
+  alreadyWaitlisted: boolean;
 };
 
 export type CustomerSubscriptionView = {
@@ -58,7 +59,7 @@ function asDate(value: unknown) {
     : null;
 }
 
-function slotView(id: string, data: FirebaseFirestore.DocumentData, alreadyBooked: boolean): SlotView | null {
+function slotView(id: string, data: FirebaseFirestore.DocumentData, alreadyBooked: boolean, alreadyWaitlisted: boolean): SlotView | null {
   const startsAt = asDate(data.startsAt);
   if (!startsAt) return null;
   const capacity = Number(data.capacity ?? 0);
@@ -76,6 +77,7 @@ function slotView(id: string, data: FirebaseFirestore.DocumentData, alreadyBooke
     confirmedBookingCount,
     remainingCapacity: remainingSlotCapacity(capacity, confirmedBookingCount),
     alreadyBooked,
+    alreadyWaitlisted,
   };
 }
 
@@ -119,19 +121,30 @@ async function existingBookingIds(studioId: string, customerUid: string) {
   return new Set(bookings.docs.filter((doc) => doc.data().status === "confirmed").map((doc) => String(doc.data().slotId)));
 }
 
+async function existingWaitlistSlotIds(studioId: string, customerUid: string) {
+  const db = getAdminDb();
+  const entries = await db.collection(`studios/${studioId}/waitlists`)
+    .where("customerUid", "==", customerUid)
+    .where("status", "==", "active")
+    .limit(50)
+    .get();
+  return new Set(entries.docs.map((doc) => String(doc.data().slotId)));
+}
+
 export async function getCustomerSchedule(principal: Principal) {
   const studioId = requireCustomer(principal);
   const db = getAdminDb();
-  const [studio, slots, bookedSlotIds, subscription] = await Promise.all([
+  const [studio, slots, bookedSlotIds, waitlistedSlotIds, subscription] = await Promise.all([
     db.doc(`studios/${studioId}`).get(),
     db.collection(`studios/${studioId}/slots`).where("startsAt", ">", Timestamp.fromDate(new Date())).orderBy("startsAt", "asc").limit(100).get(),
     existingBookingIds(studioId, principal.uid),
+    existingWaitlistSlotIds(studioId, principal.uid),
     currentSubscription(studioId, principal.uid),
   ]);
   if (!studio.exists || studio.data()?.status !== "active") throw new Error("INACTIVE_STUDIO");
   const visibleSlots = slots.docs.filter((doc) => doc.data().status === "published").slice(0, 60);
   const slotViews = await Promise.all(visibleSlots.map(async (doc) => {
-    const view = slotView(doc.id, doc.data(), bookedSlotIds.has(doc.id));
+    const view = slotView(doc.id, doc.data(), bookedSlotIds.has(doc.id), waitlistedSlotIds.has(doc.id));
     return view ? { ...view, trainerName: await currentTrainerName(studioId, doc.data()) } : null;
   }));
   return {
@@ -146,15 +159,16 @@ export async function getCustomerSlot(principal: Principal, slotId: string) {
   const studioId = requireCustomer(principal);
   bookingSlotIdSchema.parse(slotId);
   const db = getAdminDb();
-  const [studio, slot, bookedSlotIds, subscription] = await Promise.all([
+  const [studio, slot, bookedSlotIds, waitlistedSlotIds, subscription] = await Promise.all([
     db.doc(`studios/${studioId}`).get(),
     db.doc(`studios/${studioId}/slots/${slotId}`).get(),
     existingBookingIds(studioId, principal.uid),
+    existingWaitlistSlotIds(studioId, principal.uid),
     currentSubscription(studioId, principal.uid),
   ]);
   if (!studio.exists || studio.data()?.status !== "active") throw new Error("INACTIVE_STUDIO");
   if (!slot.exists || slot.data()?.status !== "published") return null;
-  const initialView = slotView(slot.id, slot.data()!, bookedSlotIds.has(slot.id));
+  const initialView = slotView(slot.id, slot.data()!, bookedSlotIds.has(slot.id), waitlistedSlotIds.has(slot.id));
   const view = initialView ? { ...initialView, trainerName: await currentTrainerName(studioId, slot.data()!) } : null;
   if (!view) return null;
   return { slot: view, subscription, started: new Date(view.startsAt).getTime() <= Date.now() };

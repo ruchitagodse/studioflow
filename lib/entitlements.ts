@@ -186,11 +186,22 @@ export async function getCustomerEntitlement(principal: Principal): Promise<Cust
   const subscriptionSnapshot = await subscriptionRef.get();
   if (!subscriptionSnapshot.exists || String(subscriptionSnapshot.data()?.customerUid ?? "") !== principal.uid) return { subscription: null, ledger: [] };
   const data = subscriptionSnapshot.data()!;
-  const ledger = await subscriptionRef.collection("ledger").orderBy("createdAt", "desc").limit(20).get();
+  const [ledger, customerBookings] = await Promise.all([
+    subscriptionRef.collection("ledger").orderBy("createdAt", "desc").limit(20).get(),
+    db.collection(`studios/${principal.studioId}/bookings`).where("customerUid", "==", principal.uid).limit(100).get(),
+  ]);
   const terms = data.historicalTerms ?? {};
   const allocation = Number(terms.creditAllocation ?? 0);
   const availableCredits = Number(data.availableCredits ?? 0);
-  const reservedCredits = Number(data.reservedCredits ?? 0);
+  // Keep this count aligned with the Upcoming booking screen: only a future,
+  // confirmed booking reserves a class pass. This avoids displaying a pass as
+  // booked after its booking has been cancelled or moved to history.
+  const now = new Date();
+  const reservedCredits = customerBookings.docs.filter((booking) => {
+    const bookingData = booking.data();
+    const startsAt = asDate(bookingData?.slotStartsAt);
+    return bookingData?.status === "confirmed" && startsAt !== null && startsAt.getTime() > now.getTime();
+  }).length;
   return {
     subscription: {
       id: subscriptionSnapshot.id,

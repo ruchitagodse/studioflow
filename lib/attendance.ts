@@ -100,7 +100,10 @@ export async function getAttendanceRoster(principal: Principal, slotId: string):
     endTime: String(slotContext.data.endTime ?? ""),
     timezone: String(slotContext.data.timezone ?? ""),
     capacity: Number(slotContext.data.capacity ?? 0),
-    confirmedBookingCount: Number(slotContext.data.confirmedBookingCount ?? 0),
+    // The roster is the authoritative attendance view: include each eligible
+    // confirmed/outcome booking shown below, even if a historical slot counter
+    // was not populated before this attendance slice.
+    confirmedBookingCount: entries.length,
     window: attendanceWindow(slotContext.startsAt, slotContext.endsAt),
     role,
     entries,

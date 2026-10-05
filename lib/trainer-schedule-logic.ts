@@ -1,4 +1,4 @@
-export const visibleTrainerSlotStatuses = new Set(["draft", "published"]);
+export const visibleTrainerSlotStatuses = new Set(["draft", "published", "completed"]);
 export const slotStatuses = ["draft", "published", "cancelled", "completed"] as const;
 export type SlotStatus = (typeof slotStatuses)[number];
 
@@ -16,7 +16,19 @@ export type TrainerSlot = {
   endsAt: Date;
   capacity: number;
   confirmedBookingCount: number;
+  rosterBookingCount: number;
 };
+
+export type TrainerSessionStatus = "pending" | "in-progress" | "completed" | "draft";
+
+/** Presentation-only session state for trainers; it never changes the Slot lifecycle. */
+export function trainerSessionStatus(slot: Pick<TrainerSlot, "status" | "startsAt" | "endsAt">, now = new Date()): TrainerSessionStatus {
+  if (slot.status === "draft") return "draft";
+  if (slot.status === "completed") return "completed";
+  if (now.getTime() < slot.startsAt.getTime()) return "pending";
+  if (now.getTime() < slot.endsAt.getTime()) return "in-progress";
+  return "completed";
+}
 
 export function trainerCanSeeSlot(trainerUid: string, slot: Pick<TrainerSlot, "trainerUid" | "status">) {
   return slot.trainerUid === trainerUid && visibleTrainerSlotStatuses.has(slot.status);
@@ -26,12 +38,18 @@ export function isSlotStatus(status: string): status is SlotStatus {
   return slotStatuses.some((candidate) => candidate === status);
 }
 
-/** Upcoming classes are most useful first; recent past classes remain available below them. */
-export function orderTrainerSlots<T extends Pick<TrainerSlot, "startsAt">>(slots: T[], now = new Date()): T[] {
+/** Active classes first, then pending work, followed by completed session history. */
+export function orderTrainerSlots<T extends Pick<TrainerSlot, "startsAt" | "endsAt" | "status">>(slots: T[], now = new Date()): T[] {
   return [...slots].sort((left, right) => {
-    const leftFuture = left.startsAt.getTime() >= now.getTime();
-    const rightFuture = right.startsAt.getTime() >= now.getTime();
-    if (leftFuture !== rightFuture) return leftFuture ? -1 : 1;
-    return leftFuture ? left.startsAt.getTime() - right.startsAt.getTime() : right.startsAt.getTime() - left.startsAt.getTime();
+    const rank = (slot: T) => {
+      const sessionStatus = trainerSessionStatus(slot, now);
+      if (sessionStatus === "in-progress") return 0;
+      if (sessionStatus === "pending" || sessionStatus === "draft") return 1;
+      return 2;
+    };
+    const leftRank = rank(left);
+    const rightRank = rank(right);
+    if (leftRank !== rightRank) return leftRank - rightRank;
+    return leftRank === 1 ? left.startsAt.getTime() - right.startsAt.getTime() : right.startsAt.getTime() - left.startsAt.getTime();
   });
 }

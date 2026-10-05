@@ -34,7 +34,13 @@ export async function getAssignedTrainerSlots(principal: Principal): Promise<Tra
       endsAt: data.endsAt.toDate() as Date,
       capacity: Number(data.capacity ?? 0),
       confirmedBookingCount: Number(data.confirmedBookingCount ?? 0),
+      rosterBookingCount: 0,
     };
   }).filter((slot): slot is TrainerSlot => slot !== null && trainerCanSeeSlot(principal.uid, slot));
-  return orderTrainerSlots(slots);
+  const rosterCounts = new Map<string, number>();
+  await Promise.all(slots.map(async (slot) => {
+    const bookings = await db.collection(`studios/${studioId}/bookings`).where("slotId", "==", slot.id).limit(Math.max(slot.capacity + 1, 1)).get();
+    rosterCounts.set(slot.id, bookings.docs.filter((booking) => ["confirmed", "attended", "no-show"].includes(String(booking.data().status ?? ""))).length);
+  }));
+  return orderTrainerSlots(slots.map((slot) => ({ ...slot, rosterBookingCount: rosterCounts.get(slot.id) ?? 0 })));
 }

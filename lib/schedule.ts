@@ -6,7 +6,7 @@ import { z } from "zod";
 import { getAdminDb } from "@/lib/firebase/admin";
 import { promoteWaitlistUntilFull } from "@/lib/waitlist";
 import type { Principal } from "@/lib/auth/server";
-import { studioLocalInstant } from "@/lib/schedule-time";
+import { isFutureSlotStart, studioLocalInstant } from "@/lib/schedule-time";
 
 const statuses = ["draft", "active", "retired"] as const;
 const slotStatuses = ["draft", "published", "cancelled", "completed"] as const;
@@ -41,7 +41,7 @@ export async function createSlot(principal: Principal, raw: unknown) {
   const studioId = assertScheduleAuthority(principal); const input = slotSchema.parse(raw); const db = getAdminDb(); const studio = await db.doc(`studios/${studioId}`).get(); const timezone = studio.data()?.timezone as string | undefined; if (!timezone) throw new Error("STUDIO_TIMEZONE_REQUIRED");
   const [classSnapshot, trainerSnapshot] = await Promise.all([db.doc(`studios/${studioId}/classes/${input.classId}`).get(), db.doc(`studios/${studioId}/members/${input.trainerUid}`).get()]);
   if (!classSnapshot.exists || classSnapshot.data()?.status === "retired") throw new Error("CLASS_UNAVAILABLE"); const trainer = trainerSnapshot.data(); if (!trainerSnapshot.exists || trainer?.status !== "active" || !Array.isArray(trainer.roles) || !trainer.roles.includes("trainer")) throw new Error("TRAINER_NOT_ELIGIBLE");
-  const start = studioLocalInstant(input.localDate, input.startTime, timezone); const end = studioLocalInstant(input.localDate, input.endTime, timezone); if (end <= start) throw new Error("SLOT_END_MUST_FOLLOW_START"); if (input.status === "published" && !input.trainerUid) throw new Error("PUBLISHED_SLOT_REQUIRES_TRAINER");
+  const start = studioLocalInstant(input.localDate, input.startTime, timezone); const end = studioLocalInstant(input.localDate, input.endTime, timezone); if (end <= start) throw new Error("SLOT_END_MUST_FOLLOW_START"); if (!isFutureSlotStart(start)) throw new Error("SLOT_START_MUST_BE_FUTURE"); if (input.status === "published" && !input.trainerUid) throw new Error("PUBLISHED_SLOT_REQUIRES_TRAINER");
   const ref = db.doc(`studios/${studioId}/slots/${input.operationId}`);
   await db.runTransaction(async (tx) => { if ((await tx.get(ref)).exists) return; const overlap = await tx.get(db.collection(`studios/${studioId}/slots`).where("trainerUid", "==", input.trainerUid).where("status", "in", ["draft", "published"])); if (overlap.docs.some((doc) => { const data = doc.data(); return data.startsAt.toDate() < end && data.endsAt.toDate() > start; })) throw new Error("TRAINER_SLOT_OVERLAP"); tx.set(ref, { classId: classSnapshot.id, className: classSnapshot.data()?.name, trainerUid: input.trainerUid, trainerName: String(trainer.displayName ?? "").trim() || "Trainer", capacity: input.capacity, confirmedBookingCount: 0, status: input.status, localDate: input.localDate, startTime: input.startTime, endTime: input.endTime, timezone, startsAt: Timestamp.fromDate(start), endsAt: Timestamp.fromDate(end), createdAt: FieldValue.serverTimestamp(), createdBy: principal.uid }); tx.set(db.doc(`studios/${studioId}/auditEvents/${randomUUID()}`), { action: "slot.created", actorUid: principal.uid, targetId: ref.id, createdAt: FieldValue.serverTimestamp(), result: "success" }); });
   return ref.id;
@@ -56,7 +56,7 @@ export async function updateSlot(principal: Principal, raw: unknown) {
   const studioId = assertScheduleAuthority(principal); const input = slotUpdateSchema.parse(raw); const db = getAdminDb(); const studio = await db.doc(`studios/${studioId}`).get(); const timezone = studio.data()?.timezone as string | undefined;
   if (!timezone) throw new Error("STUDIO_TIMEZONE_REQUIRED");
   const start = studioLocalInstant(input.localDate, input.startTime, timezone); const end = studioLocalInstant(input.localDate, input.endTime, timezone);
-  if (end <= start) throw new Error("SLOT_END_MUST_FOLLOW_START");
+  if (end <= start) throw new Error("SLOT_END_MUST_FOLLOW_START"); if (!isFutureSlotStart(start)) throw new Error("SLOT_START_MUST_BE_FUTURE");
   const slotRef = db.doc(`studios/${studioId}/slots/${input.slotId}`); const auditRef = db.doc(`studios/${studioId}/auditEvents/${input.operationId}`);
   let capacityIncreased = false;
   await db.runTransaction(async (tx) => {
