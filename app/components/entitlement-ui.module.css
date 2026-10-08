@@ -1,15 +1,12 @@
-.entUi { max-width: 1280px !important; }
-.entHeader { margin-bottom: 16px !important; padding-bottom: 0 !important; border: 0 !important; }
+.entUi { max-width: 1440px !important; }
+.entHeader { display: flex !important; margin-bottom: 16px !important; padding-bottom: 0 !important; border: 0 !important; }
 .entHeader h1 { margin: 4px 0 6px !important; font-size: clamp(2.3rem, 4vw, 3.5rem) !important; }
 .entHeader > div > p:last-child { color: var(--color-text-muted); font-size: .8rem; }
 .entHeaderVisual { display: flex; gap: 14px; align-items: center; }
 .entHeaderVisual > div { position: relative; width: 230px; height: 92px; overflow: hidden; border-radius: 13px; }
 .entHeaderVisual img { object-fit: cover; }
-.entGrid { grid-template-columns: 1fr 1fr !important; gap: 14px !important; }
 .entPanel { margin: 0 !important; padding: 20px !important; border: 1px solid var(--color-border) !important; border-radius: 14px !important; background: var(--color-surface) !important; box-shadow: 0 9px 25px color-mix(in srgb, var(--color-primary) 3.5%, transparent) !important; }
 .entPanel h2 { margin: 4px 0 8px !important; font-size: clamp(1.2rem,1.8vw,1.55rem) !important; }
-.entGrid .entPanel h2::before { display: inline-grid; width: 32px; height: 32px; margin-right: 8px; border-radius: 50%; place-items: center; background: var(--color-border); color: var(--color-text); content: "✦"; font: .95rem Georgia, serif; vertical-align: middle; }
-.entGrid .entPanel:nth-child(2) h2::before { content: "⌁"; }
 .entUi form { gap: 10px !important; margin-top: 10px !important; }
 .entUi form label { gap: 4px !important; font-size: .66rem !important; }
 .entUi form input, .entUi form select, .entUi form textarea { min-height: 37px !important; padding: 8px 9px !important; }
@@ -20,33 +17,44 @@
 .libraryHeader { display: flex; gap: 20px; align-items: flex-start; justify-content: space-between; }
 .libraryHeader h2 { margin: 4px 0 !important; }
 .libraryHeader p:last-child { margin: 0; color: var(--color-text-muted); font-size: .66rem; }
-.libraryHeader label { display: flex; width: min(100%, 260px); gap: 7px; min-height: 34px; padding: 7px 9px; border: 1px solid var(--color-border); border-radius: 7px; align-items: center; color: var(--color-text-muted); }
-.libraryHeader input { width: 100%; border: 0; outline: 0; background: transparent; font: inherit; font-size: .64rem; }
+.planFilters label { display: flex; width: min(100%, 260px); gap: 7px; min-height: 34px; padding: 7px 9px; border: 1px solid var(--color-border); border-radius: 7px; align-items: center; background: var(--color-surface); color: var(--color-text-muted); }
+.planFilters input { width: 100%; border: 0; outline: 0; background: transparent; color: var(--color-text); font: inherit; font-size: .64rem; }
+.planFilters label:focus-within { border-color: color-mix(in srgb, var(--color-primary) 55%, var(--color-border)); box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 10%, transparent); }
 .planFilters { display: flex; gap: 7px; width: min(100%, 350px); }
 .planFilters label { flex: 1; }
 .planFilters select { width: 96px; min-height: 34px; padding: 7px; border: 1px solid var(--color-border); border-radius: 7px; background: var(--color-surface); color: var(--color-text); font: inherit; font-size: .62rem; }
 .planLibrary .memberList { display: block !important; margin-top: 13px !important; border-top: 1px solid var(--color-border); }
-.planTableHead, .planRow { display: grid !important; grid-template-columns: 1.5fr .8fr .65fr .9fr .72fr .7fr !important; gap: 9px !important; align-items: center; }
+.planTableHead, .planRow { display: grid !important; grid-template-columns: 1.05fr 1.35fr .75fr .7fr 1fr .68fr .8fr !important; gap: 12px !important; align-items: center; }
 .planTableHead { margin-top: 14px; padding: 0 0 8px; border-bottom: 1px solid var(--color-border); color: var(--color-text-muted); font-size: .56rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 .planRows { display: block !important; margin-top: 0 !important; }
 .planLibrary .memberCard { display: grid !important; grid-template-columns: 1.1fr .85fr .75fr; gap: 12px; padding: 9px 0 !important; border: 0 !important; border-bottom: 1px solid var(--color-surface-secondary) !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; align-items: center; }
-.planLibrary .planRow { grid-template-columns: 1.5fr .8fr .65fr .9fr .72fr .7fr !important; gap: 9px !important; }
+.planLibrary .planRow { grid-template-columns: 1.05fr 1.35fr .75fr .7fr 1fr .68fr .8fr !important; gap: 12px !important; }
 .planLibrary .memberHeading { align-items: center; }
 .planLibrary .memberHeading b { color: var(--color-text); font-size: .7rem; }
 .planLibrary .memberHeading span { font-size: .61rem; }
 .planLibrary .activeBadge, .planLibrary .inactiveBadge { width: max-content; margin-top: 4px; padding: 3px 7px; background: var(--color-surface-secondary); color: var(--color-text); font-size: .59rem; }
 .planPrice, .planCredits, .planDuration { color: var(--color-text-muted); font-size: .63rem; }
+.planDescription { color: var(--color-text-muted); font-size: .63rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .planStatus { margin: 0 !important; }
 .planMeta { display: flex; gap: 8px; flex-wrap: wrap; color: var(--color-text-muted); font-size: .62rem; }
 .planMeta span { padding: 3px 6px; border-radius: 999px; background: var(--color-surface-secondary); }
 .planEditButton { justify-self: end; min-height: 29px; padding: 5px 8px; border: 1px solid var(--color-border); border-radius: 7px; background: var(--color-surface); color: var(--color-text); cursor: pointer; font: inherit; font-size: .61rem; font-weight: 800; }
-.planModalBackdrop { position: fixed; z-index: 100; inset: 0; display: grid; padding: 20px; place-items: center; background: color-mix(in srgb, var(--color-primary) 26%, transparent); backdrop-filter: blur(5px); }
-.planModal { width: min(100%, 520px); max-height: min(720px, calc(100vh - 40px)); overflow: auto; padding: 22px; border: 1px solid var(--color-border); border-radius: 17px; background: var(--color-surface); box-shadow: 0 22px 60px color-mix(in srgb, var(--color-primary) 26%, transparent); }
-.planModalHeader { display: flex; gap: 16px; padding-bottom: 14px; border-bottom: 1px solid var(--color-surface-secondary); align-items: flex-start; justify-content: space-between; }
-.planModalHeader h2 { margin: 4px 0; color: var(--color-text); font-family: Georgia, serif; font-size: 1.6rem; }
-.planModalHeader span { color: var(--color-text-muted); font-size: .68rem; }
-.planModalHeader button { display: grid; width: 31px; height: 31px; border: 1px solid var(--color-border); border-radius: 50%; place-items: center; background: var(--color-surface); color: var(--color-text); cursor: pointer; font-size: 1.25rem; line-height: 1; }
-.retirePlanForm { margin-top: 12px !important; padding-top: 12px; border-top: 1px solid var(--color-surface-secondary); }
+.createPlanButton { min-height: 42px; padding: 10px 14px; border: 0; border-radius: 10px; background: var(--color-text); color: var(--color-button-text); cursor: pointer; font: inherit; font-size: .76rem; font-weight: 800; white-space: nowrap; }
+.planActions { display: flex; gap: 5px; justify-content: flex-end; align-items: center; }
+.planActions .planEditButton { justify-self: auto; }
+.planOverflow { position: relative; }
+.planOverflow summary { display: grid; width: 29px; height: 29px; border: 1px solid var(--color-border); border-radius: 7px; place-items: center; background: var(--color-surface); color: var(--color-text); cursor: pointer; font-size: .68rem; font-weight: 800; list-style: none; }
+.planOverflow summary::-webkit-details-marker { display: none; }
+.planOverflow[open] > form { position: absolute; z-index: 8; top: 34px; right: 0; width: 112px; margin: 0 !important; padding: 6px !important; border: 1px solid var(--color-border); border-radius: 8px; background: var(--color-surface); box-shadow: 0 12px 26px color-mix(in srgb, var(--color-primary) 14%, transparent); }
+.planOverflow form button { width: 100%; min-height: 30px !important; border: 0; border-radius: 5px; background: var(--color-surface-secondary); color: var(--color-text); cursor: pointer; font: inherit; font-size: .62rem; font-weight: 800; }
+.planDrawerBackdrop { position: fixed; z-index: 100; inset: 0; display: flex; justify-content: flex-end; background: color-mix(in srgb, var(--color-primary) 26%, transparent); backdrop-filter: blur(3px); }
+.planDrawer { width: min(100%, 540px); min-height: 100%; max-height: 100vh; overflow: auto; padding: 26px; border-left: 1px solid var(--color-border); background: var(--color-surface); box-shadow: -22px 0 60px color-mix(in srgb, var(--color-primary) 24%, transparent); }
+.planDrawerHeader { display: flex; gap: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--color-surface-secondary); align-items: flex-start; justify-content: space-between; }
+.planDrawerHeader h2 { margin: 4px 0; color: var(--color-text); font-family: Georgia, serif; font-size: 1.7rem; }
+.planDrawerHeader span { color: var(--color-text-muted); font-size: .7rem; }
+.planDrawerHeader button { display: grid; width: 32px; height: 32px; border: 1px solid var(--color-border); border-radius: 50%; place-items: center; background: var(--color-surface); color: var(--color-text); cursor: pointer; font-size: 1.25rem; line-height: 1; }
+.drawerActions { display: grid; grid-template-columns: 1fr 1.4fr; gap: 9px; }
+.drawerActions .textButton { min-height: 40px; cursor: pointer; }
 .noPlans { margin: 12px 0 0; color: var(--color-text-muted); font-size: .72rem; }
 .subscriptionLibrary { margin-top: 14px !important; }
 .subscriptionTableHead, .subscriptionRow { display: grid !important; grid-template-columns: 1.05fr .85fr .85fr .82fr .82fr .7fr .72fr .85fr !important; gap: 8px !important; align-items: center; }
@@ -56,13 +64,39 @@
 .subscriptionCustomer { font-weight: 800; }
 .subscriptionRow time { color: var(--color-text-muted); font-size: .6rem; }
 .subscriptionStatus { width: max-content; margin: 0 !important; padding: 3px 7px !important; background: var(--color-surface-secondary) !important; color: var(--color-text) !important; font-size: .58rem !important; }
-.subscriptionActions { position: relative; display: flex; gap: 5px; align-items: center; }
-.subscriptionActions .textButton { min-height: 27px !important; padding: 5px 7px !important; border-radius: 6px !important; font-size: .58rem !important; }
+.subscriptionActions { position: relative; display: flex; min-width: 0; gap: 5px; align-items: center; }
+.subscriptionActions .textButton { width: auto !important; min-width: 88px; min-height: 34px !important; padding: 6px 10px !important; border-radius: 7px !important; font-size: .6rem !important; line-height: 1; white-space: nowrap; }
 .subscriptionEditor summary { width: 25px; padding: 2px 0; border: 0; background: transparent; color: var(--color-text); cursor: pointer; font-size: .9rem; list-style: none; }
 .subscriptionEditor summary::-webkit-details-marker { display: none; }
 .subscriptionEditor[open] { position: relative; z-index: 7; }
 .subscriptionEditor[open] > form { position: absolute; top: 26px; right: 0; width: min(350px, 75vw); padding: 14px; border: 1px solid var(--color-border); border-radius: 11px; background: var(--color-surface); box-shadow: 0 16px 36px color-mix(in srgb, var(--color-primary) 14%, transparent); }
 .subscriptionEditor[open] > form:not(:first-of-type) { top: auto; }
+.exportButton { display: inline-flex; min-height: 40px; padding: 9px 15px; border: 1px solid var(--color-border); border-radius: 9px; align-items: center; gap: 8px; background: var(--color-surface); box-shadow: 0 3px 10px color-mix(in srgb, var(--color-primary) 6%, transparent); color: var(--color-text); cursor: pointer; font: inherit; font-size: .68rem; font-weight: 800; }
+.exportButton:disabled { cursor: not-allowed; opacity: .55; }
+.subscriptionToolbar { display: flex; gap: 18px; margin-bottom: 12px; align-items: center; justify-content: space-between; }
+.subscriptionTools { display: flex; gap: 10px; flex: 0 0 auto; align-items: center; }
+.subscriptionTools .planFilters { width: 350px; }
+.subscriptionTools .exportButton { flex: 0 0 auto; white-space: nowrap; }
+.subscriptionChips { display: flex; gap: 8px; flex-wrap: wrap; }
+.subscriptionChips button { display: inline-flex; min-height: 36px; padding: 7px 12px; border: 0; border-radius: 12px; align-items: center; gap: 10px; background: color-mix(in srgb, var(--color-surface-secondary) 72%, var(--color-surface)); color: var(--color-text); cursor: pointer; font: inherit; font-size: .62rem; font-weight: 800; }
+.subscriptionChips button[data-active="true"] { background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface)); }
+.subscriptionChips b { display: grid; min-width: 19px; height: 19px; border-radius: 999px; place-items: center; background: color-mix(in srgb, var(--color-primary) 9%, var(--color-surface)); font-size: .58rem; }
+.subscriptionLibrary .subscriptionTableHead, .subscriptionLibrary .subscriptionRow { grid-template-columns: 1.36fr .92fr .92fr .85fr .92fr .78fr .85fr .95fr !important; gap: 12px !important; }
+.subscriptionLibrary .subscriptionRow { min-height: 73px; padding: 10px 0 !important; }
+.subscriptionCustomer { display: flex; gap: 9px; align-items: center; }
+.customerAvatar { display: grid; width: 31px; height: 31px; flex: 0 0 auto; border-radius: 50%; place-items: center; background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface)); color: var(--color-text); font-size: .56rem; font-weight: 900; }
+.subscriptionCustomer b, .subscriptionPlan b, .creditBalance b { display: block; color: var(--color-text); font-size: .65rem; }
+.subscriptionCustomer small, .subscriptionPlan small { display: block; max-width: 120px; margin-top: 3px; overflow: hidden; color: var(--color-text-muted); font-size: .53rem; text-overflow: ellipsis; white-space: nowrap; }
+.subscriptionPlan, .creditBalance { min-width: 0; }
+.creditBalance > i { display: block; width: 100%; height: 6px; margin-top: 6px; overflow: hidden; border-radius: 99px; background: var(--color-surface-secondary); }
+.creditBalance > i > i { display: block; height: 100%; border-radius: inherit; background: #36a77c; }
+.subscriptionStatus { display: inline-flex !important; min-height: 25px; padding: 4px 9px !important; border-radius: 999px; align-items: center; gap: 6px; font-style: normal; font-weight: 700; }
+.subscriptionStatus > i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.statusActive { background: #eaf7ef !important; color: #218359 !important; }
+.statusPaused { background: #fff6e8 !important; color: #c77807 !important; }
+.statusExpired { background: #fff0f2 !important; color: #d44a62 !important; }
+.statusCancelled { background: #f0f0f6 !important; color: #70708a !important; }
+.cancellationDetail { color: var(--color-text-muted); font-size: .59rem; }
 .ledgerBackdrop { position: fixed; z-index: 100; inset: 0; display: grid; padding: 20px; place-items: center; background: color-mix(in srgb, var(--color-primary) 26%, transparent); backdrop-filter: blur(5px); }
 .ledgerModal { width: min(100%, 620px); max-height: min(720px, calc(100vh - 40px)); overflow: auto; padding: 22px; border: 1px solid var(--color-border); border-radius: 17px; background: var(--color-surface); box-shadow: 0 22px 60px color-mix(in srgb, var(--color-primary) 26%, transparent); }
 .ledgerHeader { display: flex; gap: 16px; padding-bottom: 14px; border-bottom: 1px solid var(--color-surface-secondary); align-items: flex-start; justify-content: space-between; }
@@ -74,15 +108,166 @@
 .ledgerList b { display: block; color: var(--color-text); font-size: .74rem; text-transform: capitalize; }
 .ledgerList span { display: block; margin-top: 3px; color: var(--color-text-muted); font-size: .64rem; }
 .ledgerList strong { color: var(--color-text-muted); font-size: .67rem; white-space: nowrap; }
-@media (max-width: 760px) { .entGrid { grid-template-columns: 1fr !important; } .entHeaderVisual > div { display: none; } .libraryHeader { flex-direction: column; gap: 10px; } .planFilters { width: 100%; } .libraryHeader label { width: 100%; } .planTableHead, .subscriptionTableHead { display: none; } .planLibrary .planRow, .subscriptionLibrary .subscriptionRow { grid-template-columns: 1fr 1fr !important; gap: 7px; } .planLibrary .planRow > :first-child, .planLibrary .planRow > :last-child, .subscriptionLibrary .subscriptionRow > :first-child, .subscriptionLibrary .subscriptionRow > :last-child { grid-column: 1 / -1; } .planEditButton { justify-self: start; } .subscriptionEditor[open] > form { position: fixed; top: 50%; right: 16px; left: 16px; width: auto; max-height: 78vh; overflow: auto; transform: translateY(-50%); } }
-.selectedCustomer{margin:0;padding:8px 10px;border:1px solid var(--color-border);border-radius:8px;background:var(--color-surface-secondary);color:var(--color-text);font-size:.7rem}
+@media (max-width: 760px) { .entHeaderVisual > div { display: none; } .entHeader { align-items: flex-start; } .createPlanButton { min-height: 40px; } .libraryHeader, .subscriptionToolbar { flex-direction: column; gap: 10px; align-items: stretch; } .subscriptionTools { flex-direction: column; align-items: stretch; } .subscriptionTools .exportButton { justify-content: center; } .subscriptionChips { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 2px; } .subscriptionChips button { flex: 0 0 auto; } .planFilters { width: 100%; } .libraryHeader label { width: 100%; } .planTableHead, .subscriptionTableHead { display: none; } .planLibrary .planRow, .subscriptionLibrary .subscriptionRow { grid-template-columns: 1fr 1fr !important; gap: 7px; } .subscriptionLibrary .subscriptionRow > :first-child, .subscriptionLibrary .subscriptionRow > :last-child { grid-column: 1 / -1; } .subscriptionLibrary .subscriptionRow > :nth-child(6), .subscriptionLibrary .subscriptionRow > :nth-child(7) { grid-column: auto; } .subscriptionLibrary .subscriptionActions { justify-content: flex-start; } .subscriptionLibrary .subscriptionActions .textButton { width: auto !important; min-height: 38px !important; } .planLibrary .planRow > :first-child, .planLibrary .planRow > :last-child { grid-column: 1 / -1; } .planLibrary .planDescription { grid-column: 1 / -1; white-space: normal; } .planActions { justify-content: flex-start; } .planEditButton { justify-self: start; } .planDrawer { width: 100%; padding: 20px 16px; } .subscriptionEditor[open] > form { position: fixed; top: 50%; right: 16px; left: 16px; width: auto; max-height: 78vh; overflow: auto; transform: translateY(-50%); } }
 .durationSelector { display: grid; gap: 8px; margin: 0; padding: 10px; border: 1px solid var(--color-border); border-radius: 9px; }
 .durationLegend { padding: 0 3px; color: var(--color-text); font-size: .66rem; font-weight: 800; }
 .durationOptions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
 .durationOption { display: flex !important; min-height: 34px; margin: 0; padding: 7px 8px; border: 1px solid var(--color-border); border-radius: 7px; align-items: center; gap: 6px !important; background: var(--color-surface); color: var(--color-text); cursor: pointer; font-size: .64rem !important; font-weight: 700; }
 .durationOption[data-active="true"] { border-color: var(--color-primary); background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface)); }
 .durationOption input { width: auto; min-height: auto !important; margin: 0; accent-color: var(--color-primary); }
-.durationFields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.durationFields { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
 .durationFields label { margin: 0; }
 .durationFields input:disabled { cursor: not-allowed; opacity: .55; background: var(--color-surface-secondary); }
 @media (max-width: 480px) { .durationOptions, .durationFields { grid-template-columns: 1fr; } }
+
+/* Pause management follows the roomy active-and-history table treatment. */
+.pauseLibrary { max-width: none; padding: clamp(24px, 2.45vw, 36px) !important; border-radius: 16px !important; }
+.pauseHeader { display: flex; gap: 28px; align-items: flex-start; justify-content: space-between; }
+.pauseHeader h1 { margin: 5px 0 7px; color: var(--color-text); font-family: Georgia, serif; font-size: clamp(2rem, 3.1vw, 3rem); letter-spacing: -.035em; line-height: 1; }
+.pauseHeader p:last-child { max-width: 800px; margin: 0; color: var(--color-text-muted); font-size: .8rem; line-height: 1.45; }
+.pauseFilters { display: flex; flex: 0 0 auto; gap: 12px; padding-top: 1px; }
+.pauseFilters select { width: 146px; min-height: 48px; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: 9px; background: var(--color-surface); color: var(--color-text); font: inherit; font-size: .78rem; }
+.pauseFilters label { display: flex; width: min(356px, 29vw); min-height: 48px; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: 9px; align-items: center; gap: 11px; background: var(--color-surface); color: var(--color-text-muted); }
+.pauseFilters label:focus-within { border-color: var(--color-primary); box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 10%, transparent); }
+.pauseFilters svg, .pauseStart svg { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2; }
+.pauseFilters svg { width: 19px; height: 19px; flex: 0 0 auto; }
+.pauseFilters input { width: 100%; border: 0; outline: 0; background: transparent; color: var(--color-text); font: inherit; font-size: .74rem; }
+.pauseTableHead, .pauseRow { display: grid; grid-template-columns: 1.5fr 1.02fr 1.26fr 1.1fr .92fr .9fr .98fr .93fr; gap: clamp(12px, 1.75vw, 30px); align-items: center; }
+.pauseTableHead { min-height: 66px; margin-top: 29px; padding: 0 16px; border-radius: 11px 11px 0 0; background: linear-gradient(105deg, color-mix(in srgb, var(--color-primary) 6%, var(--color-surface)), color-mix(in srgb, var(--color-primary) 2%, var(--color-surface))); color: color-mix(in srgb, var(--color-text) 75%, var(--color-text-muted)); font-size: .61rem; font-weight: 850; letter-spacing: -.02em; text-transform: uppercase; }
+.pauseRows { border-bottom: 1px solid color-mix(in srgb, var(--color-border) 72%, transparent); }
+.pauseRow { min-height: 126px; padding: 18px 16px; border-bottom: 1px solid color-mix(in srgb, var(--color-border) 68%, transparent); color: var(--color-text); font-size: .76rem; }
+.pauseCustomer { display: flex; min-width: 0; align-items: center; gap: 14px; }
+.pauseAvatar { display: grid; width: 58px; height: 58px; flex: 0 0 auto; border-radius: 50%; place-items: center; background: linear-gradient(135deg, #fbd8f0, #f8e9fa); color: #30234d; font-size: 1rem; font-weight: 800; }
+.pauseCustomer b, .pausePlan b, .pauseAllowance b, .pauseStart b, .pauseEnd b { display: block; color: var(--color-text); font-size: .78rem; }
+.pauseCustomer small, .pausePlan small, .pauseAllowance small, .pauseStart small, .pauseEnd small, .pauseHistory small { display: block; margin-top: 4px; color: var(--color-text-muted); font-size: .66rem; line-height: 1.2; }
+.pauseCustomer small { max-width: 155px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pausePlan { padding: 12px 13px; border-radius: 9px; background: color-mix(in srgb, var(--color-primary) 4%, var(--color-surface)); }
+.pauseAllowance > i { display: block; width: 100%; height: 9px; margin-top: 11px; overflow: hidden; border-radius: 999px; background: color-mix(in srgb, var(--color-primary) 12%, var(--color-surface)); }
+.pauseAllowance > i > i { display: block; height: 100%; border-radius: inherit; background: #8b75ed; }
+.pauseStart { display: flex; gap: 11px; align-items: center; }
+.pauseStart svg { width: 20px; height: 20px; flex: 0 0 auto; color: var(--color-text-muted); }
+.pauseEnd b { font-size: .95rem; font-weight: 600; }
+.pauseStatus { display: inline-flex; width: max-content; min-height: 39px; padding: 8px 15px; border-radius: 999px; align-items: center; gap: 9px; background: #eee9fb; color: #342061; font-size: .77rem; font-style: normal; font-weight: 800; }
+.pauseStatus i { width: 8px; height: 8px; border-radius: 50%; background: #6848ec; }
+.pauseStatusPaused { background: #fff3df; color: #9a6508; }
+.pauseStatusPaused i { background: currentColor; }
+.pauseHistory b { display: block; font-size: 1.1rem; font-weight: 400; }
+.pauseActions { position: relative; }
+.pauseEditor summary { display: inline-flex; min-width: 132px; min-height: 48px; padding: 10px 17px; border: 1px solid #bcaafc; border-radius: 10px; align-items: center; justify-content: center; gap: 12px; background: color-mix(in srgb, var(--color-surface) 92%, #f0edff); color: #5536ca; cursor: pointer; font-size: .77rem; font-weight: 800; list-style: none; }
+.pauseEditor summary::-webkit-details-marker { display: none; }
+.pauseEditor summary span { font-size: 1.05rem; letter-spacing: -3px; }
+.pauseEditor[open] { z-index: 10; }
+.pauseEditor[open] > form { position: absolute; z-index: 10; top: 55px; right: 0; width: 230px; margin: 0 !important; padding: 14px !important; border: 1px solid var(--color-border); border-radius: 11px; background: var(--color-surface); box-shadow: 0 16px 36px color-mix(in srgb, var(--color-primary) 15%, transparent); }
+.pauseEditor form small { color: var(--color-text-muted); font-size: .65rem; }
+.pauseUnavailable { color: var(--color-text-muted); }
+@media (max-width: 1050px) { .pauseTableHead, .pauseRow { grid-template-columns: 1.35fr 1fr 1.2fr 1.1fr .85fr .85fr .9fr; gap: 14px; } .pauseTableHead > :nth-child(7), .pauseRow > :nth-child(7) { display: none; } .pauseFilters label { width: 255px; } }
+@media (max-width: 760px) { .pauseLibrary { padding: 20px !important; } .pauseHeader { display: grid; gap: 19px; } .pauseFilters { display: grid; grid-template-columns: 130px 1fr; width: 100%; } .pauseFilters select, .pauseFilters label { width: 100%; } .pauseTableHead { display: none; } .pauseRows { margin-top: 20px; } .pauseRow { grid-template-columns: 1fr 1fr; gap: 14px; min-height: 0; padding: 20px 0; } .pauseCustomer, .pauseActions { grid-column: 1 / -1; } .pausePlan { padding: 9px 10px; } .pauseAvatar { width: 48px; height: 48px; } .pauseEditor summary { width: 100%; min-height: 48px; } .pauseEditor[open] > form { position: fixed; top: 50%; right: 16px; left: 16px; width: auto; transform: translateY(-50%); } }
+
+/* Credit balance table: keeps the ledger surface dense on desktop and legible on touch devices. */
+.creditActivity { padding: clamp(20px, 2.35vw, 32px) !important; border-radius: 18px !important; }
+.creditActivity .libraryHeader { gap: 26px; margin-bottom: 20px; }
+.creditActivity .libraryHeader h2 { margin: 5px 0 7px !important; font-family: Georgia, serif; font-size: clamp(1.8rem, 3vw, 2.55rem) !important; letter-spacing: -.025em; }
+.creditActivity .libraryHeader p:last-child { max-width: 610px; font-size: .78rem; line-height: 1.45; }
+.creditActivity .planFilters { width: min(100%, 360px); padding-top: 1px; }
+.creditActivity .planFilters label { width: 100%; min-height: 46px; padding: 10px 13px; border-radius: 10px; }
+.creditActivity .planFilters svg { width: 17px; height: 17px; flex: 0 0 auto; fill: none; stroke: currentColor; stroke-linecap: round; stroke-width: 2; }
+.creditActivity .planFilters input { font-size: .76rem; }
+.creditActivity .subscriptionRows { border-top: 0; }
+.creditActivity .creditTableHead, .creditActivity .creditRow { grid-template-columns: 1.14fr .92fr 1fr 1fr 1fr .72fr 1.28fr !important; gap: clamp(10px, 1.35vw, 20px) !important; }
+.creditActivity .creditTableHead { min-height: 68px; margin: 0; padding: 0 10px; border: 0; border-radius: 12px 12px 0 0; align-items: end; background: linear-gradient(105deg, color-mix(in srgb, var(--color-primary) 6%, var(--color-surface)), color-mix(in srgb, var(--color-primary) 2%, var(--color-surface))); color: color-mix(in srgb, var(--color-text) 70%, var(--color-text-muted)); font-size: .61rem; }
+.creditTableHead > span { display: grid; min-height: 42px; align-content: center; gap: 3px; }
+.creditTableHead small { color: var(--color-text-muted); font: inherit; font-size: .56rem; letter-spacing: .03em; }
+.creditActivity .creditRow { min-height: 98px; padding: 12px 10px !important; border-bottom-color: color-mix(in srgb, var(--color-border) 76%, transparent) !important; font-size: .75rem; }
+.creditPlan { display: grid; gap: 4px; min-width: 0; padding: 9px 10px; border-radius: 10px; background: color-mix(in srgb, var(--color-primary) 5%, var(--color-surface)); }
+.creditPlan b { overflow: hidden; color: var(--color-text); font-size: .77rem; text-overflow: ellipsis; white-space: nowrap; }
+.creditPlan small { color: var(--color-text-muted); font-size: .65rem; }
+.creditMeasure { display: grid; min-width: 0; gap: 6px; align-content: center; }
+.creditMeasure b { color: var(--color-text); font-size: 1.05rem; line-height: 1; }
+.creditMeasure small { color: var(--color-text-muted); font-size: .64rem; white-space: nowrap; }
+.creditTrack { height: 7px; overflow: hidden; border-radius: 999px; background: color-mix(in srgb, var(--color-primary) 9%, var(--color-surface-secondary)); }
+.creditTrack > i { display: block; height: 100%; min-width: 0; border-radius: inherit; transition: width .2s ease; }
+.creditTrack[data-tone="healthy"] > i { background: #32b77e; }
+.creditTrack[data-tone="warning"] > i, .creditTrack[data-tone="reserved"] > i { background: #f2a616; }
+.creditTrack[data-tone="used"] > i { background: #6440ad; }
+.creditActivity .subscriptionCustomer { gap: 11px; }
+.creditActivity .customerAvatar { width: 42px; height: 42px; background: linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 14%, white), color-mix(in srgb, var(--color-primary) 5%, var(--color-surface))); font-size: .76rem; }
+.creditActivity .subscriptionCustomer b { font-size: .82rem; }
+.creditActivity .subscriptionStatus { min-height: 31px; padding: 5px 11px !important; font-size: .7rem !important; }
+.creditActions { position: relative; display: flex; gap: 10px; align-items: center; justify-content: flex-start; }
+.creditActions .textButton { min-width: 118px; min-height: 42px !important; padding: 9px 13px !important; border-color: color-mix(in srgb, var(--color-primary) 65%, var(--color-border)) !important; border-radius: 10px !important; font-size: .72rem !important; }
+.creditActions .textButton span { margin-left: 7px; font-size: 1.1rem; line-height: .7; }
+.creditActions .subscriptionEditor summary { display: inline-flex; width: auto; min-height: 42px; padding: 9px 12px; border-radius: 10px; align-items: center; gap: 8px; background: color-mix(in srgb, var(--color-primary) 6%, var(--color-surface)); color: var(--color-text); font-size: .72rem; font-weight: 700; }
+.creditActions .subscriptionEditor summary svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
+.creditActions .subscriptionEditor[open] > form { top: 47px; }
+
+@media (max-width: 960px) {
+  .creditActivity { overflow-x: auto; }
+  .creditActivity .libraryHeader { min-width: 760px; }
+  .creditActivity .creditTableHead, .creditActivity .creditRow { min-width: 1020px; }
+}
+
+@media (max-width: 760px) {
+  .creditActivity { overflow: visible; }
+  .creditActivity .libraryHeader { min-width: 0; margin-bottom: 16px; }
+  .creditActivity .libraryHeader h2 { font-size: 1.75rem !important; }
+  .creditActivity .creditTableHead { display: none; }
+  .creditActivity .creditRow { grid-template-columns: 1fr 1fr !important; min-width: 0; gap: 12px !important; padding: 18px 0 !important; }
+  .creditActivity .creditRow > :first-child, .creditActivity .creditRow > :last-child { grid-column: 1 / -1; }
+  .creditActivity .creditPlan { padding: 8px 9px; }
+  .creditActivity .creditMeasure { padding: 7px 0; }
+  .creditActivity .creditActions { gap: 8px; }
+  .creditActions .textButton { flex: 1; }
+  .creditActions .subscriptionEditor summary { min-width: 42px; justify-content: center; }
+  .creditActions .subscriptionEditor summary span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}
+
+/* Ledger dialog */
+.ledgerBackdrop { padding: 24px; background: color-mix(in srgb, var(--color-primary) 18%, rgba(30, 22, 54, .35)); }
+.ledgerModal { width: min(100%, 840px); max-height: min(720px, calc(100vh - 48px)); padding: clamp(22px, 3vw, 30px); border-radius: 18px; }
+.ledgerHeader { padding-bottom: 18px; border-bottom-color: var(--color-border); }
+.ledgerHeader h2 { margin: 5px 0 6px; font-size: clamp(1.75rem, 2.65vw, 2.15rem); letter-spacing: -.025em; }
+.ledgerHeader span { font-size: .72rem; }
+.ledgerHeader a { width: 35px; height: 35px; border-color: color-mix(in srgb, var(--color-primary) 30%, var(--color-border)); font-size: 1.4rem; }
+.ledgerSummary { display: grid; grid-template-columns: 1.48fr repeat(4, .85fr); gap: 0; margin-top: 18px; padding: 14px 17px; border-radius: 12px; background: linear-gradient(110deg, color-mix(in srgb, var(--color-primary) 8%, var(--color-surface)), color-mix(in srgb, var(--color-primary) 2%, var(--color-surface))); }
+.ledgerSummary > div:not(:first-child) { display: grid; min-width: 0; padding-left: 18px; border-left: 1px solid color-mix(in srgb, var(--color-primary) 12%, var(--color-border)); align-content: center; }
+.ledgerSummary small { display: block; color: var(--color-text-muted); font-size: .57rem; }
+.ledgerSummary b { display: block; margin: 5px 0 2px; color: var(--color-text); font-size: 1.02rem; }
+.ledgerSummary > div > span { color: var(--color-text-muted); font-size: .56rem; }
+.ledgerCustomer { display: flex; gap: 12px; align-items: center; }
+.ledgerCustomer .customerAvatar { width: 43px; height: 43px; font-size: .76rem; }
+.ledgerCustomer b { margin: 0; font-size: .86rem; }
+.ledgerCustomer > div > span { display: block; margin-top: 3px; color: var(--color-text-muted); font-size: .65rem; }
+.ledgerCustomer > div > small { margin-top: 5px; color: #27845f; }
+.ledgerCustomer small[data-status="paused"] { color: #bd780c; }
+.ledgerCustomer small[data-status="inactive"] { color: #7c748f; }
+.ledgerTools { display: flex; margin: 16px 0 12px; align-items: center; justify-content: space-between; }
+.ledgerFilters { display: flex; gap: 7px; flex-wrap: wrap; }
+.ledgerFilters button { min-height: 30px; padding: 6px 11px; border: 0; border-radius: 9px; background: color-mix(in srgb, var(--color-primary) 3%, var(--color-surface-secondary)); color: var(--color-text-muted); cursor: pointer; font: inherit; font-size: .59rem; font-weight: 750; }
+.ledgerFilters button[data-active="true"] { background: var(--color-primary); color: var(--color-button-text); }
+.ledgerTable { border-top: 1px solid var(--color-border); }
+.ledgerTableHead, .ledgerTable article { display: grid; grid-template-columns: 1.05fr .78fr 1.75fr .5fr .78fr; gap: 14px; align-items: center; }
+.ledgerTableHead { min-height: 38px; padding: 0 10px; background: color-mix(in srgb, var(--color-primary) 5%, var(--color-surface)); color: var(--color-text-muted); font-size: .52rem; font-weight: 850; letter-spacing: .06em; text-transform: uppercase; }
+.ledgerTable article { min-height: 68px; padding: 13px 10px; border-bottom: 1px solid var(--color-surface-secondary); }
+.ledgerTable time { display: flex; gap: 10px; align-items: center; color: var(--color-text); font-size: .68rem; font-weight: 750; }
+.ledgerTable time i { color: var(--color-primary); font-size: 1rem; font-style: normal; }
+.ledgerTable time span, .ledgerDescription { min-width: 0; }
+.ledgerTable time small, .ledgerDescription span { display: block; margin-top: 3px; overflow: hidden; color: var(--color-text-muted); font-size: .58rem; font-weight: 500; text-overflow: ellipsis; text-transform: capitalize; white-space: nowrap; }
+.ledgerType { width: max-content; padding: 5px 9px; border-radius: 8px; background: #e9efff; color: #3262b4; font-size: .58rem; font-weight: 800; }
+.ledgerType[data-type="allocation"] { background: #eee7ff; color: #6945ad; }
+.ledgerType[data-type="consumption"] { background: #ffecee; color: #cf4c55; }
+.ledgerType[data-type="release"] { background: #e8f8ee; color: #27845f; }
+.ledgerType[data-type="adjustment"] { background: #fff4df; color: #a4650a; }
+.ledgerDescription b { display: block; overflow: hidden; color: var(--color-text); font-size: .68rem; text-overflow: ellipsis; white-space: nowrap; }
+.ledgerTable strong { color: #eb4f55; font-size: .85rem; }
+.ledgerTable strong[data-positive="true"] { color: #18945c; }
+.ledgerBalance { display: grid; gap: 3px; padding-left: 12px; border-left: 1px solid var(--color-border); color: var(--color-text-muted); font-size: .59rem; }
+
+@media (max-width: 760px) {
+  .ledgerBackdrop { padding: 12px; }
+  .ledgerModal { max-height: calc(100vh - 24px); padding: 20px 16px; border-radius: 16px; }
+  .ledgerSummary { grid-template-columns: 1fr 1fr; gap: 12px; padding: 15px; }
+  .ledgerSummary > div:first-child { grid-column: 1 / -1; padding-bottom: 10px; border-bottom: 1px solid var(--color-border); }
+  .ledgerSummary > div:not(:first-child) { padding-left: 0; border: 0; }
+  .ledgerTable { overflow-x: auto; }
+  .ledgerTableHead, .ledgerTable article { width: 720px; grid-template-columns: 1.1fr .8fr 1.65fr .48fr .8fr; gap: 12px; }
+}

@@ -1,4 +1,5 @@
 import { AdminSidebar } from "./admin-sidebar";
+import { AdminHeader } from "./admin-header";
 import { WorkspaceLiveRefresh } from "./workspace-live-refresh";
 import styles from "./workspace-shell.module.css";
 
@@ -13,5 +14,5 @@ type AdminLayoutProps = {
 
 /** Shared desktop studio shell. Individual route pages remain responsible for authorization. */
 export function AdminLayout({ children, ...sidebarProps }: AdminLayoutProps) {
-  return <div className={styles.adminShell}><WorkspaceLiveRefresh /><AdminSidebar {...sidebarProps} /><div className={styles.adminContent}>{children}</div></div>;
+  return <div className={styles.adminShell}><WorkspaceLiveRefresh /><AdminSidebar {...sidebarProps} /><div className={styles.adminContent}><AdminHeader {...sidebarProps} />{children}</div></div>;
 }
