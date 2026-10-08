@@ -13,10 +13,10 @@ function message(error: unknown) {
     NO_ACTIVE_SESSION: "Please sign in again before recording attendance.",
     INACTIVE_STUDIO: "This studio is not active, so attendance cannot be changed.",
     MEMBERSHIP_INACTIVE: "Your studio access is not active.",
-    FORBIDDEN_ATTENDANCE: "You do not have access to this class roster.",
+    FORBIDDEN_ATTENDANCE: "You do not have access to this class attendance.",
     FORBIDDEN_ATTENDANCE_CORRECTION: "Only studio staff or the owner can correct attendance.",
     SLOT_UNAVAILABLE: "This class is no longer available for attendance.",
-    BOOKING_NOT_FOUND: "This booking is no longer available in this roster.",
+    BOOKING_NOT_FOUND: "This booking is no longer available for attendance.",
     BOOKING_NOT_ATTENDANCE_ELIGIBLE: "Only a current confirmed booking can receive attendance.",
     ATTENDANCE_NOT_OPEN: "Attendance opens at the scheduled class start time.",
     ATTENDANCE_LOCKED: "Attendance is locked. Ask studio staff or the owner to correct an existing outcome.",
@@ -30,6 +30,7 @@ function message(error: unknown) {
 
 function revalidateAttendanceViews(slotId: string) {
   revalidatePath("/trainer");
+  revalidatePath("/trainer/attendance");
   revalidatePath(`/trainer/slots/${slotId}`);
   revalidatePath(`/studio/attendance/${slotId}`);
   revalidatePath("/studio/schedule");

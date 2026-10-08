@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import Image from "next/image";
+import Link from "next/link";
 import styles from "@/app/trainer/trainer-dashboard.module.css";
 import { requireWorkspace } from "@/lib/auth/server";
 import { getAssignedTrainerSlots } from "@/lib/trainer-schedule";
@@ -80,7 +81,7 @@ export default async function TrainerWorkspace() {
       <div className={styles.heroCopy}>
         <p className={styles.kicker}>TRAINER WORKSPACE</p>
         <h1>{morning ? "Good morning" : "Hello"}, {trainerName}.</h1>
-        <p className={styles.intro}>{todaySlots.length > 0 ? `Here ${todaySlots.length === 1 ? "is" : "are"} your ${todaySlots.length} assigned ${todaySlots.length === 1 ? "class" : "classes"} for today.` : "Your assigned classes and rosters are ready when you are."}</p>
+        <p className={styles.intro}>{todaySlots.length > 0 ? `Here ${todaySlots.length === 1 ? "is" : "are"} your ${todaySlots.length} assigned ${todaySlots.length === 1 ? "class" : "classes"} for today.` : "Your assigned classes and attendance are ready when you are."}</p>
       </div>
       <div className={styles.heroAside}><Image className={styles.heroVisual} src={studioImage} alt="A calm Pilates studio" sizes="(max-width: 540px) 130px, 230px" priority /><p className={styles.dateContext}><span className={styles.dateIcon} aria-hidden="true">□</span> Today · {longDate(now, timezone)}</p></div>
     </header>
@@ -94,9 +95,9 @@ export default async function TrainerWorkspace() {
     <section className={styles.schedule} aria-labelledby="assigned-classes">
       <div className={styles.sectionHeader}>
         <div><p className={styles.kicker}>ASSIGNED CLASSES</p><h2 id="assigned-classes">Your schedule</h2></div>
-        <span>{slots.length} {slots.length === 1 ? "class" : "classes"} <b aria-hidden="true">›</b></span>
+        <Link className={styles.scheduleLink} href="#class-list" aria-label={`View all ${slots.length} assigned ${slots.length === 1 ? "class" : "classes"}`}>{slots.length} {slots.length === 1 ? "class" : "classes"} <b aria-hidden="true">›</b></Link>
       </div>
-      {slots.length === 0 ? <div className={styles.empty}><span aria-hidden="true">◌</span><h3>No classes assigned</h3><p>Your assigned classes will appear here.</p></div> : <div className={styles.classList}>{slots.map((slot) => {
+      {slots.length === 0 ? <div className={styles.empty}><span aria-hidden="true">◌</span><h3>No classes assigned</h3><p>Your assigned classes will appear here.</p></div> : <div className={styles.classList} id="class-list">{slots.map((slot) => {
         const available = Math.max(0, slot.capacity - slot.rosterBookingCount);
         const isNext = nextSlot?.id === slot.id;
         const sessionStatus = trainerSessionStatus(slot, now);
@@ -112,7 +113,7 @@ export default async function TrainerWorkspace() {
           </div>
           <footer className={styles.cardFooter}>
             {isNext ? <span className={styles.nextLabel}><i aria-hidden="true">›</i>Next up</span> : <span />}
-            {slot.status === "published" ? <a className={styles.rosterLink} href={`/trainer/slots/${slot.id}`}>View roster <span aria-hidden="true">→</span></a> : <span className={styles.unavailable}>Roster opens when published</span>}
+            {slot.status === "published" ? <Link className={styles.rosterLink} href={`/trainer/slots/${slot.id}`}>View attendance <span aria-hidden="true">→</span></Link> : <span className={styles.unavailable}>Attendance opens when published</span>}
           </footer>
         </article>;
       })}</div>}

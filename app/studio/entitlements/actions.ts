@@ -32,6 +32,10 @@ function message(error: unknown) {
 
 function refresh() {
   revalidatePath("/studio/entitlements");
+  revalidatePath("/studio/plans");
+  revalidatePath("/studio/subscriptions");
+  revalidatePath("/studio/credits");
+  revalidatePath("/studio/pause-requests");
   revalidatePath("/customer/entitlements");
 }
 

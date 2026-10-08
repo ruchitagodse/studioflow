@@ -1,10 +1,10 @@
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
-import { AttendanceRosterActions } from "@/app/components/attendance-roster";
 import { TrainerMobileNav } from "@/app/components/trainer-mobile-nav";
-import styles from "@/app/components/attendance.module.css";
 import { requireWorkspace } from "@/lib/auth/server";
 import { getAttendanceRoster } from "@/lib/attendance";
+import { TrainerRosterActions } from "../trainer-roster-actions";
+import styles from "../trainer-roster.module.css";
 
 function RosterIcon({ name }: { name: "calendar" | "clock" | "pin" | "trainer" | "people" }) {
   const paths = {
@@ -28,9 +28,9 @@ export default async function TrainerRosterPage({ params }: { params: Promise<{ 
     redirect("/access-denied");
   }
   return <main className={styles.page}>
-    <a className={styles.back} href="/trainer"><span aria-hidden="true">←</span> Assigned classes</a>
+    <a className={styles.back} href="/trainer/classes"><span aria-hidden="true">←</span> My classes</a>
     <header className={styles.header}>
-      <p className={styles.kicker}>CLASS ROSTER</p>
+      <p className={styles.kicker}>CLASS ATTENDANCE</p>
       <h1>{roster.className}</h1>
       <div className={styles.slotMeta} aria-label="Class details">
         <span><RosterIcon name="calendar" />{roster.localDate}</span>
@@ -42,7 +42,7 @@ export default async function TrainerRosterPage({ params }: { params: Promise<{ 
       <div><RosterIcon name="trainer" /><span>Trainer<strong>{roster.trainerName}</strong></span></div>
       <div><RosterIcon name="people" /><span>Booked<strong>{roster.confirmedBookingCount} / {roster.capacity}</strong></span></div>
     </section>
-    <AttendanceRosterActions roster={roster} />
-    <TrainerMobileNav active="roster" />
+    <TrainerRosterActions roster={roster} />
+    <TrainerMobileNav active="attendance" />
   </main>;
 }

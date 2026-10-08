@@ -3,7 +3,7 @@
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { getCurrentPrincipal, requireWorkspace } from "@/lib/auth/server";
-import { acceptTeamInvitation, changeTeamMemberPassword, createTeamInvitation, revokeTeamInvitation, updateTeamMembership } from "@/lib/team";
+import { acceptTeamInvitation, changeTeamMemberPassword, createTeamInvitation, reissueTeamInvitation, revokeTeamInvitation, updateTeamMembership } from "@/lib/team";
 
 export type TeamActionState = { error?: string; success?: string; invitationPath?: string; existingAccount?: boolean };
 
@@ -25,8 +25,26 @@ function message(error: unknown) {
   } as Record<string, string>)[code] ?? code;
 }
 
+function revalidateTeamPages() {
+  revalidatePath("/studio/team");
+  revalidatePath("/studio/trainer");
+  revalidatePath("/studio/staff");
+}
+
 export async function revokeInvitationAction(_: TeamActionState, form: FormData): Promise<TeamActionState> {
-  try { const principal = await requireWorkspace("/studio"); await revokeTeamInvitation(principal, String(form.get("invitationId") ?? "")); revalidatePath("/studio/team"); return { success: "Invitation revoked." }; } catch (error) { return { error: message(error) }; }
+  try { const principal = await requireWorkspace("/studio"); await revokeTeamInvitation(principal, String(form.get("invitationId") ?? "")); revalidateTeamPages(); return { success: "Invitation revoked." }; } catch (error) { return { error: message(error) }; }
+}
+
+export async function reissueInvitationAction(_: TeamActionState, form: FormData): Promise<TeamActionState> {
+  try {
+    const principal = await requireWorkspace("/studio");
+    const result = await reissueTeamInvitation(principal, { invitationId: form.get("invitationId"), operationId: form.get("operationId") });
+    const requestHeaders = await headers();
+    const configuredOrigin = process.env.NEXT_PUBLIC_APP_URL;
+    const origin = configuredOrigin || `${requestHeaders.get("x-forwarded-proto") ?? "http"}://${requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host")}`;
+    revalidateTeamPages();
+    return { success: "Replacement invitation link created. Copy and share it manually.", invitationPath: new URL(`/invite/${result.invitationId}?token=${encodeURIComponent(result.secret)}`, origin).toString() };
+  } catch (error) { return { error: message(error) }; }
 }
 
 export async function createInvitationAction(_: TeamActionState, form: FormData): Promise<TeamActionState> {
@@ -37,7 +55,7 @@ export async function createInvitationAction(_: TeamActionState, form: FormData)
     const configuredOrigin = process.env.NEXT_PUBLIC_APP_URL;
     const origin = configuredOrigin || `${requestHeaders.get("x-forwarded-proto") ?? "http"}://${requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host")}`;
     const invitationPath = new URL(`/invite/${result.invitationId}?token=${encodeURIComponent(result.secret)}`, origin).toString();
-    revalidatePath("/studio/team");
+    revalidateTeamPages();
     return { success: "Invitation created. Copy the link and send it to the member.", invitationPath, existingAccount: result.existingAccount };
   } catch (error) { return { error: message(error) }; }
 }
@@ -46,7 +64,7 @@ export async function updateMembershipAction(_: TeamActionState, form: FormData)
   try {
     const principal = await requireWorkspace("/studio");
     await updateTeamMembership(principal, { uid: form.get("uid"), action: form.get("action"), displayName: form.get("displayName"), roles: form.getAll("roles"), reason: form.get("reason") });
-    revalidatePath("/studio/team");
+    revalidateTeamPages();
     revalidatePath("/studio/schedule");
     return { success: "Membership updated." };
   } catch (error) { return { error: message(error) }; }
@@ -56,7 +74,7 @@ export async function changeMemberPasswordAction(_: TeamActionState, form: FormD
   try {
     const principal = await requireWorkspace("/studio");
     await changeTeamMemberPassword(principal, { uid: form.get("uid"), newPassword: form.get("newPassword"), confirmPassword: form.get("confirmPassword") });
-    revalidatePath("/studio/team");
+    revalidateTeamPages();
     return { success: "Password changed. The member will need to sign in again." };
   } catch (error) { return { error: message(error) }; }
 }
