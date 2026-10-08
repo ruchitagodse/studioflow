@@ -123,7 +123,7 @@ configuration required. No studio selector exists in V1.
 - The existing Membership is the trainer identity; V1 trainer profile needs a
   display name only. The existing `trainerUid` assignment, one-active-trainer
   rule, overlap protection, and inactive-trainer constraints remain unchanged.
-- BR-07 defines the attendance window from exact Slot start through 30 minutes
+- BR-07 defines the attendance window from exact Slot start through 1 hour
   after scheduled end. Outcomes are limited to attended and no-show; both
   consume the existing reservation. Locked outcomes may be corrected only by
   Owner/Staff with a reason and audit history.

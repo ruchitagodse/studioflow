@@ -104,7 +104,7 @@ Booking and then attempt a separate target booking.
 ### BR-07 — Attendance and no-show
 
 Attendance is available from the exact scheduled Slot start instant through the
-instant exactly 30 minutes after its scheduled end; trusted server time and the
+instant exactly 1 hour after its scheduled end; trusted server time and the
 stored Slot instants are authoritative. After that window it is locked. Only a
 current eligible confirmed Booking may receive one of two factual outcomes:
 `attended` or `no-show`. Either outcome consumes that Booking's already-reserved

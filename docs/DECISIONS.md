@@ -131,7 +131,7 @@ approval-required in `BUSINESS_RULES.md`.
 - The existing Membership is the trainer identity. It retains the existing
   `trainerUid` Slot assignment; V1 trainer profile is limited to display name.
   Photo, specialization, contact, and other profile enhancements are deferred.
-- Attendance is available from the Slot start instant through exactly 30 minutes
+- Attendance is available from the Slot start instant through exactly 1 hour
   after its scheduled end, using trusted server time. It is then locked.
 - Attendance outcomes are limited to `attended` and `no-show`. Each outcome
   consumes the Booking's existing reserved credit through the current ledger;
