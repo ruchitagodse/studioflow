@@ -10,7 +10,7 @@ export function attendanceContextRejection(studioActive: boolean, membershipActi
 
 export function attendanceWindow(startsAt: Date, endsAt: Date, now = new Date()): AttendanceWindow {
   if (now.getTime() < startsAt.getTime()) return "before";
-  return now.getTime() <= endsAt.getTime() + 30 * 60 * 1000 ? "open" : "locked";
+  return now.getTime() <= endsAt.getTime() + 60 * 60 * 1000 ? "open" : "locked";
 }
 
 export function isAttendanceOutcome(value: string): value is AttendanceOutcome {

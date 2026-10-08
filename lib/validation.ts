@@ -29,6 +29,10 @@ export const invitationSchema = z.object({
   roles: z.array(teamRoleSchema).min(1, "Choose at least one role."),
   operationId: z.string().uuid(),
 });
+export const invitationReissueSchema = z.object({
+  invitationId: z.string().min(1),
+  operationId: z.string().uuid(),
+});
 export const membershipUpdateSchema = z.object({
   uid: z.string().min(1),
   action: z.enum(["update", "activate", "deactivate", "revoke"]),

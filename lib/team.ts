@@ -4,7 +4,7 @@ import { randomUUID } from "node:crypto";
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import type { Principal } from "@/lib/auth/server";
 import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
-import { invitationSchema, memberPasswordChangeSchema, membershipUpdateSchema } from "@/lib/validation";
+import { invitationReissueSchema, invitationSchema, memberPasswordChangeSchema, membershipUpdateSchema } from "@/lib/validation";
 import { assertTeamPasswordAuthority, createInvitationSecret, hashInvitationSecret, invitationCanBeAccepted, invitationExpiry, invitationRecipientMatches, invitationTokenMatches, normalUserCanJoinStudio, type InvitationStatus } from "@/lib/team-logic";
 
 function requireOwner(principal: Principal) { return assertTeamPasswordAuthority(principal); }
@@ -179,4 +179,23 @@ export async function revokeTeamInvitation(principal: Principal, invitationId: s
     transaction.update(ref, { status: "revoked", revokedAt: FieldValue.serverTimestamp(), revokedBy: principal.uid });
     transaction.set(db.doc(`studios/${studioId}/auditEvents/${randomUUID()}`), audit(studioId, "membership.invitation_revoked", principal.uid, invitationId));
   });
+}
+
+/** Replaces a pending manually shared invitation link; it never sends email. */
+export async function reissueTeamInvitation(principal: Principal, raw: unknown) {
+  const studioId = requireOwner(principal);
+  const input = invitationReissueSchema.parse(raw);
+  const db = getAdminDb();
+  const secret = createInvitationSecret();
+  const tokenHash = hashInvitationSecret(secret);
+  const ref = db.doc(`studios/${studioId}/invitations/${input.invitationId}`);
+  await db.runTransaction(async (transaction) => {
+    const invitation = await transaction.get(ref);
+    if (!invitation.exists) throw new Error("INVITATION_NOT_FOUND");
+    if (invitation.data()?.status !== "pending") throw new Error("INVITATION_NOT_PENDING");
+    transaction.update(ref, { tokenHash, expiresAt: Timestamp.fromDate(invitationExpiry(new Date())), reissuedAt: FieldValue.serverTimestamp(), reissuedBy: principal.uid, reissueOperationId: input.operationId });
+    transaction.set(db.doc(`invitationLookups/${input.invitationId}`), { studioId, tokenHash, reissuedAt: FieldValue.serverTimestamp() }, { merge: true });
+    transaction.set(db.doc(`studios/${studioId}/auditEvents/${randomUUID()}`), audit(studioId, "membership.invitation_reissued", principal.uid, input.invitationId));
+  });
+  return { invitationId: input.invitationId, secret };
 }

@@ -8,11 +8,11 @@ const operationId = "5b2577c5-6648-4d46-b520-c3227605ab4b";
 const mark = { slotId: "5b2577c5-6648-4d46-b520-c3227605ab4b", bookingId: "booking-a", outcome: "attended", operationId };
 
 describe("Sprint 6 attendance rules", () => {
-  it("opens at the exact slot start and stays open through the inclusive 30-minute boundary", () => {
+  it("opens at the exact slot start and stays open through the inclusive one-hour boundary", () => {
     expect(attendanceWindow(startsAt, endsAt, new Date("2026-10-08T03:29:59.999Z"))).toBe("before");
     expect(attendanceWindow(startsAt, endsAt, startsAt)).toBe("open");
-    expect(attendanceWindow(startsAt, endsAt, new Date("2026-10-08T04:50:00.000Z"))).toBe("open");
-    expect(attendanceWindow(startsAt, endsAt, new Date("2026-10-08T04:50:00.001Z"))).toBe("locked");
+    expect(attendanceWindow(startsAt, endsAt, new Date("2026-10-08T05:20:00.000Z"))).toBe("open");
+    expect(attendanceWindow(startsAt, endsAt, new Date("2026-10-08T05:20:00.001Z"))).toBe("locked");
   });
 
   it("permits only the two approved factual outcomes", () => {
