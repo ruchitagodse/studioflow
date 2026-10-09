@@ -46,6 +46,7 @@ function Correction({ slotId, bookingId, current }: { slotId: string; bookingId:
 
 export function AttendanceRosterActions({ roster }: { roster: Roster }) {
   const attended = roster.entries.filter((entry) => entry.status === "attended").length;
+  const pending = roster.entries.filter((entry) => entry.status === "confirmed").length;
   const noShow = roster.entries.filter((entry) => entry.status === "no-show").length;
   const canCorrect = roster.role === "owner" || roster.role === "staff";
   const windowNotice = roster.window === "before"
@@ -56,6 +57,6 @@ export function AttendanceRosterActions({ roster }: { roster: Roster }) {
   const windowClass = roster.window === "open" ? styles.windowOpen : roster.window === "locked" ? styles.windowLocked : styles.windowBefore;
   return <section className={styles.roster} aria-label="Class attendance"><div className={`${styles.window} ${windowClass}`}><AttendanceIcon name="info" /><p>{windowNotice}</p></div>
     {roster.entries.length === 0 ? <p className={styles.empty}>There are no eligible confirmed bookings for attendance.</p> : <div className={styles.rows}>{roster.entries.map((entry) => <article key={entry.bookingId} className={styles.row}><div className={styles.customer}><span className={styles.avatar} aria-hidden="true"><span>{entry.customerName.slice(0, 1)}</span></span><div><b>{entry.customerName}</b>{entry.customerEmail && <span>{entry.customerEmail}</span>}</div></div><div className={styles.rowActions}>{entry.status === "confirmed" ? <><MarkActions slotId={roster.slotId} bookingId={entry.bookingId} disabled={roster.window !== "open"} />{roster.window === "before" && <p className={styles.availableLater}><AttendanceIcon name="lock" />Available when the class starts.</p>}</> : <><em className={entry.status === "attended" ? styles.attended : styles.noShow}>{entry.status === "attended" ? "Attended" : "No-show"}</em>{canCorrect && <Correction slotId={roster.slotId} bookingId={entry.bookingId} current={entry.status} />}</>}</div></article>)}</div>}
-    <footer className={styles.summary}><span><b>{attended}</b> attended</span><span><b>{noShow}</b> no-show</span></footer>
+    <footer className={styles.summary}><span><b>{attended}</b> attended</span><span><b>{pending}</b> pending</span><span><b>{noShow}</b> no-show</span></footer>
   </section>;
 }

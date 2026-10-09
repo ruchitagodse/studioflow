@@ -25,7 +25,7 @@ function PersonIcon() { return <svg viewBox="0 0 24 24" aria-hidden="true"><circ
 
 function BookingList({ items, targets }: { items: CustomerBookingView[]; targets: TargetSlot[] }) {
   if (items.length === 0) return <div className={styles.empty}>Nothing to show yet.</div>;
-  return <div className={`${styles.bookingTimeline} ${readableStyles.timeline}`}>{items.map((booking) => <article className={`${styles.historyCard} ${readableStyles.bookingCard}`} key={booking.id}>
+  return <div className={`${styles.bookingTimeline} ${readableStyles.timeline}`}>{items.map((booking) => <article className={`${styles.historyCard} ${readableStyles.bookingCard} ${booking.isUpcoming ? readableStyles.upcomingCard : ""}`} key={booking.id}>
     <Image className={`${styles.bookingThumb} ${readableStyles.bookingThumb}`} src={studioImage} alt="" sizes="140px" />
     <div className={styles.bookingBody}><div className={readableStyles.bookingDate}><CalendarIcon />{displayCustomerDate(booking.localDate)}</div><b>{booking.className}</b><span className={readableStyles.bookingFact}><ClockIcon />{booking.startTime}–{booking.endTime}</span><span className={readableStyles.bookingFact}><PersonIcon />with {booking.trainerName}</span><em className={`${styles.status} ${readableStyles.bookingStatus} ${booking.status.startsWith("cancelled") ? readableStyles.cancelledStatus : ""}`}><i aria-hidden="true" />{bookingStatusLabel(booking.status)}</em>{booking.isUpcoming && <BookingManagementActions booking={booking} targets={targets.filter((target) => !target.alreadyBooked && target.id !== booking.slotId && target.remainingCapacity > 0)} />}</div>
   </article>)}</div>;

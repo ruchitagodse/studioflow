@@ -44,8 +44,8 @@ export function CustomerProfile({ customer }: { customer: CustomerProfile }) {
     <section className={styles.panel} role="tabpanel">
       {tab === "Overview" && <div className={styles.overview}><article><small>Membership</small><b>{customer.subscription}</b><span>Pause status: {customer.pauseStatus}</span></article><article><small>Available credits</small><b>{customer.credits ?? "—"}</b><span>See the credit history for details.</span></article><article><small>Booking history</small><b>{customer.bookings.length}</b><span>All records remain in their original systems.</span></article></div>}
       {tab === "Bookings" && <RecordList records={customer.bookings} empty="No booking records are available." />}
-      {tab === "Membership" && <div className={styles.detail}><h2>{customer.subscription}</h2><p>Pause status: {customer.pauseStatus}</p><Link href="/studio/subscriptions">Open subscriptions →</Link></div>}
-      {tab === "Credits" && <div className={styles.detail}><h2>{customer.credits ?? "—"} available credits</h2><p>Credit movements are managed from Membership and remain immutable.</p><Link href="/studio/credits">Open credit management →</Link></div>}
+      {tab === "Membership" && <div className={styles.detail}><h2>{customer.subscription}</h2><p>Pause status: {customer.pauseStatus}</p><Link href={`/studio/subscriptions?customer=${encodeURIComponent(customer.uid)}`}>Open subscriptions →</Link></div>}
+      {tab === "Credits" && <div className={styles.detail}><h2>{customer.credits ?? "—"} available credits</h2><p>Credit movements are managed from Membership and remain immutable.</p><Link href={`/studio/credits?customer=${encodeURIComponent(customer.uid)}`}>Open credit management →</Link></div>}
       {tab === "Attendance" && <RecordList records={customer.attendance} empty="No attendance outcomes are available." />}
       {tab === "Activity" && <RecordList records={customer.activity} empty="No customer activity is available." />}
     </section>

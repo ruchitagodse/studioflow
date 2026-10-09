@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useActionState, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { adjustCreditsAction, cancelSubscriptionAction, createPlanAction, pauseSubscriptionAction, renewSubscriptionAction, retirePlanAction, updatePlanAction, type EntitlementActionState } from "@/app/studio/entitlements/actions";
 import styles from "./schedule.module.css";
 import entStyles from "./entitlement-ui.module.css";
@@ -84,16 +85,17 @@ function LedgerHistory({ subscription, entries }: { subscription: Subscription; 
   const [filter, setFilter] = useState<LedgerFilter>("all");
   const displayedEntries = entries.filter((entry) => filter === "all" || ledgerType(entry) === filter);
   const total = Math.max(subscription.availableCredits + subscription.reservedCredits + subscription.usedCredits, 1);
-  return <div className={entStyles.ledgerBackdrop} role="presentation"><section className={entStyles.ledgerModal} role="dialog" aria-modal="true" aria-labelledby="ledger-title">
+  if (typeof document === "undefined") return null;
+  return createPortal(<div className={entStyles.ledgerBackdrop} role="presentation"><section className={entStyles.ledgerModal} role="dialog" aria-modal="true" aria-labelledby="ledger-title">
     <div className={entStyles.ledgerHeader}><div><p className={styles.kicker}>LEDGER HISTORY</p><h2 id="ledger-title">Credit transaction history</h2><span>Actual immutable ledger activity for this subscription.</span></div><a href="/studio/credits" aria-label="Close credit history">×</a></div>
     <section className={entStyles.ledgerSummary} aria-label="Subscription credit summary"><div className={entStyles.ledgerCustomer}><span className={entStyles.customerAvatar} aria-hidden="true">{initials(subscription.customerName)}</span><div><b>{subscription.customerName}</b><span>Plan: {subscription.planName}</span><small data-status={subscription.status}>● Status: {subscriptionLabel(subscription)}</small></div></div><div><small>Available</small><b>{subscription.usableCredits}</b><span>credits</span></div><div><small>Reserved</small><b>{subscription.reservedCredits}</b><span>credits</span></div><div><small>Used</small><b>{subscription.usedCredits}</b><span>credits</span></div><div><small>Total plan</small><b>{total}</b><span>credits</span></div></section>
     <div className={entStyles.ledgerTools}><div className={entStyles.ledgerFilters} role="group" aria-label="Filter ledger transactions">{ledgerFilters.map((item) => <button type="button" key={item.value} data-active={filter === item.value} onClick={() => setFilter(item.value)}>{item.label}</button>)}</div></div>
     {displayedEntries.length === 0 ? <p className={styles.empty}>No {filter === "all" ? "" : filter + " "}ledger entries are available.</p> : <div className={entStyles.ledgerTable}><div className={entStyles.ledgerTableHead} aria-hidden="true"><span>Date &amp; time</span><span>Type</span><span>Description</span><span>Credits</span><span>Balance after</span></div>{displayedEntries.map((entry) => <article key={entry.id}><time dateTime={entry.createdAt}><i aria-hidden="true">◷</i><span>{ledgerDate(entry.createdAt)}<small>{ledgerType(entry)}</small></span></time><span className={entStyles.ledgerType} data-type={ledgerType(entry)}>{ledgerLabel(entry)}</span><div className={entStyles.ledgerDescription}><b>{entry.reason || ledgerLabel(entry) + " recorded"}</b><span>{entry.action.replaceAll("_", " ")}</span></div><strong data-positive={entry.amount > 0}>{entry.amount > 0 ? "+" : ""}{entry.amount}</strong><div className={entStyles.ledgerBalance}><span>Available: {entry.balanceAfter}</span><span>Before: {entry.balanceBefore}</span></div></article>)}</div>}
-  </section></div>;
+  </section></div>, document.body);
 }
 
 type EntitlementView = "plans" | "subscriptions" | "credits" | "pauses";
-export function EntitlementManager({ plans, subscriptions, ledger, selectedSubscriptionId, view }: { plans: Plan[]; subscriptions: Subscription[]; ledger: LedgerEntry[]; selectedSubscriptionId: string | null; view: EntitlementView }) {
+export function EntitlementManager({ plans, subscriptions, ledger, selectedSubscriptionId, view, customerUid = null }: { plans: Plan[]; subscriptions: Subscription[]; ledger: LedgerEntry[]; selectedSubscriptionId: string | null; view: EntitlementView; customerUid?: string | null }) {
   const [createState, createAction, creating] = useActionState(createPlanAction, initial);
   const [updateState, updateAction, updating] = useActionState(updatePlanAction, initial);
   const [retireState, retireAction, retiring] = useActionState(retirePlanAction, initial);
@@ -108,6 +110,8 @@ export function EntitlementManager({ plans, subscriptions, ledger, selectedSubsc
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
   const [creatingPlan, setCreatingPlan] = useState(false);
   const [openCreditAdjustmentId, setOpenCreditAdjustmentId] = useState<string | null>(null);
+  const [ledgerLoading, setLedgerLoading] = useState(false);
+  const [pauseEditorOpen, setPauseEditorOpen] = useState(false);
   const creditAdjustmentRef = useRef<HTMLDetailsElement | null>(null);
   useEffect(() => {
     if (!openCreditAdjustmentId) return;
@@ -119,22 +123,47 @@ export function EntitlementManager({ plans, subscriptions, ledger, selectedSubsc
     document.addEventListener("keydown", closeOnEscape);
     return () => { document.removeEventListener("pointerdown", closeWhenOutside); document.removeEventListener("keydown", closeOnEscape); };
   }, [openCreditAdjustmentId]);
+  useEffect(() => {
+    const selector = `details.${entStyles.pauseEditor}`;
+    const updatePauseEditor = (event: Event) => {
+      if (event.target instanceof HTMLDetailsElement && event.target.matches(selector)) setPauseEditorOpen(event.target.open);
+    };
+    document.addEventListener("toggle", updatePauseEditor, true);
+    return () => document.removeEventListener("toggle", updatePauseEditor, true);
+  }, []);
+  const closePauseEditor = () => {
+    document.querySelectorAll<HTMLDetailsElement>(`details.${entStyles.pauseEditor}[open]`).forEach((editor) => { editor.open = false; });
+    setPauseEditorOpen(false);
+  };
+  useEffect(() => {
+    const openLedger = (event: MouseEvent) => {
+      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || !(event.target instanceof Element)) return;
+      const link = event.target.closest<HTMLAnchorElement>('a[href*="/studio/credits?subscription="]');
+      if (!link) return;
+      event.preventDefault();
+      setLedgerLoading(true);
+      window.requestAnimationFrame(() => window.location.assign(link.href));
+    };
+    document.addEventListener("click", openLedger);
+    return () => document.removeEventListener("click", openLedger);
+  }, []);
   const activePlans = plans.filter((plan) => plan.status === "active");
   const visiblePlans = plans.filter((plan) => {
     const query = planQuery.trim().toLowerCase();
     return (!query || plan.name.toLowerCase().includes(query) || plan.description.toLowerCase().includes(query)) && (planStatus === "all" || plan.status === planStatus);
   });
-  const visibleSubscriptions = subscriptions.filter((subscription) => {
+  const scopedSubscriptions = customerUid ? subscriptions.filter((subscription) => subscription.customerUid === customerUid) : subscriptions;
+  const visibleSubscriptions = scopedSubscriptions.filter((subscription) => {
     const query = subscriptionQuery.trim().toLowerCase();
     const matchesStatus = subscriptionStatus === "all" || subscription.status === subscriptionStatus || (subscriptionStatus === "expired" && subscription.status === "inactive" && !subscription.inactiveReason?.toLowerCase().includes("cancel")) || (subscriptionStatus === "cancelled" && subscription.status === "inactive" && subscription.inactiveReason?.toLowerCase().includes("cancel"));
     return (!query || subscription.customerName.toLowerCase().includes(query) || subscription.planName.toLowerCase().includes(query)) && matchesStatus;
   });
   const subscriptionCounts = {
-    all: subscriptions.length,
-    active: subscriptions.filter((subscription) => subscription.status === "active").length,
-    paused: subscriptions.filter((subscription) => subscription.status === "paused").length,
-    expired: subscriptions.filter((subscription) => subscription.status === "inactive" && !subscription.inactiveReason?.toLowerCase().includes("cancel")).length,
-    cancelled: subscriptions.filter((subscription) => subscription.status === "inactive" && subscription.inactiveReason?.toLowerCase().includes("cancel")).length,
+    all: scopedSubscriptions.length,
+    active: scopedSubscriptions.filter((subscription) => subscription.status === "active").length,
+    paused: scopedSubscriptions.filter((subscription) => subscription.status === "paused").length,
+    expired: scopedSubscriptions.filter((subscription) => subscription.status === "inactive" && !subscription.inactiveReason?.toLowerCase().includes("cancel")).length,
+    cancelled: scopedSubscriptions.filter((subscription) => subscription.status === "inactive" && subscription.inactiveReason?.toLowerCase().includes("cancel")).length,
   };
   const selectedSubscription = selectedSubscriptionId ? subscriptions.find((subscription) => subscription.id === selectedSubscriptionId) ?? null : null;
   const exportSubscriptions = () => {
@@ -152,7 +181,9 @@ export function EntitlementManager({ plans, subscriptions, ledger, selectedSubsc
   }[view];
 
   return <main className={`${styles.page} ${styles.studioPolish} ${entStyles.entUi}`}>
-    {view !== "subscriptions" && <header className={`${styles.header} ${entStyles.entHeader}`}>{view !== "credits" && <div><p className={styles.kicker}>{copy.kicker}</p>{copy.title && <h1>{copy.title}</h1>}<p>{copy.detail}</p></div>}{view === "plans" ? <button type="button" className={entStyles.createPlanButton} onClick={() => setCreatingPlan(true)}>+ Create plan</button> : <div className={entStyles.entHeaderVisual}><a className={styles.back} href="/studio">← Studio dashboard</a><div><Image src={studioImage} alt="Pilates studio" fill sizes="260px" priority /></div></div>}</header>}
+    {ledgerLoading && createPortal(<div className={entStyles.ledgerLoadingBackdrop} role="status" aria-live="polite"><div className={entStyles.ledgerLoadingNotice}><span className={entStyles.ledgerLinkSpinner} aria-hidden="true" />Opening ledger…</div></div>, document.body)}
+    {pauseEditorOpen && createPortal(<><button type="button" className={entStyles.pauseEditorBackdrop} aria-label="Close pause form by clicking outside" onClick={closePauseEditor} /><button type="button" className={entStyles.pauseEditorClose} aria-label="Close pause form" onClick={closePauseEditor}>×</button></>, document.body)}
+    {view !== "subscriptions" && <header className={`${styles.header} ${entStyles.entHeader}`}>{view !== "credits" && view !== "pauses" && <div><p className={styles.kicker}>{copy.kicker}</p>{copy.title && <h1>{copy.title}</h1>}<p>{copy.detail}</p></div>}{view === "plans" ? <button type="button" className={entStyles.createPlanButton} onClick={() => setCreatingPlan(true)}>+ Create plan</button> : <div className={entStyles.entHeaderVisual}><a className={styles.back} href="/studio">← Studio dashboard</a><div><Image src={studioImage} alt="Pilates studio" fill sizes="260px" priority /></div></div>}</header>}
     {view === "plans" && <section className={`${styles.panel} ${entStyles.entPanel} ${entStyles.planLibrary}`}>
       <div className={entStyles.libraryHeader}><div><p className={styles.kicker}>PLAN LIBRARY</p><h2>Current and historical templates</h2></div><div className={entStyles.planFilters}><label><span>⌕</span><input type="search" placeholder="Search plans..." aria-label="Search plans" value={planQuery} onChange={(event) => setPlanQuery(event.target.value)} /></label><select aria-label="Filter plans by status" value={planStatus} onChange={(event) => setPlanStatus(event.target.value)}><option value="all">All status</option><option value="active">Active</option><option value="draft">Draft</option><option value="retired">Retired</option></select></div></div>
       <Result state={updateState} /><Result state={retireState} />

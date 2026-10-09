@@ -97,8 +97,13 @@
 .statusExpired { background: #fff0f2 !important; color: #d44a62 !important; }
 .statusCancelled { background: #f0f0f6 !important; color: #70708a !important; }
 .cancellationDetail { color: var(--color-text-muted); font-size: .59rem; }
-.ledgerBackdrop { position: fixed; z-index: 100; inset: 0; display: grid; padding: 20px; place-items: center; background: color-mix(in srgb, var(--color-primary) 26%, transparent); backdrop-filter: blur(5px); }
-.ledgerModal { width: min(100%, 620px); max-height: min(720px, calc(100vh - 40px)); overflow: auto; padding: 22px; border: 1px solid var(--color-border); border-radius: 17px; background: var(--color-surface); box-shadow: 0 22px 60px color-mix(in srgb, var(--color-primary) 26%, transparent); }
+.ledgerBackdrop { position: fixed; z-index: 100; inset: 0; width: 100vw; height: 100dvh; background: color-mix(in srgb, var(--color-primary) 26%, transparent); backdrop-filter: blur(5px); }
+.ledgerModal { position: fixed; z-index: 101; top: 50%; left: 50%; width: min(840px, calc(100vw - 24px)); max-width: calc(100vw - 24px); max-height: calc(100dvh - 24px); overflow: auto; padding: 22px; border: 1px solid var(--color-border); border-radius: 17px; background: var(--color-surface); box-shadow: 0 22px 60px color-mix(in srgb, var(--color-primary) 26%, transparent); transform: translate(-50%, -50%); }
+.ledgerLoadingBackdrop { position: fixed; z-index: 200; inset: 0; display: grid; place-items: center; background: color-mix(in srgb, var(--color-primary) 10%, transparent); }
+.ledgerLoadingNotice { display: inline-flex; min-height: 48px; padding: 12px 17px; border: 1px solid var(--color-border); border-radius: 12px; align-items: center; gap: 10px; background: var(--color-surface); box-shadow: 0 15px 38px color-mix(in srgb, var(--color-primary) 20%, transparent); color: var(--color-text); font-size: .8rem; font-weight: 800; }
+.ledgerLinkSpinner { display: inline-block; width: 16px; height: 16px; flex: 0 0 auto; border: 2px solid color-mix(in srgb, var(--color-primary) 24%, transparent); border-top-color: var(--color-primary); border-radius: 50%; animation: ledger-spin 700ms linear infinite; }
+@keyframes ledger-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .ledgerLinkSpinner { animation: none; } }
 .ledgerHeader { display: flex; gap: 16px; padding-bottom: 14px; border-bottom: 1px solid var(--color-surface-secondary); align-items: flex-start; justify-content: space-between; }
 .ledgerHeader h2 { margin: 4px 0; color: var(--color-text); font-family: Georgia, serif; font-size: 1.6rem; }
 .ledgerHeader span { color: var(--color-text-muted); font-size: .68rem; }
@@ -158,6 +163,9 @@
 .pauseEditor summary span { font-size: 1.05rem; letter-spacing: -3px; }
 .pauseEditor[open] { z-index: 10; }
 .pauseEditor[open] > form { position: absolute; z-index: 10; top: 55px; right: 0; width: 230px; margin: 0 !important; padding: 14px !important; border: 1px solid var(--color-border); border-radius: 11px; background: var(--color-surface); box-shadow: 0 16px 36px color-mix(in srgb, var(--color-primary) 15%, transparent); }
+.pauseEditorBackdrop { position: fixed; z-index: 110; inset: 0; width: 100vw; height: 100dvh; border: 0; background: color-mix(in srgb, var(--color-primary) 22%, transparent); backdrop-filter: blur(3px); }
+.pauseEditorClose { position: fixed; z-index: 112; top: 16px; right: 16px; display: grid; width: 40px; height: 40px; padding: 0; border: 1px solid var(--color-border); border-radius: 50%; place-items: center; background: var(--color-surface); color: var(--color-text); font-size: 1.5rem; line-height: 1; }
+.pauseEditor[open] > form { position: fixed; z-index: 111; top: 50%; right: 16px; left: 16px; width: auto; max-width: 430px; max-height: calc(100dvh - 32px); margin: 0 auto !important; overflow: auto; transform: translateY(-50%); }
 .pauseEditor form small { color: var(--color-text-muted); font-size: .65rem; }
 .pauseUnavailable { color: var(--color-text-muted); }
 @media (max-width: 1050px) { .pauseTableHead, .pauseRow { grid-template-columns: 1.35fr 1fr 1.2fr 1.1fr .85fr .85fr .9fr; gap: 14px; } .pauseTableHead > :nth-child(7), .pauseRow > :nth-child(7) { display: none; } .pauseFilters label { width: 255px; } }
@@ -206,11 +214,11 @@
   .creditActivity .creditTableHead, .creditActivity .creditRow { min-width: 1020px; }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 960px) {
   .creditActivity { overflow: visible; }
   .creditActivity .libraryHeader { min-width: 0; margin-bottom: 16px; }
   .creditActivity .libraryHeader h2 { font-size: 1.75rem !important; }
-  .creditActivity .creditTableHead { display: none; }
+  .creditActivity .creditTableHead { display: none !important; }
   .creditActivity .creditRow { grid-template-columns: 1fr 1fr !important; min-width: 0; gap: 12px !important; padding: 18px 0 !important; }
   .creditActivity .creditRow > :first-child, .creditActivity .creditRow > :last-child { grid-column: 1 / -1; }
   .creditActivity .creditPlan { padding: 8px 9px; }
@@ -270,4 +278,89 @@
   .ledgerSummary > div:not(:first-child) { padding-left: 0; border: 0; }
   .ledgerTable { overflow-x: auto; }
   .ledgerTableHead, .ledgerTable article { width: 720px; grid-template-columns: 1.1fr .8fr 1.65fr .48fr .8fr; gap: 12px; }
+}
+
+/* Keep the ledger dialog contained and readable in narrow tablet/mobile viewports. */
+@media (max-width: 960px) {
+  .ledgerBackdrop { padding: 12px; }
+  .ledgerModal { width: calc(100vw - 24px); max-height: calc(100dvh - 24px); padding: 20px 16px; border-radius: 16px; }
+  .ledgerHeader { gap: 12px; padding-bottom: 14px; }
+  .ledgerHeader > div { min-width: 0; }
+  .ledgerHeader h2 { font-size: clamp(1.45rem, 6vw, 1.85rem); overflow-wrap: anywhere; }
+  .ledgerSummary { grid-template-columns: 1fr 1fr; gap: 12px; padding: 15px; }
+  .ledgerSummary > div:first-child { grid-column: 1 / -1; padding-bottom: 10px; border-bottom: 1px solid var(--color-border); }
+  .ledgerSummary > div:not(:first-child) { padding-left: 0; border: 0; }
+  .ledgerTools { display: block; margin: 14px 0 10px; }
+  .ledgerFilters { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 3px; }
+  .ledgerFilters button { flex: 0 0 auto; }
+  .ledgerTable { overflow: visible; }
+  .ledgerTableHead { display: none; }
+  .ledgerTable article { width: 100%; min-height: 0; grid-template-columns: minmax(0, 1fr) auto; gap: 9px 12px; padding: 14px 0; }
+  .ledgerTable time, .ledgerDescription, .ledgerBalance { grid-column: 1 / -1; }
+  .ledgerTable time { font-size: .74rem; }
+  .ledgerType { align-self: center; }
+  .ledgerTable strong { align-self: center; justify-self: end; font-size: 1rem; }
+  .ledgerDescription b { font-size: .74rem; white-space: normal; }
+  .ledgerBalance { display: flex; gap: 12px; padding: 0; border: 0; font-size: .66rem; }
+}
+
+/* On small screens, plans read as individual cards rather than compressed table rows. */
+@media (max-width: 960px) {
+  .planTableHead { display: none !important; }
+  .planLibrary .memberList { border-top: 0; }
+  .planLibrary .planRow {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+    margin-top: 12px;
+    padding: 16px !important;
+    border: 1px solid var(--color-border) !important;
+    border-radius: 14px !important;
+    background: var(--color-surface) !important;
+    box-shadow: 0 6px 18px color-mix(in srgb, var(--color-primary) 4%, transparent) !important;
+  }
+  .planLibrary .planRow > :first-child,
+  .planLibrary .planDescription,
+  .planLibrary .planActions { grid-column: 1 / -1; }
+  .planLibrary .planDescription { margin-top: -5px; }
+  .planLibrary .planDuration { grid-column: 1; }
+  .planLibrary .planStatus { grid-column: 2; justify-self: stretch; width: 100%; text-align: center; }
+  .planLibrary .planActions { margin-top: 2px; }
+  .planLibrary .planEditButton,
+  .planLibrary .planOverflow summary { min-height: 40px; }
+  .planLibrary .planOverflow summary { width: 40px; }
+}
+
+/* Subscriptions use the same compact card treatment before the desktop table can overflow. */
+@media (max-width: 960px) {
+  .subscriptionToolbar,
+  .subscriptionTools { flex-direction: column; align-items: stretch; }
+  .subscriptionTools .planFilters { width: 100%; }
+  .subscriptionTableHead { display: none !important; }
+  .subscriptionLibrary .subscriptionRow {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+    margin-top: 12px;
+    padding: 16px !important;
+    border: 1px solid var(--color-border) !important;
+    border-radius: 14px !important;
+    background: var(--color-surface) !important;
+    box-shadow: 0 6px 18px color-mix(in srgb, var(--color-primary) 4%, transparent) !important;
+  }
+  .subscriptionLibrary .subscriptionRow > :first-child,
+  .subscriptionLibrary .subscriptionActions,
+  .subscriptionLibrary .cancellationDetail { grid-column: 1 / -1; }
+  .subscriptionLibrary .subscriptionActions { justify-content: flex-start; }
+  .subscriptionLibrary .subscriptionActions .textButton { flex: 1; min-height: 42px !important; }
+  .subscriptionLibrary .subscriptionEditor summary { display: grid; width: 42px; min-height: 42px; border: 1px solid var(--color-border); border-radius: 9px; place-items: center; }
+  .creditActions .subscriptionEditor[open] > form {
+    position: fixed;
+    z-index: 110;
+    top: 50%;
+    right: 12px;
+    left: 12px;
+    width: auto;
+    max-height: calc(100dvh - 24px);
+    overflow: auto;
+    transform: translateY(-50%);
+  }
 }

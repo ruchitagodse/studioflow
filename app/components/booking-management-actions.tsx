@@ -55,7 +55,7 @@ export function BookingManagementActions({ booking, targets }: { booking: Bookin
     if (state.success) router.refresh();
   }
   if (booking.cancellationState === "unavailable") return <p className={styles.actionHint}>This booking can no longer be changed online.</p>;
-  return <div className={actionStyles.actions}>
+  return <div className={`${actionStyles.actions} ${booking.reschedulable ? "" : actionStyles.singleAction}`}>
     <button type="button" className={actionStyles.cancel} onClick={() => void confirmCancellation()} disabled={cancelPending || Boolean(cancelState.success)}><CancelIcon />{cancelPending ? "Cancelling…" : "Cancel booking"}</button>
     {booking.reschedulable && <button type="button" className={actionStyles.reschedule} onClick={() => void openReschedule()} disabled={reschedulePending}><CalendarIcon />{reschedulePending ? "Rescheduling…" : "Reschedule"}</button>}
   </div>;
