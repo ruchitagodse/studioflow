@@ -5,23 +5,27 @@ import { pauseAllowanceDays } from "@/lib/subscription-lifecycle-logic";
 import { expireSubscriptionIfDue, subscriptionUsableCredits } from "@/lib/entitlements";
 import { getAdminDb } from "@/lib/firebase/admin";
 
-export async function getEntitlementData(requestedSubscriptionId: string | null) {
+export async function getEntitlementData(requestedSubscriptionId: string | null, requestedCustomerUid: string | null = null) {
   let principal;
   try { principal = await requireWorkspace("/studio"); } catch { redirect("/"); }
   if (!principal.studioId) redirect("/access-denied");
   const studioId = principal.studioId;
   const db = getAdminDb();
+  const subscriptionsRef = db.collection(`studios/${studioId}/subscriptions`);
+  const loadSubscriptions = () => requestedCustomerUid
+    ? subscriptionsRef.where("customerUid", "==", requestedCustomerUid).limit(50).get()
+    : subscriptionsRef.orderBy("createdAt", "desc").limit(50).get();
   const [planDocs, customerDocs, initialSubscriptionDocs] = await Promise.all([
     db.collection(`studios/${studioId}/plans`).orderBy("createdAt", "desc").limit(50).get(),
     db.collection(`studios/${studioId}/members`).where("status", "==", "active").where("roles", "array-contains", "customer").limit(50).get(),
-    db.collection(`studios/${studioId}/subscriptions`).orderBy("createdAt", "desc").limit(50).get(),
+    loadSubscriptions(),
   ]);
   let subscriptionDocs = initialSubscriptionDocs;
   const expired = await Promise.all(subscriptionDocs.docs.filter((doc) => {
     const data = doc.data(); const effectiveEndsAt = data.effectiveEndsAt ?? data.endsAt;
     return (data.status === "active" || data.status === "paused") && effectiveEndsAt?.toDate && isSubscriptionExpired(effectiveEndsAt.toDate());
   }).map((doc) => expireSubscriptionIfDue(studioId, doc.id)));
-  if (expired.some(Boolean)) subscriptionDocs = await db.collection(`studios/${studioId}/subscriptions`).orderBy("createdAt", "desc").limit(50).get();
+  if (expired.some(Boolean)) subscriptionDocs = await loadSubscriptions();
   const customers = customerDocs.docs.map((doc) => ({ uid: doc.id, name: String(doc.data().displayName ?? "") || String(doc.data().email ?? "Customer"), email: String(doc.data().email ?? "") }));
   const subscriptions = subscriptionDocs.docs.map((doc) => {
     const data = doc.data(); const endsAt = data.endsAt.toDate() as Date; const effectiveEndsAt = (data.effectiveEndsAt ?? data.endsAt).toDate() as Date; const expiredAtRead = isSubscriptionExpired(effectiveEndsAt);
