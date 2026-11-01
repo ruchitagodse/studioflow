@@ -57,7 +57,7 @@ export default async function StudioActivityPage() {
     const data = doc.data();
     const action = String(data.action ?? "Studio activity");
     const actorUid = String(data.actorUid ?? "");
-    return { id: doc.id, actor: actorUid === "system" ? "StudioFlow" : names.get(actorUid) ?? "Studio member", action: label(action), detail: detail(data), createdAt: asDate(data.createdAt), href: destination(action, String(data.targetId ?? ""), data) };
+    return { id: doc.id, actor: actorUid === "system" ? "Studio Calendar" : names.get(actorUid) ?? "Studio member", action: label(action), detail: detail(data), createdAt: asDate(data.createdAt), href: destination(action, String(data.targetId ?? ""), data) };
   });
   const timezone = String(studio.data()?.timezone ?? "Asia/Kolkata");
 

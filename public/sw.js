@@ -1,9 +1,9 @@
-/* StudioFlow intentionally caches only public build assets. User, Firestore, API,
+/* Studio Calendar intentionally caches only public build assets. User, Firestore, API,
    and page responses are always network-only so private information is never
    persisted by the service worker. */
-const CACHE = "studioflow-public-v2";
+const CACHE = "studio-calendar-public-v3";
 const OFFLINE_URL = "/offline.html";
-const PUBLIC_ASSETS = [OFFLINE_URL, "/icon", "/apple-icon"];
+const PUBLIC_ASSETS = [OFFLINE_URL, "/icon", "/apple-icon", "/icons/icon.png", "/icons/icon-maskable.png", "/icons/apple-touch-icon.png"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(PUBLIC_ASSETS)));

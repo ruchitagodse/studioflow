@@ -56,7 +56,7 @@ export async function createBookingAction(_: BookingActionState, form: FormData)
 export async function cancelBookingAction(_: BookingActionState, form: FormData): Promise<BookingActionState> {
   try {
     const principal = await requireWorkspace("/customer"); const result = await cancelCustomerBooking(principal, Object.fromEntries(form)); revalidateCustomerBookingViews();
-    return { success: result.kind === "free" ? "Your booking was cancelled and your class pass was returned." : "Your booking was cancelled. This late cancellation used your reserved class pass.", bookingId: result.bookingId };
+    return { success: result.creditOutcome === "released" ? "Your booking was cancelled and your class pass was returned." : result.creditOutcome === "expired" ? "Your booking was cancelled. Its reserved class pass had expired and was not returned to your available balance." : "Your booking was cancelled. This late cancellation used your reserved class pass.", bookingId: result.bookingId };
   } catch (error) { return { error: message(error) }; }
 }
 

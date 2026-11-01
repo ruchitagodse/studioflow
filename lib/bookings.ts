@@ -3,7 +3,7 @@ import "server-only";
 import { randomUUID } from "node:crypto";
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import type { Principal } from "@/lib/auth/server";
-import { bookingPaths, bookingRejection, canReschedule, cancellationBalances, cancellationKind, hasActiveBooking, isIdempotentBookingRetry, remainingSlotCapacity, reservationBalance, rescheduledBookingCounts, type BookingCheck, type CancellationKind } from "@/lib/booking-logic";
+import { bookingPaths, bookingRejection, canReschedule, cancellationBalances, cancellationCreditOutcome, cancellationKind, hasActiveBooking, isIdempotentBookingRetry, remainingSlotCapacity, reservationBalance, reservationMoveRejection, rescheduledBookingCounts, type BookingCheck, type CancellationKind } from "@/lib/booking-logic";
 import { expireSubscriptionIfDue, subscriptionUsableCredits } from "@/lib/entitlements";
 import { getAdminDb } from "@/lib/firebase/admin";
 import { recordIncidentInTransaction } from "@/lib/incidents";
@@ -306,7 +306,7 @@ function assertCustomerContext(studio: FirebaseFirestore.DocumentSnapshot, membe
   if (!Array.isArray(member.data()?.roles) || !member.data()?.roles.includes("customer")) throw new Error("FORBIDDEN_CUSTOMER");
 }
 
-export type CancellationResult = { bookingId: string; kind: "free" | "late"; idempotent: boolean };
+export type CancellationResult = { bookingId: string; kind: "free" | "late"; creditOutcome: "released" | "expired" | "consumed"; idempotent: boolean };
 
 export async function cancelCustomerBooking(principal: Principal, raw: unknown): Promise<CancellationResult> {
   const studioId = requireCustomer(principal); const input = bookingCancellationSchema.parse(raw); const db = getAdminDb();
@@ -318,7 +318,7 @@ export async function cancelCustomerBooking(principal: Principal, raw: unknown):
     if (!booking.exists || booking.data()?.customerUid !== principal.uid) throw new Error("BOOKING_NOT_FOUND");
     const bookingData = booking.data()!;
     if (bookingData.status !== "confirmed") {
-      if (bookingData.cancellationOperationId === input.operationId && (bookingData.status === "cancelled-free" || bookingData.status === "cancelled-late")) return { bookingId: bookingRef.id, kind: bookingData.status === "cancelled-free" ? "free" as const : "late" as const, idempotent: true };
+      if (bookingData.cancellationOperationId === input.operationId && (bookingData.status === "cancelled-free" || bookingData.status === "cancelled-late")) return { bookingId: bookingRef.id, kind: bookingData.status === "cancelled-free" ? "free" as const : "late" as const, creditOutcome: String(bookingData.creditOutcome ?? (bookingData.status === "cancelled-free" ? "released" : "consumed")) as CancellationResult["creditOutcome"], idempotent: true };
       throw new Error("BOOKING_NOT_CANCELLABLE");
     }
     const startsAt = asDate(bookingData.slotStartsAt); const slotId = String(bookingData.slotId ?? ""); const subscriptionId = String(bookingData.subscriptionId ?? ""); const reservationLedgerId = String(bookingData.reservationLedgerId ?? "");
@@ -327,19 +327,24 @@ export async function cancelCustomerBooking(principal: Principal, raw: unknown):
     if (kind === "unavailable") throw new Error("CANCELLATION_AFTER_START");
     const slotRef = db.doc(`studios/${studioId}/slots/${slotId}`); const subscriptionRef = db.doc(`studios/${studioId}/subscriptions/${subscriptionId}`); const ledgerRef = subscriptionRef.collection("ledger").doc(`cancellation-${input.operationId}`);
     const [slot, subscription, reservation, existingLedger] = await Promise.all([transaction.get(slotRef), transaction.get(subscriptionRef), transaction.get(subscriptionRef.collection("ledger").doc(reservationLedgerId)), transaction.get(ledgerRef)]);
-    if (existingLedger.exists) return { bookingId: bookingRef.id, kind, idempotent: true };
+    if (existingLedger.exists) {
+      const action = String(existingLedger.data()?.action ?? "");
+      return { bookingId: bookingRef.id, kind, creditOutcome: action === "release" ? "released" as const : action === "expiry" ? "expired" as const : "consumed" as const, idempotent: true };
+    }
     if (!slot.exists || !subscription.exists || !reservation.exists || reservation.data()?.action !== "reservation") throw new Error("BOOKING_INVALID");
     const bookingCount = Number(slot.data()?.confirmedBookingCount ?? 0); const availableCredits = Number(subscription.data()?.availableCredits ?? 0); const reservedCredits = Number(subscription.data()?.reservedCredits ?? 0);
-    const outcome = cancellationBalances(kind, availableCredits, reservedCredits, bookingCount);
+    const subscriptionEndsAt = asDate(subscription.data()?.effectiveEndsAt) ?? asDate(subscription.data()?.endsAt);
+    const creditOutcome = cancellationCreditOutcome(kind, subscriptionEndsAt);
+    const outcome = cancellationBalances(creditOutcome === "released" ? "free" : "late", availableCredits, reservedCredits, bookingCount);
     if (kind === "late") await recordIncidentInTransaction(transaction, studioId, principal.uid, { bookingId: bookingRef.id, customerUid: principal.uid, type: "late-cancellation", sourceTimestamp: new Date() });
     transaction.update(slotRef, { confirmedBookingCount: outcome.confirmedBookingCount, updatedAt: FieldValue.serverTimestamp() });
     transaction.update(subscriptionRef, { availableCredits: outcome.availableCredits, reservedCredits: outcome.reservedCredits, updatedAt: FieldValue.serverTimestamp(), updatedBy: principal.uid });
-    transaction.update(bookingRef, { status: kind === "free" ? "cancelled-free" : "cancelled-late", cancelledAt: FieldValue.serverTimestamp(), cancellationKind: kind, cancellationOperationId: input.operationId, updatedAt: FieldValue.serverTimestamp() });
-    transaction.set(ledgerRef, { action: kind === "free" ? "release" : "consumption", amount: kind === "free" ? 1 : 0, balanceBefore: availableCredits, balanceAfter: outcome.availableCredits, reservedCreditsBefore: reservedCredits, reservedCreditsAfter: outcome.reservedCredits, actorUid: principal.uid, referenceId: bookingRef.id, slotId, createdAt: FieldValue.serverTimestamp() });
-    transaction.set(db.doc(`studios/${studioId}/auditEvents/${randomUUID()}`), { action: kind === "free" ? "booking.cancelled_free" : "booking.cancelled_late", actorUid: principal.uid, targetId: bookingRef.id, createdAt: FieldValue.serverTimestamp(), result: "success", after: { slotId, creditOutcome: kind === "free" ? "released" : "consumed" } });
-    transaction.set(db.doc(`studios/${studioId}/auditEvents/${randomUUID()}`), { action: kind === "free" ? "credit.released" : "credit.consumed", actorUid: principal.uid, targetId: subscriptionRef.id, createdAt: FieldValue.serverTimestamp(), result: "success", after: { bookingId: bookingRef.id, balanceAfter: outcome.availableCredits, reservedCreditsAfter: outcome.reservedCredits } });
+    transaction.update(bookingRef, { status: kind === "free" ? "cancelled-free" : "cancelled-late", cancelledAt: FieldValue.serverTimestamp(), cancellationKind: kind, cancellationOperationId: input.operationId, creditOutcome, updatedAt: FieldValue.serverTimestamp() });
+    transaction.set(ledgerRef, { action: creditOutcome === "released" ? "release" : creditOutcome === "expired" ? "expiry" : "consumption", amount: creditOutcome === "released" ? 1 : 0, balanceBefore: availableCredits, balanceAfter: outcome.availableCredits, reservedCreditsBefore: reservedCredits, reservedCreditsAfter: outcome.reservedCredits, actorUid: principal.uid, referenceId: bookingRef.id, slotId, ...(creditOutcome === "expired" ? { reason: "Reserved credit reached effective subscription expiry before free cancellation." } : {}), createdAt: FieldValue.serverTimestamp() });
+    transaction.set(db.doc(`studios/${studioId}/auditEvents/${randomUUID()}`), { action: kind === "free" ? "booking.cancelled_free" : "booking.cancelled_late", actorUid: principal.uid, targetId: bookingRef.id, createdAt: FieldValue.serverTimestamp(), result: "success", after: { slotId, creditOutcome } });
+    transaction.set(db.doc(`studios/${studioId}/auditEvents/${randomUUID()}`), { action: creditOutcome === "released" ? "credit.released" : creditOutcome === "expired" ? "credit.expired" : "credit.consumed", actorUid: principal.uid, targetId: subscriptionRef.id, createdAt: FieldValue.serverTimestamp(), result: "success", after: { bookingId: bookingRef.id, balanceAfter: outcome.availableCredits, reservedCreditsAfter: outcome.reservedCredits } });
     openedSlotId = slotId;
-    return { bookingId: bookingRef.id, kind, idempotent: false };
+    return { bookingId: bookingRef.id, kind, creditOutcome, idempotent: false };
   });
   if (openedSlotId) await promoteOneWaitlistEntry(studioId, openedSlotId, principal.uid);
   return result;
@@ -374,6 +379,9 @@ export async function rescheduleCustomerBooking(principal: Principal, raw: unkno
     const [originalSlot, subscription, reservation] = await Promise.all([transaction.get(originalSlotRef), transaction.get(subscriptionRef), transaction.get(reservationRef)]);
     if (!originalSlot.exists || !subscription.exists || !reservation.exists || reservation.data()?.action !== "reservation") throw new Error("BOOKING_INVALID");
     const originalCount = Number(originalSlot.data()?.confirmedBookingCount ?? 0); if (Number(subscription.data()?.reservedCredits ?? 0) < 1) throw new Error("BOOKING_INVALID");
+    const subscriptionEndsAt = asDate(subscription.data()?.effectiveEndsAt) ?? asDate(subscription.data()?.endsAt);
+    const subscriptionRejection = reservationMoveRejection(String(subscription.data()?.status ?? ""), subscriptionEndsAt);
+    if (subscriptionRejection) throw new Error(subscriptionRejection);
     const counts = rescheduledBookingCounts(originalCount, targetCount, Number(targetData.capacity ?? 0));
     transaction.update(originalSlotRef, { confirmedBookingCount: counts.originalConfirmedBookingCount, updatedAt: FieldValue.serverTimestamp() });
     transaction.update(targetSlotRef, { confirmedBookingCount: counts.targetConfirmedBookingCount, updatedAt: FieldValue.serverTimestamp() });

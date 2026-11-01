@@ -59,7 +59,7 @@ export default async function TrainerWorkspace() {
   let accessError: unknown;
   try { principal = await requireWorkspace("/trainer"); } catch (error) {
     accessError = error;
-    console.error("StudioFlow trainer access resolution failed.", error);
+    console.error("Studio Calendar trainer access resolution failed.", error);
   }
   if (!principal) redirect(accessError instanceof Error && accessError.message === "NO_ACTIVE_SESSION" ? "/" : "/access-denied");
 

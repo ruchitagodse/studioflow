@@ -1,0 +1,95 @@
+.dashboard{display:grid;gap:28px;padding-top:4px;font-family:"Segoe UI",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+.feature{display:grid;grid-template-columns:1.1fr 1fr;min-height:210px;overflow:hidden;border:1px solid var(--color-border);border-radius:14px;background:var(--color-surface)}
+.featureCopy{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;min-width:0;padding:24px}
+.eyebrow{margin:0;color:var(--color-text-muted);font-size:10px;font-weight:500;letter-spacing:.12em}
+.feature h2{margin:10px 0 8px;color:var(--color-text);font-size:24px;font-weight:600;line-height:1.3;letter-spacing:-.02em}
+.feature p:not(.eyebrow){margin:0;color:var(--color-text-muted);font-size:13px;line-height:1.5;font-weight:400}
+.featureImage{width:100%;height:100%;min-height:0;object-fit:cover;object-position:center;filter:brightness(.86)}
+.primary{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:44px;width:100%;margin-top:14px;padding:10px 14px;border-radius:6px;background:var(--color-button-background);color:var(--color-button-text);font-size:12px;font-weight:600}
+.sectionHead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+.sectionHead h2{margin:0;color:var(--color-text);font-size:16px;font-weight:600;line-height:1.4;letter-spacing:0}
+.sectionHead>a{color:var(--color-text-muted);font-size:12px;font-weight:400}
+.weekControls{display:flex;align-items:center;gap:2px}
+.weekControls button{display:grid;place-items:center;min-width:44px;height:44px;padding:0;border:0;border-radius:8px;background:transparent;color:var(--color-text-muted);font-size:11px;font-weight:400}
+.weekControls button:hover{background:var(--color-surface-secondary);color:var(--color-text)}
+.weekControls button:first-child{padding:0 8px;margin-right:4px}
+.weekControls svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.month{margin:0 0 12px;color:var(--color-text-muted);font-size:11px;font-weight:400;line-height:1.4}
+.week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
+.day{display:grid;justify-items:center;align-content:center;gap:7px;min-width:0;min-height:92px;padding:10px 2px;border:1px solid color-mix(in srgb,var(--color-border) 55%,transparent);border-radius:7px;background:var(--color-surface);color:var(--color-text);font:inherit}
+.day>span{color:var(--color-text-muted);font-size:11px;font-weight:400;line-height:1.2}
+.day strong{font-size:15px;font-weight:500;line-height:1.2}
+.day time[aria-current]{color:var(--color-primary)}
+.day .dayMarker{display:grid;place-items:center;width:16px;height:16px;border:1.5px solid color-mix(in srgb,var(--color-text-muted) 55%,transparent);border-radius:50%;background:transparent}
+.dayMarker svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.day .dayMarker.booked{border-color:var(--color-primary);background:var(--color-primary);color:var(--color-button-text)}
+.day .dayMarker.available{border-color:var(--color-primary);box-shadow:inset 0 0 0 4px var(--color-surface);background:var(--color-primary)}
+.day .dayMarker.noClasses{opacity:.7}
+.day.bookedDay{border-color:color-mix(in srgb,var(--color-primary) 28%,var(--color-border));background:color-mix(in srgb,var(--color-primary) 11%,var(--color-surface))}
+.day.selected{border-color:var(--color-primary);background:color-mix(in srgb,var(--color-primary) 14%,var(--color-surface))}
+.legend{display:flex;align-items:center;gap:12px;margin-top:6px;color:var(--color-text-muted);font-size:10px;font-weight:400;line-height:1.4}
+.legend button{margin-left:auto;min-height:36px;padding:6px 0;border:0;background:transparent;color:var(--color-primary);font:inherit;font-weight:500}
+.classSection{min-width:0}
+.listNote{margin:-3px 0 12px;color:var(--color-text-muted);font-size:11px;line-height:1.4}
+.classes{display:grid;gap:12px;align-content:start}
+.classCard{display:grid;grid-template-columns:100px minmax(0,1fr) auto;align-items:center;gap:16px;min-height:120px;padding:12px;border:1px solid color-mix(in srgb,var(--color-border) 60%,transparent);border-radius:10px;background:var(--color-surface)}
+.classCard:hover{border-color:var(--color-primary)}
+.thumbnail{width:100px;height:94px;object-fit:cover;border-radius:6px}
+.classCopy h3{margin:0 0 8px;font-size:15px;font-weight:600;line-height:1.3;letter-spacing:0}
+.classCopy p{margin:4px 0;color:var(--color-text-muted);font-size:12px;font-weight:400;line-height:1.4}
+.classCopy p span{margin:0 3px}
+.status{display:block;margin-top:8px;color:var(--color-primary);font-size:11px;font-weight:500}
+.classAction{padding:9px 12px;border:1px solid var(--color-primary);border-radius:6px;color:var(--color-primary);font-size:11px;font-weight:500;white-space:nowrap}
+.empty{display:flex;align-items:center;gap:14px;padding:20px;border:1px solid color-mix(in srgb,var(--color-border) 55%,transparent);border-radius:10px;background:var(--color-surface);text-align:left}
+.emptyIcon{display:grid;place-items:center;flex:none;width:36px;height:36px;color:var(--color-text-muted)}
+.emptyIcon svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.25;stroke-linecap:round;stroke-linejoin:round}
+.empty h3{margin:0;font-size:14px;font-weight:500;line-height:1.4;letter-spacing:0}
+.empty p{margin:5px 0 0;color:var(--color-text-muted);font-size:12px;font-weight:400;line-height:1.5}
+.empty button{min-height:44px;margin-top:6px;padding:6px 0;border:0;background:transparent;color:var(--color-primary);font:inherit;font-size:12px}
+@media(max-width:767px){
+  .dashboard{gap:24px;padding:0}
+  .feature{min-height:145px;grid-template-columns:1.1fr 1fr;border-radius:10px}
+  .featureCopy{padding:16px}
+  .feature h2{margin:8px 0;font-size:17px;line-height:1.3}
+  .eyebrow{font-size:9px;letter-spacing:.1em}
+  .feature p:not(.eyebrow){font-size:11px;line-height:1.45}
+  .primary{margin-top:10px;padding:8px 10px;font-size:11px}
+  .sectionHead{margin-bottom:8px}
+  .sectionHead h2{font-size:14px;font-weight:600}
+  .sectionHead>a{font-size:11px}
+  .week{gap:6px}
+  .day{min-height:78px;gap:6px;padding:9px 2px;border-radius:6px}
+  .day>span{font-size:10px}
+  .day strong{font-size:13px}
+  .day .dayMarker{width:15px;height:15px}
+  .month{margin-bottom:10px;font-size:10px}
+  .legend{gap:10px;margin-top:4px;font-size:9px}
+  .legend button{min-height:28px}
+  .classCard{grid-template-columns:72px minmax(0,1fr);gap:8px 12px;padding:10px}
+  .thumbnail{grid-row:1/3;width:72px;height:88px}
+  .classCopy h3{font-size:13px;margin-bottom:5px}
+  .classCopy p{font-size:11px;margin:3px 0}
+  .status{font-size:10px;margin-top:5px}
+  .classAction{grid-column:2;justify-self:end;padding:7px 10px;font-size:10px}
+  .empty{padding:18px 14px;gap:10px}
+  .empty h3{font-size:13px}
+  .empty p{font-size:11px;line-height:1.45}
+  .listNote{font-size:10px;margin:0 0 8px}
+}
+@media(max-width:767px) and (min-height:600px){
+  .dashboard{flex:1;min-height:0;grid-template-rows:auto auto minmax(0,1fr);gap:18px}
+  .feature{min-height:0;height:clamp(128px,20dvh,164px)}
+  .classSection{display:flex;flex-direction:column;min-height:0}
+  .classSection>.sectionHead,.listNote{flex:none}
+  .classes{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:2px 2px 4px;scrollbar-width:thin}
+}
+@media(max-width:767px) and (min-height:600px) and (max-height:690px){
+  .dashboard{gap:14px}
+  .feature{height:114px}
+  .featureCopy{padding:12px 14px}
+  .feature h2{font-size:16px;margin:6px 0}
+  .day{min-height:69px;gap:4px}
+  .sectionHead{margin-bottom:4px}
+  .month{margin-bottom:8px}
+  .empty{padding:12px}
+}

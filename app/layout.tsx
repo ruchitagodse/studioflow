@@ -9,14 +9,14 @@ import { PwaSupport } from "@/app/components/pwa-support";
 import { getApprovedBrandPalette, paletteVariables } from "@/lib/brand-palettes";
 
 export const metadata: Metadata = {
-  title: "StudioFlow — Pilates made simple",
+  title: "Studio Calendar by PROSPERA",
   description: "Thoughtful class booking for modern Pilates studios.",
-  applicationName: "StudioFlow",
+  applicationName: "Studio Calendar by PROSPERA",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "StudioFlow",
+    title: "Studio Calendar",
   },
   formatDetection: { telephone: false },
 };
@@ -25,12 +25,12 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#163C35",
+  themeColor: "#121617",
   colorScheme: "light dark",
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  let theme = "nature-minimal";
+  let theme = "ember-dark";
   let variables: Record<string, string> = {};
   let principal = null;
   try { principal = await getCurrentPrincipal(); } catch { /* Public and loading routes use the safe default. */ }

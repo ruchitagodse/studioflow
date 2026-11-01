@@ -14,10 +14,10 @@ export async function POST(request: Request) {
     const sessionCookie = await auth.createSessionCookie(idToken, { expiresIn });
     const response = NextResponse.json({ ok: true });
     response.cookies.set(sessionCookieName, sessionCookie, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/", maxAge: Math.floor(expiresIn / 1000) });
-    if (process.env.NODE_ENV !== "production") console.error("StudioFlow session issued.", { uid: user.uid, secure: false });
+    if (process.env.NODE_ENV !== "production") console.error("Studio Calendar session issued.", { uid: user.uid, secure: false });
     return response;
   } catch (error) {
-    if (process.env.NODE_ENV !== "production") console.error("StudioFlow session issuance failed.", error);
+    if (process.env.NODE_ENV !== "production") console.error("Studio Calendar session issuance failed.", error);
     const message = error instanceof FirebaseConfigurationError ? "Firebase is not configured for this environment." : "Unable to establish a secure session.";
     return NextResponse.json({ message }, { status: 401 });
   }

@@ -1,8 +1,14 @@
-# StudioFlow product brief
+# Studio Calendar product brief
+
+The product's full brand name is **Studio Calendar by PROSPERA**. The supplied
+ivory, black, and gold logo is the official artwork. Original and web-ready
+assets live in `public/brand/`; compact navigation uses the same artwork, while
+app icons use its Pilates monogram. Studio appearance settings remain independent
+of this platform identity.
 
 ## The product
 
-StudioFlow helps a small or medium Pilates studio run its class schedule and customer bookings. It is not a fitness marketplace, an on-demand workout library, or a full gym operating system.
+Studio Calendar helps a small or medium Pilates studio run its class schedule and customer bookings. It is not a fitness marketplace, an on-demand workout library, or a full gym operating system.
 
 The product has four studio roles: customer, trainer, studio staff/admin, and
 studio owner. A person may hold more than one of these roles in their one
@@ -14,7 +20,7 @@ customer-facing, trainer-facing, staff-facing, or owner-facing â€œCreate Studioâ
 path, and login is login-only.
 
 Owner team provisioning uses secure invitation links that the Owner copies and
-shares manually in V1. StudioFlow does not send invitation email in this slice,
+shares manually in V1. Studio Calendar does not send invitation email in this slice,
 and Firebase password recovery is never used as an invitation mechanism.
 
 Initial launch is India, with INR as the currency and English as the primary

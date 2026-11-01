@@ -23,7 +23,7 @@ export async function provisionStudio(actorUid: string, rawInput: ProvisionInput
     const studioRef = db.doc(`studios/${studioId}`);
     const memberRef = db.doc(`studios/${studioId}/members/${owner.uid}`);
     const auditRef = db.doc(`platformAuditEvents/${randomUUID()}`);
-    transaction.set(studioRef, { name: input.name, timezone: input.timezone, status: "active", settings: { theme: "nature-minimal", allowOwnerThemeCustomization: false }, initialOwnerUid: owner.uid, initialOwnerEmail: owner.email ?? null, createdAt: FieldValue.serverTimestamp(), createdBy: actorUid });
+    transaction.set(studioRef, { name: input.name, timezone: input.timezone, status: "active", settings: { theme: "ember-dark", allowOwnerThemeCustomization: false }, initialOwnerUid: owner.uid, initialOwnerEmail: owner.email ?? null, createdAt: FieldValue.serverTimestamp(), createdBy: actorUid });
     transaction.set(memberRef, { uid: owner.uid, email: owner.email ?? null, roles: ["owner"], status: "active", createdAt: FieldValue.serverTimestamp(), createdBy: actorUid });
     transaction.set(membershipIndex, { studioId, roles: ["owner"], status: "active", updatedAt: FieldValue.serverTimestamp() });
     transaction.set(auditRef, { action: "studio.provisioned", actorUid, studioId, ownerUid: owner.uid, createdAt: FieldValue.serverTimestamp() });

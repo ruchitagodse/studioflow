@@ -38,3 +38,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 }
 
 a { color: inherit; text-decoration: none; }
+
+[data-theme="ember-dark"]{color-scheme:dark;--color-background:#121617;--color-surface:#1E2325;--color-surface-secondary:#2A3032;--color-primary:#FF8B52;--color-primary-hover:#FFA271;--color-secondary:#AA7560;--color-accent:#3C2B24;--color-text:#F5F6F6;--color-text-muted:#ADB4B6;--color-border:#353D40;--color-success:#8BD7AB;--color-warning:#F4C76D;--color-danger:#FF9992;--color-input-background:#191E20;--color-input-border:#505B60;--color-button-background:#FF8B52;--color-button-text:#1B1714;--color-button-hover:#FFA271;--color-nav-background:#171C1E;--color-nav-text:#E4E8E9;--color-nav-active:#FF8B52;--color-nav-active-background:#3C2B24;--color-skeleton:#2A3032;--color-skeleton-highlight:#3B4447;--color-focus:#FFA271}
+[data-theme="ember-dark"] h1,[data-theme="ember-dark"] h2,[data-theme="ember-dark"] h3{font-family:var(--font-geist-sans),Arial,sans-serif;letter-spacing:-.025em}

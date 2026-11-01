@@ -1,4 +1,5 @@
 "use client";
+import { BrandLogo } from "@/app/components/brand-logo";
 
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -91,7 +92,7 @@ export function AdminSidebar({ name, role, studioName, roles, workspaceLinks, mo
   const section = params.get("section") ?? params.get("view") ?? params.get("role");
   const isOwner = roles.includes("owner");
   return <aside id={mobile ? "studio-mobile-navigation" : undefined} className={`${styles.sidebar}${mobile ? ` ${styles.mobileSidebar}` : ""}`} aria-label="Studio administration" aria-modal={mobile || undefined} role={mobile ? "dialog" : undefined}>
-    <div className={styles.top}><Link className={styles.brand} href="/studio" onClick={onNavigate} aria-label="StudioFlow dashboard"><span aria-hidden="true">S</span><b>studioflow</b></Link>{mobile && <button type="button" className={styles.close} onClick={onClose} aria-label="Close studio navigation">×</button>}</div>
+    <div className={styles.top}><Link className={styles.brand} href="/studio" onClick={onNavigate} aria-label="Studio Calendar dashboard"><BrandLogo /></Link>{mobile && <button type="button" className={styles.close} onClick={onClose} aria-label="Close studio navigation">×</button>}</div>
     <nav className={styles.navigation} aria-label="Studio navigation">
       {navigation.map((group) => {
         const items = group.items.filter((item) => !item.ownerOnly || isOwner);

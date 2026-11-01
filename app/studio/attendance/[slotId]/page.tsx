@@ -24,7 +24,7 @@ export default async function StudioAttendancePage({ params }: { params: Promise
   const { slotId } = await params;
   let roster;
   try { roster = await getAttendanceRoster(principal, slotId); } catch (error) {
-    console.error("StudioFlow attendance roster failed.", error);
+    console.error("Studio Calendar attendance roster failed.", error);
     redirect("/access-denied");
   }
   return <main className={styles.page}>

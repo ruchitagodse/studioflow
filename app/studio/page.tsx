@@ -9,7 +9,7 @@ export default async function StudioWorkspace() {
   let accessError: unknown;
   try { principal = await requireWorkspace("/studio"); } catch (error) {
     accessError = error;
-    console.error("StudioFlow studio access resolution failed.", error);
+    console.error("Studio Calendar studio access resolution failed.", error);
   }
   if (!principal) redirect(accessError instanceof Error && accessError.message === "NO_ACTIVE_SESSION" ? "/" : "/access-denied");
   return <StudioDashboard principal={principal} />;

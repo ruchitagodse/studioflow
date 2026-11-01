@@ -2,17 +2,17 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "StudioFlow",
-    short_name: "StudioFlow",
+    name: "Studio Calendar by PROSPERA",
+    short_name: "Studio Calendar",
     description: "Thoughtful class booking for modern Pilates studios.",
     start_url: "/",
     scope: "/",
     display: "standalone",
-    background_color: "#F7F3EA",
-    theme_color: "#163C35",
+    background_color: "#FAF7F2",
+    theme_color: "#121617",
     icons: [
-      { src: "/icon", sizes: "512x512", type: "image/png", purpose: "any" },
-      { src: "/icon", sizes: "512x512", type: "image/png", purpose: "maskable" },
+      { src: "/icons/icon.png", sizes: "512x512", type: "image/png", purpose: "any" },
+      { src: "/icons/icon-maskable.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
     ],
   };
 }

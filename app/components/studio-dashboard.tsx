@@ -59,7 +59,7 @@ export async function StudioDashboard({ principal }: { principal: Principal }) {
   const actorIds = [...new Set(auditDocs?.docs.map((doc) => String(doc.data().actorUid ?? "")).filter((uid) => uid && uid !== "system") ?? [])];
   const actors = await Promise.all(actorIds.map((uid) => safe(db.doc(`studios/${studioId}/members/${uid}`).get())));
   const names = new Map(actors.filter((doc): doc is NonNullable<typeof doc> => Boolean(doc)).map((doc) => [doc.id, String(doc.data()?.displayName ?? "").trim() || "Studio member"]));
-  const activities: Activity[] = (auditDocs?.docs ?? []).map((doc) => { const data = doc.data(); const action = String(data.action ?? "Studio activity"); const actorUid = String(data.actorUid ?? ""); return { id: doc.id, actor: actorUid === "system" ? "StudioFlow" : names.get(actorUid) ?? "Studio member", action: activityLabel(action), detail: activityDetail(data), createdAt: dateValue(data.createdAt), href: activityHref(action, String(data.targetId ?? ""), data) }; });
+  const activities: Activity[] = (auditDocs?.docs ?? []).map((doc) => { const data = doc.data(); const action = String(data.action ?? "Studio activity"); const actorUid = String(data.actorUid ?? ""); return { id: doc.id, actor: actorUid === "system" ? "Studio Calendar" : names.get(actorUid) ?? "Studio member", action: activityLabel(action), detail: activityDetail(data), createdAt: dateValue(data.createdAt), href: activityHref(action, String(data.targetId ?? ""), data) }; });
   const activeMemberCount = activeCustomers?.data().count ?? null;
   const trainerCount = trainers?.data().count ?? null;
   const activeSubscriptionCount = activeSubscriptions?.data().count ?? null;
@@ -72,8 +72,10 @@ export async function StudioDashboard({ principal }: { principal: Principal }) {
   const trainerHref = principal.roles.includes("owner") ? "/studio/trainer" : "/studio/schedule";
   const displayName = String(member?.data()?.displayName ?? "").trim() || principal.email?.split("@")[0] || "there";
   const scheduleError = slotDocs === null;
+  const pauseSummary = pausedSubscriptionCount === null ? "Membership pauses unavailable." : pausedSubscriptionCount === 1 ? "1 active membership pause." : `${pausedSubscriptionCount} active membership pauses.`;
+  const pauseDetail = pausedSubscriptionCount === null ? "Try again shortly." : pausedSubscriptionCount === 0 ? "No active membership pauses." : "Review active pauses and eligibility.";
   const operationCards = <section className={styles.operations}>
-    <section className={`${styles.card} ${styles.operationCard}`} aria-labelledby="pause-requests"><div className={styles.operationHeading}><h2 id="pause-requests">Pause requests</h2><Link className={styles.cardView} href="/studio/pause-requests">View all →</Link></div><div className={styles.operationBody}><span className={styles.operationIcon}><Icon name="pause"/></span><div><b>Membership pauses.</b><p>No pending pause requests.</p></div></div></section>
+    <section className={`${styles.card} ${styles.operationCard}`} aria-labelledby="pause-requests"><div className={styles.operationHeading}><h2 id="pause-requests">Membership pauses</h2><Link className={styles.cardView} href="/studio/pause-requests">View all →</Link></div><div className={styles.operationBody}><span className={styles.operationIcon}><Icon name="pause"/></span><div><b>{pauseSummary}</b><p>{pauseDetail}</p></div></div></section>
   </section>;
 
   return <main className={styles.page}>

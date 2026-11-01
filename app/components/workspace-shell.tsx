@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/app/components/brand-logo";
 import { getCurrentPrincipal } from "@/lib/auth/server";
 import { getAdminDb } from "@/lib/firebase/admin";
 import { WorkspaceProfileMenu } from "./workspace-profile-menu";
@@ -29,7 +30,7 @@ async function loadShellData(workspace: WorkspaceShellProps["workspace"]): Promi
       db.doc(`studios/${principal.studioId}/members/${principal.uid}`).get(),
     ]);
     const name = String(memberSnapshot.data()?.displayName ?? "").trim() || principal.email?.split("@")[0] || "Studio member";
-    const studioName = String(studioSnapshot.data()?.name ?? "StudioFlow Pilates").trim() || "StudioFlow Pilates";
+    const studioName = String(studioSnapshot.data()?.name ?? "Studio Calendar Pilates").trim() || "Studio Calendar Pilates";
     const workspaceLinks = workspace === "/studio" && principal.roles.includes("trainer") ? [{ href: "/trainer", label: "Switch to Trainer view" }] : workspace === "/trainer" && principal.roles.some((role) => role === "owner" || role === "staff") ? [{ href: "/studio", label: "Switch to Staff view" }] : [];
     return { name, studioName, role: roleLabel(principal.roles), roles: principal.roles.filter((role): role is "owner" | "staff" => role === "owner" || role === "staff"), workspaceLinks };
   } catch {
@@ -44,7 +45,7 @@ export async function WorkspaceShell({ workspace, homeHref, children }: Workspac
   if (workspace === "/studio") return <AdminLayout {...data}>{children}</AdminLayout>;
   return <div className={styles.shell}><WorkspaceLiveRefresh />
     <header className={styles.header}>
-      <a className={styles.brand} href={homeHref} aria-label="StudioFlow workspace home"><span>S</span><b>studioflow</b></a>
+      <a className={styles.brand} href={homeHref} aria-label="Studio Calendar workspace home"><BrandLogo /></a>
       <WorkspaceProfileMenu name={data.name} role={data.role} studioName={data.studioName} customerProfile={workspace === "/customer"} workspaceLinks={data.workspaceLinks} />
     </header>
     {children}

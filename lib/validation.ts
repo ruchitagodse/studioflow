@@ -18,7 +18,7 @@ export const provisionStudioSchema = z.object({
 
 export const studioLifecycleSchema = z.object({ studioId: z.string().min(1), status: studioStatusSchema });
 export const studioManagementSchema = z.object({ studioId: z.string().min(1), name: z.string().trim().min(2).max(100), status: studioStatusSchema });
-export const studioThemeSchema = z.object({ studioId: z.string().min(1), theme: z.enum(["nature-minimal", "warm-elegant", "dark-modern", "soft-pastel", "custom-brand"]), brandPaletteId: z.string().min(1).optional(), allowOwnerThemeCustomization: z.coerce.boolean().optional() });
+export const studioThemeSchema = z.object({ studioId: z.string().min(1), theme: z.enum(["ember-dark", "nature-minimal", "warm-elegant", "dark-modern", "soft-pastel", "custom-brand"]), brandPaletteId: z.string().min(1).optional(), allowOwnerThemeCustomization: z.coerce.boolean().optional() });
 const hexColor = z.string().regex(/^#[0-9a-fA-F]{6}$/, "Use a six-digit hex colour.");
 export const brandPaletteSchema = z.object({ name: z.string().trim().min(2).max(60), background: hexColor, surface: hexColor, primary: hexColor, accent: hexColor, operationId: z.string().uuid() });
 

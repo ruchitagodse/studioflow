@@ -40,7 +40,7 @@ export default async function TrainerAttendancePage({ searchParams }: { searchPa
   const eligibleSlots = slots.filter((slot) => slot.status === "published" || slot.status === "completed");
   const filteredSlots = eligibleSlots.filter((slot) => view === "today" ? slot.localDate === today : view === "upcoming" ? slot.localDate > today : slot.localDate < today).sort((left, right) => view === "history" ? right.startsAt.getTime() - left.startsAt.getTime() : left.startsAt.getTime() - right.startsAt.getTime());
   const results = await Promise.all(filteredSlots.map(async (slot) => {
-    try { return await getAttendanceRoster(principal, slot.id); } catch (error) { console.error("StudioFlow trainer attendance list failed for slot.", error); return null; }
+    try { return await getAttendanceRoster(principal, slot.id); } catch (error) { console.error("Studio Calendar trainer attendance list failed for slot.", error); return null; }
   }));
   const rosters = results.filter((roster): roster is AttendanceRoster => roster !== null);
 

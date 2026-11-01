@@ -25,7 +25,7 @@ export default async function TrainerProfilePage() {
   const member = await getAdminDb().doc(`studios/${principal.studioId}/members/${principal.uid}`).get();
   const name = String(member.data()?.displayName ?? "").trim() || "Trainer";
   return <main className={`${styles.page} ${styles.profilePage}`}>
-    <header className={styles.profileHeader}><h1>Your profile</h1><p>Account details for your StudioFlow trainer access.</p></header>
+    <header className={styles.profileHeader}><h1>Your profile</h1><p>Account details for your Studio Calendar trainer access.</p></header>
     <section className={styles.trainerProfileSurface} aria-labelledby="trainer-profile-name">
       <div className={styles.trainerProfileHeroImage} aria-hidden="true"><Image src={heroImage} alt="" fill sizes="100vw" priority /></div>
       <div className={styles.trainerProfileCard}>
@@ -35,7 +35,7 @@ export default async function TrainerProfilePage() {
         <p className={styles.profileEmail}>{principal.email ?? "Email not available"}</p>
         <dl className={styles.profileDetails}>
           <div><ProfileIcon name="person" /><dt>Role</dt><dd>Trainer</dd><span className={styles.trainerProfileChevron} aria-hidden="true">›</span></div>
-          <div><ProfileIcon name="account" /><dt>Account</dt><dd>StudioFlow member</dd><span className={styles.trainerProfileChevron} aria-hidden="true">›</span></div>
+          <div><ProfileIcon name="account" /><dt>Account</dt><dd>Studio Calendar member</dd><span className={styles.trainerProfileChevron} aria-hidden="true">›</span></div>
         </dl>
       </div>
     </section>

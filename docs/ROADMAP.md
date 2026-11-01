@@ -10,7 +10,7 @@ authorization, state change, audit history, and focused automated tests.
 
 - Focused product boundary and implementation architecture.
 - Polished responsive identity and protected-workspace shells establishing the
-  StudioFlow visual direction.
+  Studio Calendar visual direction.
 - Authoritative business rules, permissions, flows, UI specification, conceptual
   data model, approval register, and status record.
 - Sprint 1: protected Super Admin provisioning, Firebase identity/session entry,
@@ -37,7 +37,7 @@ authorization, state change, audit history, and focused automated tests.
      No customer booking yet.
 
 3. **Team & Membership Provisioning — complete**
-   - Owner-only team list, manually shared secure invitation links, existing-account association, pending/active/inactive lifecycle, permitted role/profile changes, bounded queries, and audit history. StudioFlow does not send invitation email or use Firebase password recovery as an invitation mechanism.
+   - Owner-only team list, manually shared secure invitation links, existing-account association, pending/active/inactive lifecycle, permitted role/profile changes, bounded queries, and audit history. Studio Calendar does not send invitation email or use Firebase password recovery as an invitation mechanism.
    - Enforce one active studio membership, seven-day invitation expiry, and no automatic future-slot, booking, or subscription changes on deactivation.
 
 4. **Entitlement foundation — complete**

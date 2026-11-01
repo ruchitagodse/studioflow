@@ -69,11 +69,11 @@ export function PwaSupport({ persistTheme = false }: { persistTheme?: boolean })
   };
 
   return <>
-    {installEvent && <aside className={styles.install} aria-label="Install StudioFlow">
-      <span>Install StudioFlow for quicker access.</span><button onClick={install}>Install</button><button className={styles.dismiss} onClick={dismiss} aria-label="Dismiss install prompt">Not now</button>
+    {installEvent && <aside className={styles.install} aria-label="Install Studio Calendar">
+      <span>Install Studio Calendar for quicker access.</span><button onClick={install}>Install</button><button className={styles.dismiss} onClick={dismiss} aria-label="Dismiss install prompt">Not now</button>
     </aside>}
-    {showIosInstall && <aside className={styles.install} aria-label="Add StudioFlow to your Home Screen">
-      <span>Add StudioFlow to your Home Screen: tap Share, then “Add to Home Screen”.</span><button className={styles.dismiss} onClick={dismiss}>Got it</button>
+    {showIosInstall && <aside className={styles.install} aria-label="Add Studio Calendar to your Home Screen">
+      <span>Add Studio Calendar to your Home Screen: tap Share, then “Add to Home Screen”.</span><button className={styles.dismiss} onClick={dismiss}>Got it</button>
     </aside>}
   </>;
 }

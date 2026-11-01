@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { bookingDocumentId, bookingPaths, bookingRejection, canReschedule, cancellationBalances, cancellationKind, hasActiveBooking, isIdempotentBookingRetry, remainingSlotCapacity, reservationBalance, reservationRemainsValidAfterSubscriptionExpiry, rescheduledBookingCounts, type BookingCheck } from "../lib/booking-logic";
+import { bookingDocumentId, bookingPaths, bookingRejection, canReschedule, cancellationBalances, cancellationCreditOutcome, cancellationKind, hasActiveBooking, isIdempotentBookingRetry, remainingSlotCapacity, reservationBalance, reservationMoveRejection, reservationRemainsValidAfterSubscriptionExpiry, rescheduledBookingCounts, type BookingCheck } from "../lib/booking-logic";
 
 const now = new Date("2026-09-25T10:00:00.000Z");
 const base: BookingCheck = {
@@ -82,6 +82,21 @@ describe("Sprint 4 customer booking rules", () => {
     )).toBe(true);
   });
 
+  it("blocks a reservation move when the subscription is paused or effectively expired", () => {
+    const now = new Date("2026-09-25T10:00:00.000Z");
+    expect(reservationMoveRejection("paused", new Date("2026-10-01T10:00:00.000Z"), now)).toBe("NO_ACTIVE_SUBSCRIPTION");
+    expect(reservationMoveRejection("inactive", new Date("2026-09-24T10:00:00.000Z"), now)).toBe("NO_ACTIVE_SUBSCRIPTION");
+    expect(reservationMoveRejection("active", new Date("2026-09-25T10:00:00.000Z"), now)).toBe("SUBSCRIPTION_EXPIRED");
+  });
+
+  it("allows a reservation move through a pause-extended effective expiry", () => {
+    const now = new Date("2026-09-25T10:00:00.000Z");
+    const historicalEndsAt = new Date("2026-09-24T10:00:00.000Z");
+    const effectiveEndsAt = new Date("2026-09-30T10:00:00.000Z");
+    expect(historicalEndsAt.getTime()).toBeLessThan(now.getTime());
+    expect(reservationMoveRejection("active", effectiveEndsAt, now)).toBeNull();
+  });
+
   it("classifies the exact two-hour boundary as a free cancellation", () => {
     const startsAt = new Date("2026-09-26T10:00:00.000Z");
     expect(cancellationKind(startsAt, new Date("2026-09-26T07:59:59.999Z"))).toBe("free");
@@ -108,6 +123,17 @@ describe("Sprint 4 customer booking rules", () => {
 
   it("returns a free-cancellation credit and capacity exactly once", () => {
     expect(cancellationBalances("free", 7, 1, 1)).toEqual({ availableCredits: 8, reservedCredits: 0, confirmedBookingCount: 0 });
+  });
+
+  it("expires rather than returns a reservation resolved after effective subscription expiry", () => {
+    const now = new Date("2026-09-25T10:00:00.000Z");
+    expect(cancellationCreditOutcome("free", new Date("2026-09-24T10:00:00.000Z"), now)).toBe("expired");
+    expect(cancellationBalances("late", 7, 1, 1)).toEqual({ availableCredits: 7, reservedCredits: 0, confirmedBookingCount: 0 });
+  });
+
+  it("returns a free-cancellation credit while a pause-extended subscription remains effective", () => {
+    const now = new Date("2026-09-25T10:00:00.000Z");
+    expect(cancellationCreditOutcome("free", new Date("2026-09-30T10:00:00.000Z"), now)).toBe("released");
   });
 
   it("supports a free-cancel then rebook balance and capacity sequence", () => {

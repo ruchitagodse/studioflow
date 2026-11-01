@@ -8,7 +8,7 @@ approval-required in `BUSINESS_RULES.md`.
 
 ### Platform, identity, and tenancy
 
-- StudioFlow is a focused single-studio Pilates operations and booking product,
+- Studio Calendar is a focused single-studio Pilates operations and booking product,
   not a marketplace or broad gym platform.
 - The normal login page is login-only: it has no Create Studio action and no
   studio selector. It includes Firebase Authentication password recovery.
@@ -33,7 +33,7 @@ approval-required in `BUSINESS_RULES.md`.
   access their studio. Deactivated studios block both studio operations and
   customer access. No client may reactivate any of these states.
 - V1 invitation delivery is manual: an Owner generates a secure invitation
-  link, copies it, and shares it through their chosen channel. StudioFlow does
+  link, copies it, and shares it through their chosen channel. Studio Calendar does
   not send transactional invitation email in this slice. Firebase password
   recovery is never used as an invitation mechanism, especially for an
   existing Firebase account. Transactional delivery remains deferred to the

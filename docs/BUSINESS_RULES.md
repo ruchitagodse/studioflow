@@ -1,6 +1,6 @@
 # Business rules
 
-This is the authoritative home for StudioFlow operational rules. `FLOWS.md`,
+This is the authoritative home for Studio Calendar operational rules. `FLOWS.md`,
 `UI.md`, and implementation tickets must reference rule IDs here rather than
 restate or alter them. A rule marked **approval required** has no implementation
 behaviour until it is decided in `DECISIONS.md`.
@@ -323,7 +323,7 @@ BR-17 through BR-20.
 ### BR-15 — Trainer assignment
 
 A published slot requires exactly one active trainer with an active Membership
-in that studio. That Membership is the trainer identity in V1; StudioFlow does
+in that studio. That Membership is the trainer identity in V1; Studio Calendar does
 not create a separate trainer entity. A trainer may only view customer roster
 information for their assigned slots. An inactive trainer cannot receive a new
 assignment, while existing assignments and their historical context remain
@@ -417,7 +417,7 @@ associated rather than duplicated. Owners can reactivate or revoke memberships
 without deleting history. Inactive trainers cannot receive new slots; existing
 future slots, bookings, and subscriptions remain unchanged in this slice.
 V1 invitation delivery is a manually shared, owner-generated secure link;
-StudioFlow does not send invitation email in this slice. Firebase password
+Studio Calendar does not send invitation email in this slice. Firebase password
 recovery is not an invitation mechanism and is never triggered for an existing
 Firebase account.
 

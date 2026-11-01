@@ -2,11 +2,18 @@
 
 ## Direction
 
-Retain the established StudioFlow direction: warm off-white surfaces, deep leaf
-green actions, sage/clay/sun capacity accents, restrained serif display type,
-and clean sans-serif interface text. It should feel calm and considered rather
-than clinical or feature-dense. Customer booking is mobile-first; operations is
-desktop-first and responsive. Existing shell routes are visual fixtures only.
+Ember Dark is the default appearance: charcoal backgrounds, raised dark cards,
+warm orange actions, and clear sans-serif headings, based on the approved visual
+reference. Other built-in studio themes remain available in Appearance. Existing
+explicit studio selections are preserved. Customer home includes a studio-time
+weekly date picker, real booking markers, a date-filtered list of the bounded
+upcoming schedule and a next-class card. Membership and profile remain accessible
+through the customer navigation, without extra summary or quick-link cards on home.
+Calendar markers describe listed availability and bookings, never workout progress.
+
+The Nature Minimal alternative retains warm off-white surfaces, deep leaf-green
+actions, and sage accents. Across themes, keep the experience calm and focused.
+Customer booking is mobile-first; operations is desktop-first and responsive.
 
 ## Screen map and navigation
 

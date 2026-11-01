@@ -21,7 +21,7 @@ function NavIcon({ name }: { name: (typeof navigation)[number]["icon"] }) {
 }
 
 export function CustomerBookingShell({ children, title, subtitle, active, compactHeader = false, heroHeader = false, profileHeader = false, backHref, backLabel }: { children: React.ReactNode; title: string; subtitle: string; active: CustomerSection; compactHeader?: boolean; heroHeader?: boolean; profileHeader?: boolean; backHref?: string; backLabel?: string }) {
-  return <main className={styles.page}>
+  return <main className={`${styles.page} ${heroHeader ? styles.homePage : ""}`}>
     <nav className={styles.nav} aria-label="Customer navigation">
       {navigation.map((item) => <Link key={item.key} className={active === item.key ? styles.currentNav : ""} aria-current={active === item.key ? "page" : undefined} href={item.href}>
         <NavIcon name={item.icon} /><span className={styles.navLabel}>{item.label}</span>

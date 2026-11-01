@@ -8,7 +8,7 @@ export default async function EntryPage() {
   try {
     principal = await getCurrentPrincipal();
   } catch (error) {
-    console.error("StudioFlow access resolution failed at /entry.", error);
+    console.error("Studio Calendar access resolution failed at /entry.", error);
   }
   redirect(principal?.workspace ?? "/");
 }

@@ -24,7 +24,7 @@ export default async function CustomerProfilePage() {
   try { principal = await requireWorkspace("/customer"); } catch { redirect("/access-denied"); }
   const member = principal.studioId ? await getAdminDb().doc(`studios/${principal.studioId}/members/${principal.uid}`).get() : null;
   const name = String(member?.data()?.displayName ?? "").trim() || principal.email?.split("@")[0] || "Studio member";
-  return <CustomerBookingShell active="profile" title="Your profile" subtitle="Your account details and StudioFlow access." profileHeader>
+  return <CustomerBookingShell active="profile" title="Your profile" subtitle="Your account details and Studio Calendar access." profileHeader>
     <section className={styles.profileSurface} aria-labelledby="profile-name">
       <div className={styles.profileHeroImage} aria-hidden="true"><Image src={heroImage} alt="" fill sizes="100vw" priority /></div>
       <div className={styles.profileCard}>
@@ -34,7 +34,7 @@ export default async function CustomerProfilePage() {
         <p className={styles.profileEmail}>{principal.email ?? "Email not available"}</p>
         <dl className={styles.profileDetails}>
           <div><ProfileIcon name="person" /><dt>Role</dt><dd>Customer</dd><span className={styles.profileChevron} aria-hidden="true">›</span></div>
-          <div><ProfileIcon name="account" /><dt>Account</dt><dd>StudioFlow member</dd><span className={styles.profileChevron} aria-hidden="true">›</span></div>
+          <div><ProfileIcon name="account" /><dt>Account</dt><dd>Studio Calendar member</dd><span className={styles.profileChevron} aria-hidden="true">›</span></div>
         </dl>
       </div>
     </section>

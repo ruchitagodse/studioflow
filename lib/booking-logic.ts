@@ -72,6 +72,13 @@ export function reservationRemainsValidAfterSubscriptionExpiry(confirmedAt: Date
   return confirmedAt.getTime() < subscriptionEndsAt.getTime() && subscriptionEndsAt.getTime() < slotStartsAt.getTime();
 }
 
+/** A held reservation may move only while its owning subscription remains bookable. */
+export function reservationMoveRejection(subscriptionStatus: string, subscriptionEndsAt: Date | null, now = new Date()) {
+  if (subscriptionStatus !== "active" || !subscriptionEndsAt) return "NO_ACTIVE_SUBSCRIPTION" as const;
+  if (subscriptionEndsAt.getTime() <= now.getTime()) return "SUBSCRIPTION_EXPIRED" as const;
+  return null;
+}
+
 export type CancellationKind = "free" | "late" | "unavailable";
 
 export function cancellationKind(slotStartsAt: Date, now = new Date()): CancellationKind {
@@ -90,6 +97,15 @@ export function cancellationBalances(kind: Exclude<CancellationKind, "unavailabl
     reservedCredits: reservedCredits - 1,
     confirmedBookingCount: confirmedBookingCount - 1,
   };
+}
+
+/** BR-11: a reservation that is resolved after effective expiry cannot restore usable credit. */
+export function cancellationCreditOutcome(kind: Exclude<CancellationKind, "unavailable">, subscriptionEndsAt: Date | null, now = new Date()) {
+  return kind === "free" && subscriptionEndsAt !== null && subscriptionEndsAt.getTime() <= now.getTime()
+    ? "expired" as const
+    : kind === "free"
+      ? "released" as const
+      : "consumed" as const;
 }
 
 export function rescheduledBookingCounts(originalConfirmedBookingCount: number, targetConfirmedBookingCount: number, targetCapacity: number) {
