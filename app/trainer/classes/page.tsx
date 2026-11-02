@@ -45,7 +45,7 @@ function shortTime(value: string) {
 
 function DateTabs({ active }: { active: View }) {
   const tabs: { value: View; label: string }[] = [{ value: "today", label: "Today" }, { value: "tomorrow", label: "Tomorrow" }, { value: "week", label: "This week" }];
-  return <nav className={styles.tabs} aria-label="Class date range">{tabs.map((tab) => <Link key={tab.value} href={tab.value === "today" ? "/trainer/classes" : `/trainer/classes?view=${tab.value}`} aria-current={active === tab.value ? "page" : undefined}>{tab.label}</Link>)}</nav>;
+  return <nav className={styles.tabs} aria-label="Class date range">{tabs.map((tab) => <Link prefetch={false} key={tab.value} href={tab.value === "today" ? "/trainer/classes" : `/trainer/classes?view=${tab.value}`} aria-current={active === tab.value ? "page" : undefined}>{tab.label}</Link>)}</nav>;
 }
 
 export default async function TrainerClassesPage({ searchParams }: { searchParams: Promise<{ view?: string | string[] }> }) {
@@ -79,7 +79,7 @@ export default async function TrainerClassesPage({ searchParams }: { searchParam
         <header><h2 id={`date-${date}`}>{displayDate(date)}</h2><span>{daySlots.length} {daySlots.length === 1 ? "class" : "classes"}</span></header>
         <div className={styles.classList}>{daySlots.map((slot) => {
           const time = shortTime(slot.startTime);
-          return <Link key={slot.id} className={styles.classCard} href={`/trainer/slots/${slot.id}`} aria-label={`Open ${slot.className}, ${slot.localDate}, ${slot.startTime}`}>
+          return <Link prefetch={false} key={slot.id} className={styles.classCard} href={`/trainer/slots/${slot.id}`} aria-label={`Open ${slot.className}, ${slot.localDate}, ${slot.startTime}`}>
             <time className={styles.time} dateTime={slot.startsAt.toISOString()}><strong>{typeof time === "string" ? time : time.hour}</strong>{typeof time !== "string" && <span>{time.period}</span>}</time>
             <Image src={studioImage} alt="" className={styles.classImage} sizes="56px" />
             <span className={styles.classInfo}><b>{slot.className}</b><small>{slot.startTime} – {slot.endTime}</small><small className={styles.location}><span aria-hidden="true">⌖</span>{slot.timezone}</small><em><span aria-hidden="true">♙</span>{slot.rosterBookingCount} / {slot.capacity} booked</em></span>

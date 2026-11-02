@@ -159,4 +159,14 @@ that slice.
 
 ### Query and UI state
 
+Firestore read-budget implementation is documented in `FIRESTORE_READ_AUDIT.md`.
+Server Component reads share `lib/firebase/reads.ts`: document snapshots are
+memoized only within one request, using full tenant-scoped paths. Authorization
+is checked afresh for each protected request; successful roles are never cached
+globally or trusted from browser storage. Transactions always read current data.
+There is no workspace polling or focus/visibility-driven refresh. Opening pages,
+explicit Refresh, and successful targeted Server Action invalidation load data.
+History/directory pages use cursor pagination; schedule reads follow the selected
+studio-local calendar period. No browser Firestore listeners are installed.
+
 TanStack Query will own remote client state when Firebase reads are introduced; local UI state remains in components. Keep optimistic updates limited to flows with clear reconciliation behavior. UI routes should include route-level loading and error boundaries when they begin fetching real data.

@@ -1,3 +1,4 @@
+import { readQuery, withFirestoreQuota } from "@/lib/firebase/reads";
 import "server-only";
 
 import { randomUUID } from "node:crypto";
@@ -32,7 +33,7 @@ export async function createTeamInvitation(principal: Principal, raw: unknown) {
   let existingUserUid: string | null = null;
   try { const existingUser = await auth.getUserByEmail(input.email); if (existingUser.disabled) throw new Error("TARGET_ACCOUNT_INACTIVE"); existingUserUid = existingUser.uid; } catch (error) { if (!authUserMissing(error)) throw error; }
   if (existingUserUid) {
-    const index = await db.doc(`userMemberships/${existingUserUid}`).get();
+    const index = await readQuery(db.doc(`userMemberships/${existingUserUid}`));
     const current = index.exists ? { studioId: String(index.data()?.studioId), status: String(index.data()?.status) } : null;
     if (!normalUserCanJoinStudio(current, studioId)) throw new Error("ACTIVE_MEMBERSHIP_IN_ANOTHER_STUDIO");
     if (current?.studioId === studioId && current.status === "active") throw new Error("MEMBERSHIP_ALREADY_ACTIVE");
@@ -41,7 +42,7 @@ export async function createTeamInvitation(principal: Principal, raw: unknown) {
   const secret = createInvitationSecret();
   const invitationId = input.operationId;
   const invitationRef = db.doc(`studios/${studioId}/invitations/${invitationId}`);
-  await db.runTransaction(async (transaction) => {
+  await withFirestoreQuota(() => db.runTransaction(async (transaction) => {
     const studio = await transaction.get(db.doc(`studios/${studioId}`));
     if (!studio.exists || studio.data()?.status !== "active") throw new Error("INACTIVE_STUDIO");
     const duplicate = await transaction.get(db.collection(`studios/${studioId}/invitations`).where("email", "==", input.email).where("status", "==", "pending").limit(1));
@@ -61,16 +62,16 @@ export async function createTeamInvitation(principal: Principal, raw: unknown) {
     });
     transaction.set(db.doc(`invitationLookups/${invitationId}`), { studioId, tokenHash: hashInvitationSecret(secret), createdAt: FieldValue.serverTimestamp() });
     transaction.set(db.doc(`studios/${studioId}/auditEvents/${randomUUID()}`), audit(studioId, "membership.invited", principal.uid, invitationId, { after: { email: input.email, roles: input.roles } }));
-  });
+  }));
   return { invitationId, secret, email: input.email, existingAccount: Boolean(existingUserUid) };
 }
 
 export type InvitationPreview = { id: string; email: string; displayName: string; status: InvitationStatus; expiresAt: Date };
 
 export async function getInvitationPreview(invitationId: string, secret: string): Promise<InvitationPreview | null> {
-  const db = getAdminDb(); const lookup = await db.doc(`invitationLookups/${invitationId}`).get();
+  const db = getAdminDb(); const lookup = await readQuery(db.doc(`invitationLookups/${invitationId}`));
   if (!lookup.exists || !invitationTokenMatches(secret, String(lookup.data()?.tokenHash ?? ""))) return null;
-  const snapshot = await db.doc(`studios/${lookup.data()?.studioId}/invitations/${invitationId}`).get();
+  const snapshot = await readQuery(db.doc(`studios/${lookup.data()?.studioId}/invitations/${invitationId}`));
   if (!snapshot.exists) return null;
   const data = snapshot.data();
   if (!data) return null;
@@ -78,12 +79,12 @@ export async function getInvitationPreview(invitationId: string, secret: string)
 }
 
 export async function acceptTeamInvitation(actor: { uid: string; email: string }, invitationId: string, secret: string) {
-  const db = getAdminDb(); const lookup = await db.doc(`invitationLookups/${invitationId}`).get();
+  const db = getAdminDb(); const lookup = await readQuery(db.doc(`invitationLookups/${invitationId}`));
   if (!lookup.exists || !invitationTokenMatches(secret, String(lookup.data()?.tokenHash ?? ""))) throw new Error("INVALID_INVITATION");
   const studioId = String(lookup.data()?.studioId ?? "");
   if (!studioId) throw new Error("INVALID_INVITATION");
   const invitationRef = db.doc(`studios/${studioId}/invitations/${invitationId}`);
-  await db.runTransaction(async (transaction) => {
+  await withFirestoreQuota(() => db.runTransaction(async (transaction) => {
     const [invitationSnapshot, studioSnapshot, indexSnapshot] = await Promise.all([
       transaction.get(invitationRef), transaction.get(db.doc(`studios/${studioId}`)), transaction.get(db.doc(`userMemberships/${actor.uid}`)),
     ]);
@@ -109,7 +110,7 @@ export async function acceptTeamInvitation(actor: { uid: string; email: string }
     transaction.update(invitationRef, { status: "accepted", acceptedAt: FieldValue.serverTimestamp(), acceptedBy: actor.uid });
     transaction.set(db.doc(`studios/${studioId}/auditEvents/${randomUUID()}`), audit(studioId, "membership.provisioned", actor.uid, actor.uid, { after: { roles } }));
     transaction.set(db.doc(`studios/${studioId}/auditEvents/${randomUUID()}`), audit(studioId, "membership.activated", actor.uid, actor.uid, { after: { roles } }));
-  });
+  }));
   return studioId;
 }
 
@@ -122,7 +123,7 @@ export async function updateTeamMembership(principal: Principal, raw: unknown) {
     if (target.disabled) throw new Error("TARGET_ACCOUNT_INACTIVE");
   }
   const ref = db.doc(`studios/${studioId}/members/${input.uid}`);
-  await db.runTransaction(async (transaction) => {
+  await withFirestoreQuota(() => db.runTransaction(async (transaction) => {
     const member = await transaction.get(ref);
     if (!member.exists) throw new Error("MEMBERSHIP_NOT_FOUND");
     const before = member.data();
@@ -148,7 +149,7 @@ export async function updateTeamMembership(principal: Principal, raw: unknown) {
     transaction.update(ref, { ...base, status: "inactive", [input.action === "revoke" ? "revokedAt" : "deactivatedAt"]: FieldValue.serverTimestamp(), reason: input.reason });
     if (index.exists && index.data()?.studioId === studioId) transaction.set(indexRef, { studioId, status: "inactive", roles: before?.roles ?? [], updatedAt: FieldValue.serverTimestamp() });
     transaction.set(db.doc(`studios/${studioId}/auditEvents/${randomUUID()}`), audit(studioId, input.action === "revoke" ? "membership.revoked" : "membership.deactivated", principal.uid, input.uid, { reason: input.reason }));
-  });
+  }));
 }
 
 /** Changes credentials only in Firebase Authentication; passwords never enter Firestore or audit details. */
@@ -156,7 +157,7 @@ export async function changeTeamMemberPassword(principal: Principal, raw: unknow
   const studioId = requireOwner(principal);
   const input = memberPasswordChangeSchema.parse(raw);
   const db = getAdminDb();
-  const member = await db.doc(`studios/${studioId}/members/${input.uid}`).get();
+  const member = await readQuery(db.doc(`studios/${studioId}/members/${input.uid}`));
   if (!member.exists) throw new Error("MEMBERSHIP_NOT_FOUND");
   if ((member.data()?.roles as string[] | undefined)?.includes("owner")) throw new Error("OWNER_MEMBERSHIP_PROTECTED");
   const auth = getAdminAuth();
@@ -172,13 +173,13 @@ export async function changeTeamMemberPassword(principal: Principal, raw: unknow
 
 export async function revokeTeamInvitation(principal: Principal, invitationId: string) {
   const studioId = requireOwner(principal); const db = getAdminDb(); const ref = db.doc(`studios/${studioId}/invitations/${invitationId}`);
-  await db.runTransaction(async (transaction) => {
+  await withFirestoreQuota(() => db.runTransaction(async (transaction) => {
     const invitation = await transaction.get(ref);
     if (!invitation.exists) throw new Error("INVITATION_NOT_FOUND");
     if (invitation.data()?.status !== "pending") throw new Error("INVITATION_NOT_PENDING");
     transaction.update(ref, { status: "revoked", revokedAt: FieldValue.serverTimestamp(), revokedBy: principal.uid });
     transaction.set(db.doc(`studios/${studioId}/auditEvents/${randomUUID()}`), audit(studioId, "membership.invitation_revoked", principal.uid, invitationId));
-  });
+  }));
 }
 
 /** Replaces a pending manually shared invitation link; it never sends email. */
@@ -189,13 +190,13 @@ export async function reissueTeamInvitation(principal: Principal, raw: unknown) 
   const secret = createInvitationSecret();
   const tokenHash = hashInvitationSecret(secret);
   const ref = db.doc(`studios/${studioId}/invitations/${input.invitationId}`);
-  await db.runTransaction(async (transaction) => {
+  await withFirestoreQuota(() => db.runTransaction(async (transaction) => {
     const invitation = await transaction.get(ref);
     if (!invitation.exists) throw new Error("INVITATION_NOT_FOUND");
     if (invitation.data()?.status !== "pending") throw new Error("INVITATION_NOT_PENDING");
     transaction.update(ref, { tokenHash, expiresAt: Timestamp.fromDate(invitationExpiry(new Date())), reissuedAt: FieldValue.serverTimestamp(), reissuedBy: principal.uid, reissueOperationId: input.operationId });
     transaction.set(db.doc(`invitationLookups/${input.invitationId}`), { studioId, tokenHash, reissuedAt: FieldValue.serverTimestamp() }, { merge: true });
     transaction.set(db.doc(`studios/${studioId}/auditEvents/${randomUUID()}`), audit(studioId, "membership.invitation_reissued", principal.uid, input.invitationId));
-  });
+  }));
   return { invitationId: input.invitationId, secret };
 }

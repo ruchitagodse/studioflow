@@ -4,5 +4,5 @@ import { getEntitlementData } from "@/app/studio/entitlements/data";
 
 export default async function PauseRequestsPage() {
   await connection();
-  return <EntitlementManager {...await getEntitlementData(null)} view="pauses" />;
+  return <EntitlementManager {...await getEntitlementData(null, null, "pauses")} view="pauses" />;
 }

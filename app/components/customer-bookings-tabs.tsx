@@ -1,58 +1,14 @@
-"use client";
-
-import { useId, useState, type ReactNode } from "react";
+import Link from "next/link";
+import type { ReactNode } from "react";
 import styles from "./customer-bookings-readable.module.css";
 
-type BookingTab = "upcoming" | "history";
-
-export function CustomerBookingsTabs({ upcoming, history, upcomingCount }: { upcoming: ReactNode; history: ReactNode; upcomingCount: number }) {
-  const [activeTab, setActiveTab] = useState<BookingTab>("upcoming");
-  const id = useId();
-  const upcomingPanelId = `${id}-upcoming`;
-  const historyPanelId = `${id}-history`;
-
+export function CustomerBookingsTabs({ children, activeTab, upcomingCount }: { children: ReactNode; activeTab: "upcoming" | "history"; upcomingCount: number }) {
   return <div className={styles.bookingsLayout}>
-    <div className={styles.tabList} role="tablist" aria-label="Booking lists">
-      <button
-        type="button"
-        role="tab"
-        id={`${id}-upcoming-tab`}
-        aria-selected={activeTab === "upcoming"}
-        aria-controls={upcomingPanelId}
-        className={activeTab === "upcoming" ? styles.activeTab : undefined}
-        onClick={() => setActiveTab("upcoming")}
-      >
-        <CalendarIcon /> Upcoming ({upcomingCount})
-      </button>
-      <button
-        type="button"
-        role="tab"
-        id={`${id}-history-tab`}
-        aria-selected={activeTab === "history"}
-        aria-controls={historyPanelId}
-        className={activeTab === "history" ? styles.activeTab : undefined}
-        onClick={() => setActiveTab("history")}
-      >
-        <HistoryIcon /> History
-      </button>
-    </div>
-
-    <section
-      id={upcomingPanelId}
-      role="tabpanel"
-      aria-labelledby={`${id}-upcoming-tab`}
-      hidden={activeTab !== "upcoming"}
-    >
-      {upcoming}
-    </section>
-    <section
-      id={historyPanelId}
-      role="tabpanel"
-      aria-labelledby={`${id}-history-tab`}
-      hidden={activeTab !== "history"}
-    >
-      {history}
-    </section>
+    <nav className={styles.tabList} aria-label="Booking lists">
+      <Link prefetch={false} href="/customer/bookings" aria-current={activeTab === "upcoming" ? "page" : undefined} className={activeTab === "upcoming" ? styles.activeTab : undefined}><CalendarIcon />Upcoming ({upcomingCount})</Link>
+      <Link prefetch={false} href="/customer/bookings?view=history" aria-current={activeTab === "history" ? "page" : undefined} className={activeTab === "history" ? styles.activeTab : undefined}><HistoryIcon />History</Link>
+    </nav>
+    <section aria-label={activeTab === "upcoming" ? "Upcoming bookings" : "Booking history"}>{children}</section>
   </div>;
 }
 

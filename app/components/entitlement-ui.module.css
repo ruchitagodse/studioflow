@@ -364,3 +364,13 @@
     transform: translateY(-50%);
   }
 }
+
+.historyButton{min-height:40px;padding:8px 10px;border:1px solid var(--color-border);border-radius:8px;background:var(--color-surface);color:var(--color-text);font:inherit;font-size:12px;cursor:pointer}
+.membershipHistory{width:min(760px,calc(100vw - 32px));max-height:calc(100dvh - 48px);overflow:auto;padding:24px;border:1px solid var(--color-border);border-radius:16px;background:var(--color-surface);color:var(--color-text);box-shadow:0 24px 80px #0005}
+.membershipHistory::backdrop{background:#0009}
+.membershipHistory>header{display:flex;align-items:start;justify-content:space-between;gap:18px;margin-bottom:18px}
+.membershipHistory h2{margin:6px 0 0;font-size:22px}.membershipHistory>header button{min-width:40px;min-height:40px;border:1px solid var(--color-border);border-radius:8px;background:transparent;color:inherit;font-size:24px}
+.historyCurrent{padding:12px;border-radius:9px;background:var(--color-surface-secondary);font-size:13px;line-height:1.5}.historyNote{color:var(--color-text-muted);font-size:12px;line-height:1.5}
+.historyList{display:grid;gap:10px;margin-top:18px}.historyList article{display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px;padding:16px;border:1px solid var(--color-border);border-radius:10px}.historyList h3{margin:0 0 7px;font-size:16px}.historyList span,.historyList small{display:block;margin-top:5px;color:var(--color-text-muted);font-size:12px}.historyList em{font-size:12px;font-style:normal}.historyList a{grid-column:1/-1;justify-self:end;min-height:36px;padding:9px 0;color:var(--color-primary);font-size:12px;font-weight:600}
+@media(max-width:767px){.membershipHistory{padding:18px}.historyList article{padding:13px}.historyButton{min-height:44px}}
+.subscriptionActions,.creditActions{flex-wrap:wrap}.subscriptionActions .historyButton,.creditActions .historyButton{flex:none;font-size:11px}

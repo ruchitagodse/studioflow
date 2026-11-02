@@ -24,7 +24,7 @@ function displayDate(dateKey: string) {
 
 function DateTabs({ active }: { active: View }) {
   const tabs: { value: View; label: string }[] = [{ value: "today", label: "Today" }, { value: "upcoming", label: "Upcoming" }, { value: "history", label: "History" }];
-  return <nav className={styles.tabs} aria-label="Attendance period">{tabs.map((tab) => <Link key={tab.value} href={tab.value === "today" ? "/trainer/attendance" : `/trainer/attendance?view=${tab.value}`} aria-current={active === tab.value ? "page" : undefined}>{tab.label}</Link>)}</nav>;
+  return <nav className={styles.tabs} aria-label="Attendance period">{tabs.map((tab) => <Link prefetch={false} key={tab.value} href={tab.value === "today" ? "/trainer/attendance" : `/trainer/attendance?view=${tab.value}`} aria-current={active === tab.value ? "page" : undefined}>{tab.label}</Link>)}</nav>;
 }
 
 export default async function TrainerAttendancePage({ searchParams }: { searchParams: Promise<{ view?: string | string[] }> }) {

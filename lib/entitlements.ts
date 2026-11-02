@@ -1,4 +1,7 @@
+import { readQuery, withFirestoreQuota } from "@/lib/firebase/reads";
 import "server-only";
+import { cache } from "react";
+import { readDocument } from "@/lib/firebase/reads";
 
 import { randomUUID } from "node:crypto";
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
@@ -47,39 +50,65 @@ async function expireSubscriptionInTransaction(studioId: string, subscriptionId:
 
 export async function expireSubscriptionIfDue(studioId: string, subscriptionId: string) {
   const db = getAdminDb(); const subscriptionRef = db.doc(`studios/${studioId}/subscriptions/${subscriptionId}`); let expired = false;
-  await db.runTransaction(async (transaction) => { const subscription = await transaction.get(subscriptionRef); if (!subscription.exists) return; expired = await expireSubscriptionInTransaction(studioId, subscription.id, subscription.data()!, transaction); });
+  await withFirestoreQuota(() => db.runTransaction(async (transaction) => { const subscription = await transaction.get(subscriptionRef); if (!subscription.exists) return; expired = await expireSubscriptionInTransaction(studioId, subscription.id, subscription.data()!, transaction); }));
   return expired;
 }
 
+/** Resolve the owned pointer once; lifecycle transactions run only when due. */
+export const readCustomerSubscription = cache(async (studioId: string, customerUid: string) => {
+  const db = getAdminDb();
+  const memberPath = `studios/${studioId}/members/${customerUid}`;
+  const member = await readDocument(memberPath);
+  const id = String(member.data()?.activeSubscriptionId ?? member.data()?.latestSubscriptionId ?? "");
+  if (!id || id.includes("/")) return null;
+  let subscription = await readDocument(`studios/${studioId}/subscriptions/${id}`);
+  if (!subscription.exists || subscription.data()?.customerUid !== customerUid) return null;
+  const data = subscription.data()!;
+  const endsAt = subscriptionEnd(data);
+  const pauseEndsAt = asDate(data.pauseEndsAt);
+  if ((data.status === "active" && endsAt && endsAt.getTime() <= Date.now()) ||
+      (data.status === "paused" && pauseEndsAt && pauseEndsAt.getTime() <= Date.now())) {
+    if (await expireSubscriptionIfDue(studioId, id)) {
+      // Bypass the request memo after lifecycle writes.
+      const fresh = await readQuery(db.doc(memberPath));
+      const nextId = String(fresh.data()?.activeSubscriptionId ?? fresh.data()?.latestSubscriptionId ?? id);
+      if (nextId.includes("/")) return null;
+      subscription = await readQuery(db.doc(`studios/${studioId}/subscriptions/${nextId}`));
+      if (!subscription.exists || subscription.data()?.customerUid !== customerUid) return null;
+    }
+  }
+  return subscription;
+});
+
 export async function createPlan(principal: Principal, raw: unknown) {
   const studioId = requireEntitlementAuthority(principal); const input = planInputSchema.parse(raw); const db = getAdminDb(); const planRef = db.doc(`studios/${studioId}/plans/${input.operationId}`);
-  await db.runTransaction(async (transaction) => {
+  await withFirestoreQuota(() => db.runTransaction(async (transaction) => {
     if ((await transaction.get(planRef)).exists) return;
     transaction.set(planRef, { name: input.name, description: input.description ?? "", pricePaise: input.pricePaise, creditAllocation: input.creditAllocation, validityDays: input.validityDays ?? null, durationMonths: input.durationMonths ?? null, status: input.status, createdAt: FieldValue.serverTimestamp(), createdBy: principal.uid, updatedAt: FieldValue.serverTimestamp(), updatedBy: principal.uid });
     transaction.set(db.doc(`studios/${studioId}/auditEvents/${randomUUID()}`), audit("plan.created", principal.uid, planRef.id));
     if (input.status === "active") transaction.set(db.doc(`studios/${studioId}/auditEvents/${randomUUID()}`), audit("plan.activated", principal.uid, planRef.id));
-  });
+  }));
   return planRef.id;
 }
 
 export async function updatePlan(principal: Principal, raw: unknown) {
   const studioId = requireEntitlementAuthority(principal); const input = planUpdateSchema.parse(raw); const db = getAdminDb(); const planRef = db.doc(`studios/${studioId}/plans/${input.planId}`);
-  await db.runTransaction(async (transaction) => {
+  await withFirestoreQuota(() => db.runTransaction(async (transaction) => {
     const current = await transaction.get(planRef); if (!current.exists) throw new Error("PLAN_NOT_FOUND"); if (current.data()?.status === "retired") throw new Error("PLAN_RETIRED"); const before = current.data();
     transaction.update(planRef, { name: input.name, description: input.description ?? "", pricePaise: input.pricePaise, creditAllocation: input.creditAllocation, validityDays: input.validityDays ?? null, durationMonths: input.durationMonths ?? null, status: input.status, updatedAt: FieldValue.serverTimestamp(), updatedBy: principal.uid });
     transaction.set(db.doc(`studios/${studioId}/auditEvents/${randomUUID()}`), audit("plan.updated", principal.uid, planRef.id, { before: { status: before?.status }, after: { status: input.status } }));
     if (before?.status !== "active" && input.status === "active") transaction.set(db.doc(`studios/${studioId}/auditEvents/${randomUUID()}`), audit("plan.activated", principal.uid, planRef.id));
-  });
+  }));
 }
 
 export async function retirePlan(principal: Principal, planId: string) {
   const studioId = requireEntitlementAuthority(principal); if (!planId) throw new Error("PLAN_NOT_FOUND"); const db = getAdminDb(); const planRef = db.doc(`studios/${studioId}/plans/${planId}`);
-  await db.runTransaction(async (transaction) => { const current = await transaction.get(planRef); if (!current.exists) throw new Error("PLAN_NOT_FOUND"); if (current.data()?.status === "retired") return; transaction.update(planRef, { status: "retired", retiredAt: FieldValue.serverTimestamp(), retiredBy: principal.uid, updatedAt: FieldValue.serverTimestamp(), updatedBy: principal.uid }); transaction.set(db.doc(`studios/${studioId}/auditEvents/${randomUUID()}`), audit("plan.retired", principal.uid, planId)); });
+  await withFirestoreQuota(() => db.runTransaction(async (transaction) => { const current = await transaction.get(planRef); if (!current.exists) throw new Error("PLAN_NOT_FOUND"); if (current.data()?.status === "retired") return; transaction.update(planRef, { status: "retired", retiredAt: FieldValue.serverTimestamp(), retiredBy: principal.uid, updatedAt: FieldValue.serverTimestamp(), updatedBy: principal.uid }); transaction.set(db.doc(`studios/${studioId}/auditEvents/${randomUUID()}`), audit("plan.retired", principal.uid, planId)); }));
 }
 
 async function provisionSubscription(principal: Principal, raw: unknown, renewal: boolean) {
   const studioId = requireEntitlementAuthority(principal); const input = (renewal ? subscriptionRenewalSchema : subscriptionAssignmentSchema).parse(raw); const db = getAdminDb(); const subscriptionRef = db.doc(`studios/${studioId}/subscriptions/${input.operationId}`); const customerRef = db.doc(`studios/${studioId}/members/${input.customerUid}`);
-  await db.runTransaction(async (transaction) => {
+  await withFirestoreQuota(() => db.runTransaction(async (transaction) => {
     if ((await transaction.get(subscriptionRef)).exists) return;
     const [studio, plan, customer, activeSubscriptions] = await Promise.all([
       transaction.get(db.doc(`studios/${studioId}`)), transaction.get(db.doc(`studios/${studioId}/plans/${input.planId}`)), transaction.get(customerRef),
@@ -96,7 +125,7 @@ async function provisionSubscription(principal: Principal, raw: unknown, renewal
     transaction.set(subscriptionRef.collection("ledger").doc(`allocation-${input.operationId}`), { action: "allocation", amount: historicalTerms.creditAllocation, balanceBefore: 0, balanceAfter: historicalTerms.creditAllocation, actorUid: principal.uid, createdAt: FieldValue.serverTimestamp(), referenceId: subscriptionRef.id });
     transaction.set(db.doc(`studios/${studioId}/auditEvents/${randomUUID()}`), audit(renewal ? "subscription.renewed" : "subscription.created", principal.uid, subscriptionRef.id, { after: historicalTerms }));
     transaction.set(db.doc(`studios/${studioId}/auditEvents/${randomUUID()}`), audit("subscription.activated", principal.uid, subscriptionRef.id)); transaction.set(db.doc(`studios/${studioId}/auditEvents/${randomUUID()}`), audit("credit.issued", principal.uid, subscriptionRef.id, { after: { amount: historicalTerms.creditAllocation } }));
-  });
+  }));
   return subscriptionRef.id;
 }
 
@@ -105,7 +134,7 @@ export function renewSubscription(principal: Principal, raw: unknown) { return p
 
 export async function cancelSubscription(principal: Principal, raw: unknown) {
   const studioId = requireEntitlementAuthority(principal); const input = subscriptionCancellationSchema.parse(raw); const db = getAdminDb(); const subscriptionRef = db.doc(`studios/${studioId}/subscriptions/${input.subscriptionId}`); const openedSlotIds = new Set<string>();
-  await db.runTransaction(async (transaction) => {
+  await withFirestoreQuota(() => db.runTransaction(async (transaction) => {
     const [studio, subscription] = await Promise.all([transaction.get(db.doc(`studios/${studioId}`)), transaction.get(subscriptionRef)]); if (!studio.exists || studio.data()?.status !== "active") throw new Error("INACTIVE_STUDIO"); if (!subscription.exists) throw new Error("SUBSCRIPTION_NOT_FOUND"); const data = subscription.data()!;
     if (data.status === "inactive" && data.cancellationOperationId === input.operationId) return;
     if (input.mode === "end_of_term") {
@@ -123,31 +152,31 @@ export async function cancelSubscription(principal: Principal, raw: unknown) {
     }
     if (availableCredits > 0) { transaction.set(subscriptionRef.collection("ledger").doc(`expiry-cancellation-${input.operationId}`), { action: "expiry", amount: -availableCredits, balanceBefore: availableCredits, balanceAfter: 0, reason: "Subscription cancelled immediately.", actorUid: principal.uid, createdAt: FieldValue.serverTimestamp(), referenceId: subscriptionRef.id }); transaction.set(db.doc(`studios/${studioId}/auditEvents/${randomUUID()}`), audit("credit.expired", principal.uid, subscriptionRef.id, { after: { amount: availableCredits } })); }
     transaction.update(subscriptionRef, { status: "inactive", inactiveReason: "cancelled_immediate", availableCredits: 0, reservedCredits, cancelledAt: FieldValue.serverTimestamp(), cancelledBy: principal.uid, cancellationOperationId: input.operationId, cancellationReason: input.reason, updatedAt: FieldValue.serverTimestamp(), updatedBy: principal.uid, pauseEndsAt: FieldValue.delete() }); transaction.update(db.doc(`studios/${studioId}/members/${String(data.customerUid)}`), { activeSubscriptionId: FieldValue.delete(), updatedAt: FieldValue.serverTimestamp() }); transaction.set(db.doc(`studios/${studioId}/auditEvents/${randomUUID()}`), audit("subscription.cancelled", principal.uid, subscriptionRef.id, { reason: input.reason, after: { futureBookingsCancelled: futureBookings.size } }));
-  });
+  }));
   await Promise.all([...openedSlotIds].map((slotId) => promoteOneWaitlistEntry(studioId, slotId, principal.uid)));
 }
 
 export async function pauseSubscription(principal: Principal, raw: unknown) {
   const studioId = requirePauseAuthority(principal); const input = subscriptionPauseSchema.parse(raw); const db = getAdminDb(); const subscriptionRef = db.doc(`studios/${studioId}/subscriptions/${input.subscriptionId}`); await expireSubscriptionIfDue(studioId, input.subscriptionId);
-  await db.runTransaction(async (transaction) => {
+  await withFirestoreQuota(() => db.runTransaction(async (transaction) => {
     const [studio, subscription] = await Promise.all([transaction.get(db.doc(`studios/${studioId}`)), transaction.get(subscriptionRef)]); if (!studio.exists || studio.data()?.status !== "active") throw new Error("INACTIVE_STUDIO"); if (!subscription.exists) throw new Error("SUBSCRIPTION_NOT_FOUND"); const data = subscription.data()!; const customer = await transaction.get(db.doc(`studios/${studioId}/members/${String(data.customerUid)}`)); if (!customer.exists || customer.data()?.status !== "active" || !hasCustomerRole(customer.data())) throw new Error("CUSTOMER_NOT_ELIGIBLE"); const isOperator = principal.roles.some((role) => role === "owner" || role === "staff"); if (!isOperator && String(data.customerUid) !== principal.uid) throw new Error("FORBIDDEN_PAUSE"); if (data.status === "paused" && data.pauseOperationId === input.operationId) return; if (data.status !== "active") throw new Error("SUBSCRIPTION_INACTIVE");
     const durationMonths = Number(data.historicalTerms?.durationMonths ?? data.durationMonths ?? 0) || undefined; const allowance = pauseAllowanceDays(durationMonths); if (allowance === 0) throw new Error("PAUSE_NOT_ELIGIBLE"); const used = Number(data.pauseDaysUsed ?? 0); if (used + input.pauseDays > allowance) throw new Error("PAUSE_ALLOWANCE_EXCEEDED"); const timezone = String(studio.data()?.timezone ?? "UTC"); const now = new Date(); const historicalEndsAt = asDate(data.endsAt); if (!historicalEndsAt) throw new Error("SUBSCRIPTION_INVALID"); const pauseEndsAt = addCalendarDays(now, input.pauseDays, timezone); const effectiveEndsAt = effectiveExpiry(historicalEndsAt, used + input.pauseDays, timezone);
     transaction.update(subscriptionRef, { status: "paused", pauseDaysUsed: used + input.pauseDays, pauseStartedAt: Timestamp.fromDate(now), pauseEndsAt: Timestamp.fromDate(pauseEndsAt), currentPauseDays: input.pauseDays, effectiveEndsAt: Timestamp.fromDate(effectiveEndsAt), pauseOperationId: input.operationId, pausePeriods: FieldValue.arrayUnion({ startsAt: Timestamp.fromDate(now), endsAt: Timestamp.fromDate(pauseEndsAt), days: input.pauseDays, actorUid: principal.uid }), updatedAt: FieldValue.serverTimestamp(), updatedBy: principal.uid }); transaction.set(db.doc(`studios/${studioId}/auditEvents/${randomUUID()}`), audit("subscription.pause_started", principal.uid, subscriptionRef.id, { after: { pauseDays: input.pauseDays, usedDays: used + input.pauseDays, allowance } }));
-  });
+  }));
 }
 
 export async function resumeSubscription(principal: Principal, raw: unknown) {
   const studioId = requirePauseAuthority(principal); const input = subscriptionResumeSchema.parse(raw); const db = getAdminDb(); const subscriptionRef = db.doc(`studios/${studioId}/subscriptions/${input.subscriptionId}`);
-  await db.runTransaction(async (transaction) => {
+  await withFirestoreQuota(() => db.runTransaction(async (transaction) => {
     const [studio, subscription] = await Promise.all([transaction.get(db.doc(`studios/${studioId}`)), transaction.get(subscriptionRef)]); if (!studio.exists || studio.data()?.status !== "active") throw new Error("INACTIVE_STUDIO"); if (!subscription.exists) throw new Error("SUBSCRIPTION_NOT_FOUND"); const data = subscription.data()!; const customer = await transaction.get(db.doc(`studios/${studioId}/members/${String(data.customerUid)}`)); if (!customer.exists || customer.data()?.status !== "active" || !hasCustomerRole(customer.data())) throw new Error("CUSTOMER_NOT_ELIGIBLE"); const isOperator = principal.roles.some((role) => role === "owner" || role === "staff"); if (!isOperator && String(data.customerUid) !== principal.uid) throw new Error("FORBIDDEN_PAUSE"); if (data.status === "active" && data.resumeOperationId === input.operationId) return; if (data.status !== "paused") throw new Error("SUBSCRIPTION_NOT_PAUSED");
     const timezone = String(studio.data()?.timezone ?? "UTC"); const now = new Date(); const pausePeriods = Array.isArray(data.pausePeriods) ? data.pausePeriods : []; const lastPausePeriod = pausePeriods[pausePeriods.length - 1] as Record<string, unknown> | undefined; const scheduledDays = Number(data.currentPauseDays ?? lastPausePeriod?.days ?? 0); const pauseStartedAt = asDate(data.pauseStartedAt) ?? asDate(lastPausePeriod?.startsAt); if (!pauseStartedAt || scheduledDays < 1) throw new Error("SUBSCRIPTION_INVALID"); const actualDays = Math.min(scheduledDays, calendarDayDifference(pauseStartedAt, now, timezone)); const totalUsed = Number(data.pauseDaysUsed ?? 0); const usedDays = Math.max(0, totalUsed - scheduledDays + actualDays); const historicalEndsAt = asDate(data.endsAt); if (!historicalEndsAt) throw new Error("SUBSCRIPTION_INVALID"); const effectiveEndsAt = effectiveExpiry(historicalEndsAt, usedDays, timezone);
     transaction.update(subscriptionRef, { status: "active", pauseDaysUsed: usedDays, effectiveEndsAt: Timestamp.fromDate(effectiveEndsAt), pauseResumedAt: Timestamp.fromDate(now), resumeOperationId: input.operationId, pauseEndsAt: FieldValue.delete(), pauseStartedAt: FieldValue.delete(), currentPauseDays: FieldValue.delete(), updatedAt: FieldValue.serverTimestamp(), updatedBy: principal.uid }); transaction.set(db.doc(`studios/${studioId}/auditEvents/${randomUUID()}`), audit("subscription.resumed", principal.uid, subscriptionRef.id, { after: { pauseDays: actualDays, usedDays } }));
-  });
+  }));
 }
 
 export async function adjustCredits(principal: Principal, raw: unknown) {
   const studioId = requireEntitlementAuthority(principal); const input = creditAdjustmentSchema.parse(raw); const db = getAdminDb(); const subscriptionRef = db.doc(`studios/${studioId}/subscriptions/${input.subscriptionId}`);
-  await db.runTransaction(async (transaction) => { const subscription = await transaction.get(subscriptionRef); if (!subscription.exists) throw new Error("SUBSCRIPTION_NOT_FOUND"); const data = subscription.data()!; const ledgerRef = subscriptionRef.collection("ledger").doc(`adjustment-${input.operationId}`); if ((await transaction.get(ledgerRef)).exists) return; const balanceBefore = Number(data.availableCredits ?? 0); const balanceAfter = adjustedBalance(balanceBefore, input.amount); transaction.update(subscriptionRef, { availableCredits: balanceAfter, updatedAt: FieldValue.serverTimestamp(), updatedBy: principal.uid }); transaction.set(ledgerRef, { action: "manual_adjustment", amount: input.amount, balanceBefore, balanceAfter, reason: input.reason, actorUid: principal.uid, createdAt: FieldValue.serverTimestamp(), referenceId: subscriptionRef.id }); transaction.set(db.doc(`studios/${studioId}/auditEvents/${randomUUID()}`), audit("credit.adjusted", principal.uid, subscriptionRef.id, { reason: input.reason, before: { availableCredits: balanceBefore }, after: { availableCredits: balanceAfter } })); });
+  await withFirestoreQuota(() => db.runTransaction(async (transaction) => { const subscription = await transaction.get(subscriptionRef); if (!subscription.exists) throw new Error("SUBSCRIPTION_NOT_FOUND"); const data = subscription.data()!; const ledgerRef = subscriptionRef.collection("ledger").doc(`adjustment-${input.operationId}`); if ((await transaction.get(ledgerRef)).exists) return; const balanceBefore = Number(data.availableCredits ?? 0); const balanceAfter = adjustedBalance(balanceBefore, input.amount); transaction.update(subscriptionRef, { availableCredits: balanceAfter, updatedAt: FieldValue.serverTimestamp(), updatedBy: principal.uid }); transaction.set(ledgerRef, { action: "manual_adjustment", amount: input.amount, balanceBefore, balanceAfter, reason: input.reason, actorUid: principal.uid, createdAt: FieldValue.serverTimestamp(), referenceId: subscriptionRef.id }); transaction.set(db.doc(`studios/${studioId}/auditEvents/${randomUUID()}`), audit("credit.adjusted", principal.uid, subscriptionRef.id, { reason: input.reason, before: { availableCredits: balanceBefore }, after: { availableCredits: balanceAfter } })); }));
 }
 
 export function subscriptionUsableCredits(data: { status: string; endsAt: Date; availableCredits: number }, now = new Date()) { return usableCredits(data.status, data.endsAt, data.availableCredits, now); }
@@ -174,34 +203,18 @@ export type CustomerEntitlementView = {
 /** A bounded, customer-owned entitlement view. It never accepts a tenant or customer id from the browser. */
 export async function getCustomerEntitlement(principal: Principal): Promise<CustomerEntitlementView> {
   if (!principal.studioId || !principal.roles.includes("customer")) throw new Error("FORBIDDEN_CUSTOMER");
-  const db = getAdminDb();
-  const memberRef = db.doc(`studios/${principal.studioId}/members/${principal.uid}`);
-  let member = await memberRef.get();
-  const subscriptionId = String(member.data()?.activeSubscriptionId ?? member.data()?.latestSubscriptionId ?? "");
-  if (!subscriptionId) return { subscription: null, ledger: [] };
-  await expireSubscriptionIfDue(principal.studioId, subscriptionId);
-  member = await memberRef.get();
-  const refreshedId = String(member.data()?.activeSubscriptionId ?? member.data()?.latestSubscriptionId ?? subscriptionId);
-  const subscriptionRef = db.doc(`studios/${principal.studioId}/subscriptions/${refreshedId}`);
-  const subscriptionSnapshot = await subscriptionRef.get();
-  if (!subscriptionSnapshot.exists || String(subscriptionSnapshot.data()?.customerUid ?? "") !== principal.uid) return { subscription: null, ledger: [] };
+  const subscriptionSnapshot = await readCustomerSubscription(principal.studioId, principal.uid);
+  if (!subscriptionSnapshot) return { subscription: null, ledger: [] };
+  const subscriptionRef = subscriptionSnapshot.ref;
   const data = subscriptionSnapshot.data()!;
-  const [ledger, customerBookings] = await Promise.all([
-    subscriptionRef.collection("ledger").orderBy("createdAt", "desc").limit(20).get(),
-    db.collection(`studios/${principal.studioId}/bookings`).where("customerUid", "==", principal.uid).limit(100).get(),
-  ]);
+  const ledger = await readQuery(subscriptionRef.collection("ledger").orderBy("createdAt", "desc").limit(20).select("action", "amount", "createdAt"));
   const terms = data.historicalTerms ?? {};
   const allocation = Number(terms.creditAllocation ?? 0);
   const availableCredits = Number(data.availableCredits ?? 0);
-  // Keep this count aligned with the Upcoming booking screen: only a future,
-  // confirmed booking reserves a class pass. This avoids displaying a pass as
-  // booked after its booking has been cancelled or moved to history.
-  const now = new Date();
-  const reservedCredits = customerBookings.docs.filter((booking) => {
-    const bookingData = booking.data();
-    const startsAt = asDate(bookingData?.slotStartsAt);
-    return bookingData?.status === "confirmed" && startsAt !== null && startsAt.getTime() > now.getTime();
-  }).length;
+  // Transactions maintain this subscription's balance with its immutable
+  // ledger. Old-plan reservations remain with their originating subscription;
+  // an unresolved reservation also stays reserved after the class starts (BR-03).
+  const reservedCredits = Number(data.reservedCredits ?? 0);
   return {
     subscription: {
       id: subscriptionSnapshot.id,

@@ -10,10 +10,19 @@ weekly date picker, real booking markers, a date-filtered list of the bounded
 upcoming schedule and a next-class card. Membership and profile remain accessible
 through the customer navigation, without extra summary or quick-link cards on home.
 Calendar markers describe listed availability and bookings, never workout progress.
+The customer date strip shows seven days starting at studio-local today, with
+forward navigation; returning to earlier weeks stops at today. Past dates are
+not displayed.
 
 The Nature Minimal alternative retains warm off-white surfaces, deep leaf-green
 actions, and sage accents. Across themes, keep the experience calm and focused.
 Customer booking is mobile-first; operations is desktop-first and responsive.
+Workspace data loads on page entry and explicit Refresh, without global polling
+or focus-triggered reloads. Successful mutations revalidate affected routes.
+Availability displayed on a page is a snapshot; booking decisions always use
+fresh transactional validation under BR-02 and BR-18. Paginated directories and
+histories expose explicit next/first page controls. Studio calendar navigation
+loads the selected day, week, or month rather than the entire slot history.
 
 ## Screen map and navigation
 
@@ -80,7 +89,13 @@ role they hold, as defined in `ROLES_PERMISSIONS.md`, but cannot switch studios.
   analytics.
 - **Plans and entitlements:** Owner/Staff can create, edit, activate, retire,
   and list Plans; manually renew or cancel customer Subscriptions; view bounded
-  ledger history; and make a reasoned adjustment. Customer cancellation is
+  ledger history; and make a reasoned adjustment.
+  The Subscriptions and Credits boards show one current membership per customer,
+  preferring active/paused membership, otherwise the most recent inactive one.
+  History exposes previous memberships and their original ledgers from the
+  bounded subscription results. Counts, searches, and exports use current rows.
+  Renewal records and immutable history continue to follow BR-09 and BR-17.
+  Customer cancellation is
   end-of-term only. Operator immediate cancellation requires a reason and a
   clear future-booking and released-credit-expiry impact confirmation. Customer
   membership shows active or inactive Subscription status, usable balance, and

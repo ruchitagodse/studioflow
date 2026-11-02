@@ -1,3 +1,4 @@
+import { readQuery } from "@/lib/firebase/reads";
 import { redirect } from "next/navigation";
 import { requireWorkspace } from "@/lib/auth/server";
 import { isSubscriptionExpired } from "@/lib/entitlement-logic";
@@ -5,19 +6,20 @@ import { pauseAllowanceDays } from "@/lib/subscription-lifecycle-logic";
 import { expireSubscriptionIfDue, subscriptionUsableCredits } from "@/lib/entitlements";
 import { getAdminDb } from "@/lib/firebase/admin";
 
-export async function getEntitlementData(requestedSubscriptionId: string | null, requestedCustomerUid: string | null = null) {
+export async function getEntitlementData(requestedSubscriptionId: string | null, requestedCustomerUid: string | null = null, view: "plans" | "subscriptions" | "credits" | "pauses" = "subscriptions") {
   let principal;
   try { principal = await requireWorkspace("/studio"); } catch { redirect("/"); }
   if (!principal.studioId) redirect("/access-denied");
   const studioId = principal.studioId;
   const db = getAdminDb();
   const subscriptionsRef = db.collection(`studios/${studioId}/subscriptions`);
-  const loadSubscriptions = () => requestedCustomerUid
-    ? subscriptionsRef.where("customerUid", "==", requestedCustomerUid).limit(50).get()
-    : subscriptionsRef.orderBy("createdAt", "desc").limit(50).get();
+  const empty = { docs: [] as FirebaseFirestore.QueryDocumentSnapshot[] };
+  const loadSubscriptions = () => view === "plans" ? Promise.resolve(empty) : requestedCustomerUid
+    ? readQuery(subscriptionsRef.where("customerUid", "==", requestedCustomerUid).limit(50))
+    : readQuery(subscriptionsRef.orderBy("createdAt", "desc").limit(50));
   const [planDocs, customerDocs, initialSubscriptionDocs] = await Promise.all([
-    db.collection(`studios/${studioId}/plans`).orderBy("createdAt", "desc").limit(50).get(),
-    db.collection(`studios/${studioId}/members`).where("status", "==", "active").where("roles", "array-contains", "customer").limit(50).get(),
+    view === "pauses" ? Promise.resolve(empty) : readQuery(db.collection(`studios/${studioId}/plans`).orderBy("createdAt", "desc").limit(50)),
+    view === "plans" ? Promise.resolve(empty) : readQuery(db.collection(`studios/${studioId}/members`).where("status", "==", "active").where("roles", "array-contains", "customer").limit(50)),
     loadSubscriptions(),
   ]);
   let subscriptionDocs = initialSubscriptionDocs;
@@ -40,7 +42,7 @@ export async function getEntitlementData(requestedSubscriptionId: string | null,
   const selectedSubscriptionId = requestedSubscriptionId && subscriptionDocs.docs.some((doc) => doc.id === requestedSubscriptionId) ? requestedSubscriptionId : null;
   let ledger: { id: string; action: string; amount: number; balanceBefore: number; balanceAfter: number; reason: string; createdAt: string }[] = [];
   if (selectedSubscriptionId) {
-    const ledgerDocs = await db.collection(`studios/${studioId}/subscriptions/${selectedSubscriptionId}/ledger`).orderBy("createdAt", "desc").limit(25).get();
+    const ledgerDocs = await readQuery(db.collection(`studios/${studioId}/subscriptions/${selectedSubscriptionId}/ledger`).orderBy("createdAt", "desc").limit(25));
     ledger = ledgerDocs.docs.map((doc) => { const data = doc.data(); return { id: doc.id, action: String(data.action), amount: Number(data.amount), balanceBefore: Number(data.balanceBefore), balanceAfter: Number(data.balanceAfter), reason: String(data.reason ?? ""), createdAt: data.createdAt?.toDate().toISOString() ?? new Date(0).toISOString() }; });
   }
   return { plans, customers, subscriptions, ledger, selectedSubscriptionId };

@@ -15,7 +15,7 @@ export default async function CustomerWorkspace() {
   }
   if (!principal) redirect(accessError instanceof Error && accessError.message === "NO_ACTIVE_SESSION" ? "/" : "/access-denied");
   let schedule;
-  try { schedule = await getCustomerSchedule(principal); } catch (error) {
+  try { schedule = await getCustomerSchedule(principal, false); } catch (error) {
     console.error("Studio Calendar customer schedule failed.", error);
     redirect("/access-denied");
   }

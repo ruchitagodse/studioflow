@@ -1,3 +1,4 @@
+import { readDocument, readQuery, withFirestoreQuota } from "@/lib/firebase/reads";
 import "server-only";
 
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
@@ -75,7 +76,7 @@ function requireOwner(principal: Principal) {
   return principal.studioId;
 }
 async function assertActiveOwner(studioId: string, principal: Principal) {
-  const db = getAdminDb(); const [studio, member] = await Promise.all([db.doc(`studios/${studioId}`).get(), db.doc(`studios/${studioId}/members/${principal.uid}`).get()]);
+  const db = getAdminDb(); const [studio, member] = await Promise.all([readQuery(db.doc(`studios/${studioId}`)), readQuery(db.doc(`studios/${studioId}/members/${principal.uid}`))]);
   if (!studio.exists || studio.data()?.status !== "active") throw new Error("INACTIVE_STUDIO");
   if (!member.exists || member.data()?.status !== "active") throw new Error("MEMBERSHIP_INACTIVE");
 }
@@ -83,39 +84,39 @@ async function assertActiveOwner(studioId: string, principal: Principal) {
 export async function saveIncidentPolicy(principal: Principal, raw: unknown) {
   const studioId = requireOwner(principal); const input = incidentPolicySchema.parse(raw); await assertActiveOwner(studioId, principal); const db = getAdminDb(); const ref = db.doc(`studios/${studioId}/incidentPolicies/${policyId}`);
   const auditRef = db.doc(`studios/${studioId}/auditEvents/incident-policy-${input.operationId}`);
-  return db.runTransaction(async (transaction) => { const [existing, priorAudit] = await Promise.all([transaction.get(ref), transaction.get(auditRef)]); if (priorAudit.exists) { if (priorAudit.data()?.request?.status !== input.status) throw new Error("INCIDENT_OPERATION_CONFLICT"); return policyFrom(priorAudit.data()?.after); }
+  return withFirestoreQuota(() => db.runTransaction(async (transaction) => { const [existing, priorAudit] = await Promise.all([transaction.get(ref), transaction.get(auditRef)]); if (priorAudit.exists) { if (priorAudit.data()?.request?.status !== input.status) throw new Error("INCIDENT_OPERATION_CONFLICT"); return policyFrom(priorAudit.data()?.after); }
     const current = policyFrom(existing.data()); if (existing.exists && current.status === input.status) return current;
-    const next = { version: existing.exists ? current.version + 1 : 1, rollingDays: 30, threshold: 3, status: input.status } satisfies PolicySnapshot; const action = !existing.exists ? "incident.policy_created" : next.status === "active" ? "incident.policy_activated" : "incident.policy_deactivated"; transaction.set(ref, { ...next, updatedAt: FieldValue.serverTimestamp(), updatedBy: principal.uid, createdAt: existing.exists ? existing.data()?.createdAt : FieldValue.serverTimestamp() }, { merge: true }); transaction.set(auditRef, audit(action, principal.uid, ref.id, { request: { status: input.status }, after: next })); return next; });
+    const next = { version: existing.exists ? current.version + 1 : 1, rollingDays: 30, threshold: 3, status: input.status } satisfies PolicySnapshot; const action = !existing.exists ? "incident.policy_created" : next.status === "active" ? "incident.policy_activated" : "incident.policy_deactivated"; transaction.set(ref, { ...next, updatedAt: FieldValue.serverTimestamp(), updatedBy: principal.uid, createdAt: existing.exists ? existing.data()?.createdAt : FieldValue.serverTimestamp() }, { merge: true }); transaction.set(auditRef, audit(action, principal.uid, ref.id, { request: { status: input.status }, after: next })); return next; }));
 }
 
 export async function waiveIncident(principal: Principal, raw: unknown) {
   const studioId = requireOwner(principal); const input = incidentWaiverSchema.parse(raw); await assertActiveOwner(studioId, principal); const db = getAdminDb(); const ref = db.doc(`studios/${studioId}/incidents/${input.incidentId}`);
-  return db.runTransaction(async (transaction) => { const incident = await transaction.get(ref); if (!incident.exists) throw new Error("INCIDENT_NOT_FOUND"); if (incident.data()?.status === "waived") return { idempotent: true }; if (incident.data()?.status !== "active") throw new Error("INCIDENT_NOT_ACTIVE"); const policyDoc = await transaction.get(db.doc(`studios/${studioId}/incidentPolicies/${policyId}`)); await reconcileReviewInTransaction(transaction, studioId, String(incident.data()?.customerUid), policyFrom(policyDoc.data()), principal.uid, ref.id); transaction.update(ref, { status: "waived", waivedAt: FieldValue.serverTimestamp(), waivedBy: principal.uid, waiverReason: input.reason, updatedAt: FieldValue.serverTimestamp() }); transaction.set(db.doc(`studios/${studioId}/auditEvents/incident-waived-${input.operationId}`), audit("incident.waived", principal.uid, ref.id, { reason: input.reason })); return { idempotent: false }; });
+  return withFirestoreQuota(() => db.runTransaction(async (transaction) => { const incident = await transaction.get(ref); if (!incident.exists) throw new Error("INCIDENT_NOT_FOUND"); if (incident.data()?.status === "waived") return { idempotent: true }; if (incident.data()?.status !== "active") throw new Error("INCIDENT_NOT_ACTIVE"); const policyDoc = await transaction.get(db.doc(`studios/${studioId}/incidentPolicies/${policyId}`)); await reconcileReviewInTransaction(transaction, studioId, String(incident.data()?.customerUid), policyFrom(policyDoc.data()), principal.uid, ref.id); transaction.update(ref, { status: "waived", waivedAt: FieldValue.serverTimestamp(), waivedBy: principal.uid, waiverReason: input.reason, updatedAt: FieldValue.serverTimestamp() }); transaction.set(db.doc(`studios/${studioId}/auditEvents/incident-waived-${input.operationId}`), audit("incident.waived", principal.uid, ref.id, { reason: input.reason })); return { idempotent: false }; }));
 }
 
 export async function reverseIncident(principal: Principal, raw: unknown) {
   const studioId = requireOwner(principal); const input = incidentReversalSchema.parse(raw); await assertActiveOwner(studioId, principal); const db = getAdminDb(); const ref = db.doc(`studios/${studioId}/incidents/${input.incidentId}`); const auditRef = db.doc(`studios/${studioId}/auditEvents/incident-reversed-${input.operationId}`);
-  return db.runTransaction(async (transaction) => { const [incident, priorAudit] = await Promise.all([transaction.get(ref), transaction.get(auditRef)]); if (priorAudit.exists) return { idempotent: true }; if (!incident.exists) throw new Error("INCIDENT_NOT_FOUND"); if (incident.data()?.status === "reversed") return { idempotent: true }; if (incident.data()?.status !== "active") throw new Error("INCIDENT_NOT_ACTIVE");
+  return withFirestoreQuota(() => db.runTransaction(async (transaction) => { const [incident, priorAudit] = await Promise.all([transaction.get(ref), transaction.get(auditRef)]); if (priorAudit.exists) return { idempotent: true }; if (!incident.exists) throw new Error("INCIDENT_NOT_FOUND"); if (incident.data()?.status === "reversed") return { idempotent: true }; if (incident.data()?.status !== "active") throw new Error("INCIDENT_NOT_ACTIVE");
     const data = incident.data()!; if (data.type !== "no-show") throw new Error("INCIDENT_NOT_REVERSIBLE"); const booking = await transaction.get(db.doc(`studios/${studioId}/bookings/${String(data.bookingId)}`)); if (!booking.exists || booking.data()?.status !== "attended") throw new Error("INCIDENT_SOURCE_NOT_CORRECTED");
     const policyDoc = await transaction.get(db.doc(`studios/${studioId}/incidentPolicies/${policyId}`)); await reconcileReviewInTransaction(transaction, studioId, String(data.customerUid), policyFrom(policyDoc.data()), principal.uid, ref.id); transaction.update(ref, { status: "reversed", reversedAt: FieldValue.serverTimestamp(), reversedBy: principal.uid, reversalReason: input.reason, reversalOperationId: input.operationId, updatedAt: FieldValue.serverTimestamp() }); transaction.set(auditRef, audit("incident.reversed", principal.uid, ref.id, { reason: input.reason })); return { idempotent: false };
-  });
+  }));
 }
 
 export async function acknowledgeIncidentReview(principal: Principal, raw: unknown) {
   const studioId = requireOwner(principal); const input = incidentReviewSchema.parse(raw); await assertActiveOwner(studioId, principal); const db = getAdminDb(); const ref = db.doc(`studios/${studioId}/incidents/${input.incidentId}`); const auditRef = db.doc(`studios/${studioId}/auditEvents/incident-reviewed-${input.operationId}`);
-  return db.runTransaction(async (transaction) => { const [incident, priorAudit] = await Promise.all([transaction.get(ref), transaction.get(auditRef)]); if (priorAudit.exists) return { idempotent: true }; if (!incident.exists) throw new Error("INCIDENT_NOT_FOUND"); if (incident.data()?.reviewedAt) return { idempotent: true }; transaction.update(ref, { reviewedAt: FieldValue.serverTimestamp(), reviewedBy: principal.uid, reviewOperationId: input.operationId, updatedAt: FieldValue.serverTimestamp() }); transaction.set(auditRef, audit("incident.reviewed", principal.uid, ref.id)); return { idempotent: false }; });
+  return withFirestoreQuota(() => db.runTransaction(async (transaction) => { const [incident, priorAudit] = await Promise.all([transaction.get(ref), transaction.get(auditRef)]); if (priorAudit.exists) return { idempotent: true }; if (!incident.exists) throw new Error("INCIDENT_NOT_FOUND"); if (incident.data()?.reviewedAt) return { idempotent: true }; transaction.update(ref, { reviewedAt: FieldValue.serverTimestamp(), reviewedBy: principal.uid, reviewOperationId: input.operationId, updatedAt: FieldValue.serverTimestamp() }); transaction.set(auditRef, audit("incident.reviewed", principal.uid, ref.id)); return { idempotent: false }; }));
 }
 
 export async function getIncidents(principal: Principal) {
   if (!principal.studioId || !(principal.roles.includes("owner") || principal.roles.includes("staff"))) throw new Error("FORBIDDEN_INCIDENT_ACCESS");
-  const db = getAdminDb(); const studioId = principal.studioId; const [studio, member, incidents, policy] = await Promise.all([db.doc(`studios/${studioId}`).get(), db.doc(`studios/${studioId}/members/${principal.uid}`).get(), db.collection(`studios/${studioId}/incidents`).orderBy("sourceTimestamp", "desc").limit(50).get(), db.doc(`studios/${studioId}/incidentPolicies/${policyId}`).get()]);
+  const db = getAdminDb(); const studioId = principal.studioId; const [studio, member, incidents, policy] = await Promise.all([readDocument(`studios/${studioId}`), readDocument(`studios/${studioId}/members/${principal.uid}`), readQuery(db.collection(`studios/${studioId}/incidents`).orderBy("sourceTimestamp", "desc").limit(50)), readDocument(`studios/${studioId}/incidentPolicies/${policyId}`)]);
   if (!studio.exists || studio.data()?.status !== "active") throw new Error("INACTIVE_STUDIO"); if (!member.exists || member.data()?.status !== "active") throw new Error("MEMBERSHIP_INACTIVE");
   const currentPolicy = policyFrom(policy.data()); const customerUids = [...new Set(incidents.docs.map((item) => String(item.data().customerUid)))]; const cutoff = Timestamp.fromDate(rollingWindowStart(new Date(), currentPolicy.rollingDays));
   const [names, currentCounts] = await Promise.all([
-    Promise.all(incidents.docs.map((item) => db.doc(`studios/${studioId}/members/${String(item.data().customerUid)}`).get())),
+    Promise.all(incidents.docs.map((item) => readDocument(`studios/${studioId}/members/${String(item.data().customerUid)}`))),
     Promise.all(customerUids.map(async (uid) => {
-      const active = await db.collection(`studios/${studioId}/incidents`).where("customerUid", "==", uid).where("status", "==", "active").where("sourceTimestamp", ">=", cutoff).limit(50).get();
-      return { uid, count: active.size };
+      const active = await readQuery(db.collection(`studios/${studioId}/incidents`).where("customerUid", "==", uid).where("status", "==", "active").where("sourceTimestamp", ">=", cutoff).limit(50).count());
+      return { uid, count: active.data().count };
     })),
   ]);
   const counts = new Map(currentCounts.map((item) => [item.uid, item.count]));

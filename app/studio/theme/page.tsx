@@ -1,9 +1,9 @@
+import { readDocument } from "@/lib/firebase/reads";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { StudioAppearance } from "@/app/components/studio-appearance";
 import { requireWorkspace } from "@/lib/auth/server";
 import { listApprovedBrandPalettes } from "@/lib/brand-palettes";
-import { getAdminDb } from "@/lib/firebase/admin";
 import { studioThemeSettings } from "@/lib/studio-theme";
 
 export default async function StudioThemePage() {
@@ -12,7 +12,7 @@ export default async function StudioThemePage() {
   try { principal = await requireWorkspace("/studio"); } catch { redirect("/access-denied"); }
   if (!principal.studioId || !principal.roles.includes("owner")) redirect("/access-denied");
 
-  const settings = studioThemeSettings((await getAdminDb().doc(`studios/${principal.studioId}`).get()).data());
+  const settings = studioThemeSettings((await readDocument(`studios/${principal.studioId}`)).data());
   if (!settings.allowOwnerThemeCustomization) redirect("/access-denied");
   const palettes = await listApprovedBrandPalettes();
 

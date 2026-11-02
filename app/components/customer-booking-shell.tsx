@@ -20,15 +20,15 @@ function NavIcon({ name }: { name: (typeof navigation)[number]["icon"] }) {
   return <svg className={styles.navIcon} viewBox="0 0 24 24" aria-hidden="true" focusable="false">{paths[name]}</svg>;
 }
 
-export function CustomerBookingShell({ children, title, subtitle, active, compactHeader = false, heroHeader = false, profileHeader = false, backHref, backLabel }: { children: React.ReactNode; title: string; subtitle: string; active: CustomerSection; compactHeader?: boolean; heroHeader?: boolean; profileHeader?: boolean; backHref?: string; backLabel?: string }) {
-  return <main className={`${styles.page} ${heroHeader ? styles.homePage : ""}`}>
+export function CustomerBookingShell({ children, title, subtitle, active, compactHeader = false, heroHeader = false, profileHeader = false, bookingReview = false, backHref, backLabel }: { children: React.ReactNode; title: string; subtitle: string; active: CustomerSection; compactHeader?: boolean; heroHeader?: boolean; profileHeader?: boolean; bookingReview?: boolean; backHref?: string; backLabel?: string }) {
+  return <main className={`${styles.page} ${heroHeader ? styles.homePage : ""} ${bookingReview ? styles.reviewPage : ""} ${profileHeader ? styles.accountPage : ""} ${active === "membership" ? styles.membershipPage : ""} ${active === "bookings" ? styles.bookingsPage : ""}`}>
     <nav className={styles.nav} aria-label="Customer navigation">
-      {navigation.map((item) => <Link key={item.key} className={active === item.key ? styles.currentNav : ""} aria-current={active === item.key ? "page" : undefined} href={item.href}>
+      {navigation.map((item) => <Link prefetch={false} key={item.key} className={active === item.key ? styles.currentNav : ""} aria-current={active === item.key ? "page" : undefined} href={item.href}>
         <NavIcon name={item.icon} /><span className={styles.navLabel}>{item.label}</span>
       </Link>)}
     </nav>
     <div className={styles.content}>
-      {backHref && <Link className={styles.slotBackLink} href={backHref} aria-label={backLabel ?? "Back to schedule"}><span aria-hidden="true">←</span>{backLabel}</Link>}
+      {backHref && <Link prefetch={false} className={styles.slotBackLink} href={backHref} aria-label={backLabel ?? "Back to schedule"}><span aria-hidden="true">←</span>{backLabel}</Link>}
       <header className={`${styles.header} ${compactHeader ? styles.compactSlotHeader : ""} ${heroHeader ? styles.homeHeroHeader : ""} ${profileHeader ? styles.profileHeader : ""}`}><h1>{title}</h1><p>{subtitle}</p></header>
       {children}
     </div>

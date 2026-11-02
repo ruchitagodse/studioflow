@@ -1,0 +1,386 @@
+[
+  {
+    "path": "app/access-denied/page.tsx",
+    "change": "modified"
+  },
+  {
+    "path": "app/components/admin-header.tsx",
+    "change": "modified"
+  },
+  {
+    "path": "app/components/admin-layout.tsx",
+    "change": "modified"
+  },
+  {
+    "path": "app/components/admin-sidebar.tsx",
+    "change": "modified"
+  },
+  {
+    "path": "app/components/booking-confirmation.tsx",
+    "change": "modified"
+  },
+  {
+    "path": "app/components/booking-management-actions.module.css",
+    "change": "modified"
+  },
+  {
+    "path": "app/components/booking-management-actions.tsx",
+    "change": "modified"
+  },
+  {
+    "path": "app/components/booking.module.css",
+    "change": "modified"
+  },
+  {
+    "path": "app/components/client-portal.tsx",
+    "change": "added"
+  },
+  {
+    "path": "app/components/customer-booking-shell.tsx",
+    "change": "modified"
+  },
+  {
+    "path": "app/components/customer-bookings-readable.module.css",
+    "change": "modified"
+  },
+  {
+    "path": "app/components/customer-bookings-tabs.tsx",
+    "change": "modified"
+  },
+  {
+    "path": "app/components/customer-schedule.module.css",
+    "change": "modified"
+  },
+  {
+    "path": "app/components/customer-schedule.tsx",
+    "change": "modified"
+  },
+  {
+    "path": "app/components/customers-manager.tsx",
+    "change": "modified"
+  },
+  {
+    "path": "app/components/entitlement-manager.tsx",
+    "change": "modified"
+  },
+  {
+    "path": "app/components/entitlement-ui.module.css",
+    "change": "modified"
+  },
+  {
+    "path": "app/components/invitation-acceptance.tsx",
+    "change": "modified"
+  },
+  {
+    "path": "app/components/list-pagination.tsx",
+    "change": "added"
+  },
+  {
+    "path": "app/components/login-form.tsx",
+    "change": "modified"
+  },
+  {
+    "path": "app/components/schedule-calendar.tsx",
+    "change": "modified"
+  },
+  {
+    "path": "app/components/schedule-manager.tsx",
+    "change": "modified"
+  },
+  {
+    "path": "app/components/service-unavailable.tsx",
+    "change": "added"
+  },
+  {
+    "path": "app/components/studio-dashboard.tsx",
+    "change": "modified"
+  },
+  {
+    "path": "app/components/trainer-manager.tsx",
+    "change": "modified"
+  },
+  {
+    "path": "app/components/workspace-refresh.tsx",
+    "change": "added"
+  },
+  {
+    "path": "app/components/workspace-shell.tsx",
+    "change": "modified"
+  },
+  {
+    "path": "app/customer/actions.ts",
+    "change": "modified"
+  },
+  {
+    "path": "app/customer/bookings/page.tsx",
+    "change": "modified"
+  },
+  {
+    "path": "app/customer/entitlements/page.tsx",
+    "change": "modified"
+  },
+  {
+    "path": "app/customer/page.tsx",
+    "change": "modified"
+  },
+  {
+    "path": "app/customer/profile/customer-profile.module.css",
+    "change": "added"
+  },
+  {
+    "path": "app/customer/profile/page.tsx",
+    "change": "modified"
+  },
+  {
+    "path": "app/customer/slots/[slotId]/page.tsx",
+    "change": "modified"
+  },
+  {
+    "path": "app/entry/page.tsx",
+    "change": "modified"
+  },
+  {
+    "path": "app/error.tsx",
+    "change": "added"
+  },
+  {
+    "path": "app/forgot-password/page.tsx",
+    "change": "modified"
+  },
+  {
+    "path": "app/page.tsx",
+    "change": "modified"
+  },
+  {
+    "path": "app/studio/activity/page.tsx",
+    "change": "modified"
+  },
+  {
+    "path": "app/studio/classes/page.tsx",
+    "change": "modified"
+  },
+  {
+    "path": "app/studio/customers/page.tsx",
+    "change": "modified"
+  },
+  {
+    "path": "app/studio/customers/[customerUid]/page.tsx",
+    "change": "modified"
+  },
+  {
+    "path": "app/studio/entitlements/data.ts",
+    "change": "modified"
+  },
+  {
+    "path": "app/studio/pause-requests/page.tsx",
+    "change": "modified"
+  },
+  {
+    "path": "app/studio/plans/page.tsx",
+    "change": "modified"
+  },
+  {
+    "path": "app/studio/schedule/page.tsx",
+    "change": "modified"
+  },
+  {
+    "path": "app/studio/staff/page.tsx",
+    "change": "modified"
+  },
+  {
+    "path": "app/studio/theme/page.tsx",
+    "change": "modified"
+  },
+  {
+    "path": "app/studio/trainer/page.tsx",
+    "change": "modified"
+  },
+  {
+    "path": "app/studio/waitlist/page.tsx",
+    "change": "modified"
+  },
+  {
+    "path": "app/super-admin/page.tsx",
+    "change": "modified"
+  },
+  {
+    "path": "app/trainer/attendance/page.tsx",
+    "change": "modified"
+  },
+  {
+    "path": "app/trainer/classes/page.tsx",
+    "change": "modified"
+  },
+  {
+    "path": "app/trainer/page.tsx",
+    "change": "modified"
+  },
+  {
+    "path": "app/trainer/profile/page.tsx",
+    "change": "modified"
+  },
+  {
+    "path": "lib/attendance.ts",
+    "change": "modified"
+  },
+  {
+    "path": "lib/auth/login-input.ts",
+    "change": "added"
+  },
+  {
+    "path": "lib/auth/server.ts",
+    "change": "modified"
+  },
+  {
+    "path": "lib/bookings.ts",
+    "change": "modified"
+  },
+  {
+    "path": "lib/brand-palettes.ts",
+    "change": "modified"
+  },
+  {
+    "path": "lib/customer-calendar.ts",
+    "change": "modified"
+  },
+  {
+    "path": "lib/customer-membership.ts",
+    "change": "added"
+  },
+  {
+    "path": "lib/entitlements.ts",
+    "change": "modified"
+  },
+  {
+    "path": "lib/firebase/pagination.ts",
+    "change": "added"
+  },
+  {
+    "path": "lib/firebase/quota.ts",
+    "change": "added"
+  },
+  {
+    "path": "lib/firebase/reads.ts",
+    "change": "added"
+  },
+  {
+    "path": "lib/incidents.ts",
+    "change": "modified"
+  },
+  {
+    "path": "lib/membership-display.ts",
+    "change": "added"
+  },
+  {
+    "path": "lib/provisioning.ts",
+    "change": "modified"
+  },
+  {
+    "path": "lib/schedule-window.ts",
+    "change": "added"
+  },
+  {
+    "path": "lib/schedule.ts",
+    "change": "modified"
+  },
+  {
+    "path": "lib/studio-theme.ts",
+    "change": "modified"
+  },
+  {
+    "path": "lib/team.ts",
+    "change": "modified"
+  },
+  {
+    "path": "lib/trainer-schedule.ts",
+    "change": "modified"
+  },
+  {
+    "path": "lib/waitlist.ts",
+    "change": "modified"
+  },
+  {
+    "path": "docs/ARCHITECTURE.md",
+    "change": "modified"
+  },
+  {
+    "path": "docs/firestore-read-inventory.json",
+    "change": "added"
+  },
+  {
+    "path": "docs/FIRESTORE_READ_AUDIT.md",
+    "change": "added"
+  },
+  {
+    "path": "docs/UI.md",
+    "change": "modified"
+  },
+  {
+    "path": "scripts/audit-firestore-reads.mjs",
+    "change": "added"
+  },
+  {
+    "path": "tests/auth-server.test.ts",
+    "change": "added"
+  },
+  {
+    "path": "tests/client-portal.test.ts",
+    "change": "added"
+  },
+  {
+    "path": "tests/customer-calendar.test.ts",
+    "change": "modified"
+  },
+  {
+    "path": "tests/firestore-emulator.test.ts",
+    "change": "added"
+  },
+  {
+    "path": "tests/firestore-policy.test.ts",
+    "change": "added"
+  },
+  {
+    "path": "tests/firestore-quota.test.ts",
+    "change": "added"
+  },
+  {
+    "path": "tests/firestore-reads.test.ts",
+    "change": "added"
+  },
+  {
+    "path": "tests/login-input.test.ts",
+    "change": "added"
+  },
+  {
+    "path": "tests/membership-display.test.ts",
+    "change": "added"
+  },
+  {
+    "path": "tests/schedule-window.test.ts",
+    "change": "added"
+  },
+  {
+    "path": "tests/server-only.ts",
+    "change": "added"
+  },
+  {
+    "path": ".gitignore",
+    "change": "modified"
+  },
+  {
+    "path": "package.json",
+    "change": "modified"
+  },
+  {
+    "path": "firebase.json",
+    "change": "modified"
+  },
+  {
+    "path": "firestore.indexes.json",
+    "change": "modified"
+  },
+  {
+    "path": "vitest.config.ts",
+    "change": "added"
+  }
+]

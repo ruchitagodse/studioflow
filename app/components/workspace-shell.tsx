@@ -1,8 +1,8 @@
+import { readDocument } from "@/lib/firebase/reads";
 import { BrandLogo } from "@/app/components/brand-logo";
 import { getCurrentPrincipal } from "@/lib/auth/server";
-import { getAdminDb } from "@/lib/firebase/admin";
 import { WorkspaceProfileMenu } from "./workspace-profile-menu";
-import { WorkspaceLiveRefresh } from "./workspace-live-refresh";
+import { WorkspaceRefresh } from "./workspace-refresh";
 import { AdminLayout } from "./admin-layout";
 import styles from "./workspace-shell.module.css";
 
@@ -24,10 +24,9 @@ async function loadShellData(workspace: WorkspaceShellProps["workspace"]): Promi
     if (!principal || !principal.studioId) return null;
     const canUseWorkspace = workspace === "/customer" ? principal.roles.includes("customer") : workspace === "/trainer" ? principal.roles.includes("trainer") : principal.roles.some((role) => role === "owner" || role === "staff");
     if (!canUseWorkspace) return null;
-    const db = getAdminDb();
     const [studioSnapshot, memberSnapshot] = await Promise.all([
-      db.doc(`studios/${principal.studioId}`).get(),
-      db.doc(`studios/${principal.studioId}/members/${principal.uid}`).get(),
+      readDocument(`studios/${principal.studioId}`),
+      readDocument(`studios/${principal.studioId}/members/${principal.uid}`),
     ]);
     const name = String(memberSnapshot.data()?.displayName ?? "").trim() || principal.email?.split("@")[0] || "Studio member";
     const studioName = String(studioSnapshot.data()?.name ?? "Studio Calendar Pilates").trim() || "Studio Calendar Pilates";
@@ -43,10 +42,10 @@ export async function WorkspaceShell({ workspace, homeHref, children }: Workspac
   const data = await loadShellData(workspace);
   if (!data) return <>{children}</>;
   if (workspace === "/studio") return <AdminLayout {...data}>{children}</AdminLayout>;
-  return <div className={styles.shell}><WorkspaceLiveRefresh />
+  return <div className={styles.shell}>
     <header className={styles.header}>
       <a className={styles.brand} href={homeHref} aria-label="Studio Calendar workspace home"><BrandLogo /></a>
-      <WorkspaceProfileMenu name={data.name} role={data.role} studioName={data.studioName} customerProfile={workspace === "/customer"} workspaceLinks={data.workspaceLinks} />
+      <WorkspaceRefresh /><WorkspaceProfileMenu name={data.name} role={data.role} studioName={data.studioName} customerProfile={workspace === "/customer"} workspaceLinks={data.workspaceLinks} />
     </header>
     {children}
   </div>;

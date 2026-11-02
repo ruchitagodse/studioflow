@@ -92,7 +92,7 @@ export function AdminSidebar({ name, role, studioName, roles, workspaceLinks, mo
   const section = params.get("section") ?? params.get("view") ?? params.get("role");
   const isOwner = roles.includes("owner");
   return <aside id={mobile ? "studio-mobile-navigation" : undefined} className={`${styles.sidebar}${mobile ? ` ${styles.mobileSidebar}` : ""}`} aria-label="Studio administration" aria-modal={mobile || undefined} role={mobile ? "dialog" : undefined}>
-    <div className={styles.top}><Link className={styles.brand} href="/studio" onClick={onNavigate} aria-label="Studio Calendar dashboard"><BrandLogo /></Link>{mobile && <button type="button" className={styles.close} onClick={onClose} aria-label="Close studio navigation">×</button>}</div>
+    <div className={styles.top}><Link prefetch={false} className={styles.brand} href="/studio" onClick={onNavigate} aria-label="Studio Calendar dashboard"><BrandLogo /></Link>{mobile && <button type="button" className={styles.close} onClick={onClose} aria-label="Close studio navigation">×</button>}</div>
     <nav className={styles.navigation} aria-label="Studio navigation">
       {navigation.map((group) => {
         const items = group.items.filter((item) => !item.ownerOnly || isOwner);
@@ -101,7 +101,7 @@ export function AdminSidebar({ name, role, studioName, roles, workspaceLinks, mo
           <h2>{group.label}</h2>
           <ul>{items.map((item) => {
             const active = activeRoute(pathname, section, item);
-            return <li key={item.label}><Link href={item.href} onClick={onNavigate} className={`${styles.item}${active ? ` ${styles.active}` : ""}`} aria-current={active ? "page" : undefined}><NavIcon name={item.icon}/><span>{item.label}</span></Link></li>;
+            return <li key={item.label}><Link prefetch={false} href={item.href} onClick={onNavigate} className={`${styles.item}${active ? ` ${styles.active}` : ""}`} aria-current={active ? "page" : undefined}><NavIcon name={item.icon}/><span>{item.label}</span></Link></li>;
           })}</ul>
         </section>;
       })}

@@ -1,0 +1,353 @@
+{
+  "summary": {
+    "polling": 0,
+    "browserFirestore": 0,
+    "documentReads": 47,
+    "boundedQueries": 25,
+    "aggregateQueries": 11,
+    "referenceReads": 19,
+    "catalogScans": 3,
+    "pagedQueries": 8,
+    "transactions": 37
+  },
+  "polling": [],
+  "browserFirestore": [],
+  "documentReads": [
+    "app/components/studio-dashboard.tsx:34",
+    "app/components/studio-dashboard.tsx:39",
+    "app/components/studio-dashboard.tsx:52",
+    "app/components/studio-dashboard.tsx:68",
+    "app/components/workspace-shell.tsx:28",
+    "app/components/workspace-shell.tsx:29",
+    "app/customer/profile/page.tsx:32",
+    "app/customer/profile/page.tsx:33",
+    "app/studio/activity/page.tsx:51",
+    "app/studio/activity/page.tsx:55",
+    "app/studio/classes/page.tsx:19",
+    "app/studio/customers/[customerUid]/page.tsx:27",
+    "app/studio/schedule/page.tsx:20",
+    "app/studio/schedule/page.tsx:33",
+    "app/studio/theme/page.tsx:15",
+    "app/studio/waitlist/page.tsx:28",
+    "app/studio/waitlist/page.tsx:38",
+    "app/trainer/page.tsx:68",
+    "app/trainer/profile/page.tsx:25",
+    "lib/attendance.ts:71",
+    "lib/attendance.ts:72",
+    "lib/attendance.ts:73",
+    "lib/attendance.ts:78",
+    "lib/attendance.ts:83",
+    "lib/auth/server.ts:27",
+    "lib/auth/server.ts:28",
+    "lib/auth/server.ts:35",
+    "lib/auth/server.ts:36",
+    "lib/bookings.ts:91",
+    "lib/bookings.ts:95",
+    "lib/bookings.ts:132",
+    "lib/bookings.ts:157",
+    "lib/bookings.ts:158",
+    "lib/bookings.ts:160",
+    "lib/brand-palettes.ts:18",
+    "lib/customer-membership.ts:14",
+    "lib/entitlements.ts:61",
+    "lib/entitlements.ts:64",
+    "lib/firebase/pagination.ts:15",
+    "lib/incidents.ts:112",
+    "lib/incidents.ts:112",
+    "lib/incidents.ts:112",
+    "lib/incidents.ts:116",
+    "lib/studio-theme.ts:14",
+    "lib/studio-theme.ts:16",
+    "lib/studio-theme.ts:16",
+    "lib/trainer-schedule.ts:18"
+  ],
+  "boundedQueries": [
+    {
+      "location": "app/components/studio-dashboard.tsx:40",
+      "query": "db.collection(`studios/${studioId}/slots`).where(\"localDate\", \"==\", today).limit(50)"
+    },
+    {
+      "location": "app/components/studio-dashboard.tsx:41",
+      "query": "db.collection(`studios/${studioId}/slots`).where(\"localDate\", \">=\", datesThisWeek[0]).where(\"localDate\", \"<=\", datesThisWeek[6]).limit(100)"
+    },
+    {
+      "location": "app/components/studio-dashboard.tsx:49",
+      "query": "db.collection(`studios/${studioId}/auditEvents`).orderBy(\"createdAt\", \"desc\").limit(8)"
+    },
+    {
+      "location": "app/studio/activity/page.tsx:52",
+      "query": "db.collection(`studios/${principal.studioId}/auditEvents`).orderBy(\"createdAt\", \"desc\").limit(50)"
+    },
+    {
+      "location": "app/studio/customers/[customerUid]/page.tsx:22",
+      "query": "db.collection(`studios/${studioId}/bookings`).where(\"customerUid\", \"==\", customerUid).limit(50)"
+    },
+    {
+      "location": "app/studio/customers/[customerUid]/page.tsx:23",
+      "query": "db.collection(`studios/${studioId}/incidents`).where(\"customerUid\", \"==\", customerUid).limit(25)"
+    },
+    {
+      "location": "app/studio/entitlements/data.ts:18",
+      "query": "subscriptionsRef.where(\"customerUid\", \"==\", requestedCustomerUid).limit(50)"
+    },
+    {
+      "location": "app/studio/entitlements/data.ts:19",
+      "query": "subscriptionsRef.orderBy(\"createdAt\", \"desc\").limit(50)"
+    },
+    {
+      "location": "app/studio/entitlements/data.ts:21",
+      "query": "db.collection(`studios/${studioId}/plans`).orderBy(\"createdAt\", \"desc\").limit(50)"
+    },
+    {
+      "location": "app/studio/entitlements/data.ts:22",
+      "query": "db.collection(`studios/${studioId}/members`).where(\"status\", \"==\", \"active\").where(\"roles\", \"array-contains\", \"customer\").limit(50)"
+    },
+    {
+      "location": "app/studio/entitlements/data.ts:45",
+      "query": "db.collection(`studios/${studioId}/subscriptions/${selectedSubscriptionId}/ledger`).orderBy(\"createdAt\", \"desc\").limit(25)"
+    },
+    {
+      "location": "app/studio/trainer/page.tsx:21",
+      "query": "db.collection(`studios/${studioId}/invitations`).orderBy(\"createdAt\", \"desc\").limit(50)"
+    },
+    {
+      "location": "app/studio/waitlist/page.tsx:27",
+      "query": "waitlists.where(\"status\", \"==\", \"active\").orderBy(\"createdAt\", \"asc\").limit(100)"
+    },
+    {
+      "location": "app/studio/waitlist/page.tsx:35",
+      "query": "waitlists.where(\"status\", \"==\", \"active\").orderBy(\"createdAt\", \"asc\").limit(100)"
+    },
+    {
+      "location": "lib/attendance.ts:78",
+      "query": "db.collection(`studios/${studioId}/bookings`).where(\"slotId\", \"==\", slotId).limit(100)"
+    },
+    {
+      "location": "lib/bookings.ts:111",
+      "query": "db.collection(`studios/${studioId}/bookings`)\n    .where(\"customerUid\", \"==\", customerUid)\n    .where(\"status\", \"==\", \"confirmed\")\n    .where(\"slotStartsAt\", \">\", Timestamp.now())\n    .limit(50)"
+    },
+    {
+      "location": "lib/bookings.ts:121",
+      "query": "db.collection(`studios/${studioId}/waitlists`)\n    .where(\"customerUid\", \"==\", customerUid)\n    .where(\"status\", \"==\", \"active\")\n    .limit(50)"
+    },
+    {
+      "location": "lib/bookings.ts:133",
+      "query": "db.collection(`studios/${studioId}/slots`).where(\"status\", \"==\", \"published\").where(\"startsAt\", \">\", Timestamp.fromDate(new Date())).orderBy(\"startsAt\", \"asc\").limit(60)"
+    },
+    {
+      "location": "lib/bookings.ts:159",
+      "query": "db.collection(`studios/${studioId}/bookings`).where(\"customerUid\", \"==\", principal.uid).where(\"slotId\", \"==\", slotId).where(\"status\", \"==\", \"confirmed\").limit(1)"
+    },
+    {
+      "location": "lib/customer-membership.ts:18",
+      "query": "subscriptions.where(\"customerUid\", \"==\", customerUid).limit(50)"
+    },
+    {
+      "location": "lib/entitlements.ts:210",
+      "query": "subscriptionRef.collection(\"ledger\").orderBy(\"createdAt\", \"desc\").limit(20).select(\"action\", \"amount\", \"createdAt\")"
+    },
+    {
+      "location": "lib/firebase/pagination.ts:18",
+      "query": "bounded.limit(pageSize + 1)"
+    },
+    {
+      "location": "lib/incidents.ts:112",
+      "query": "db.collection(`studios/${studioId}/incidents`).orderBy(\"sourceTimestamp\", \"desc\").limit(50)"
+    },
+    {
+      "location": "lib/trainer-schedule.ts:18",
+      "query": "db.collection(`studios/${studioId}/slots`).where(\"trainerUid\", \"==\", principal.uid).limit(100)"
+    },
+    {
+      "location": "lib/waitlist.ts:20",
+      "query": "db.collection(`studios/${studioId}/waitlists`).where(\"slotId\", \"==\", slotId).where(\"status\", \"==\", \"active\").orderBy(\"createdAt\", \"asc\").limit(100)"
+    }
+  ],
+  "aggregateQueries": [
+    {
+      "location": "app/components/studio-dashboard.tsx:42",
+      "query": "db.collection(`studios/${studioId}/members`).where(\"status\", \"==\", \"active\").where(\"roles\", \"array-contains\", \"customer\").count()"
+    },
+    {
+      "location": "app/components/studio-dashboard.tsx:43",
+      "query": "db.collection(`studios/${studioId}/members`).where(\"status\", \"==\", \"active\").where(\"roles\", \"array-contains\", \"trainer\").count()"
+    },
+    {
+      "location": "app/components/studio-dashboard.tsx:44",
+      "query": "db.collection(`studios/${studioId}/subscriptions`).where(\"status\", \"==\", \"active\").count()"
+    },
+    {
+      "location": "app/components/studio-dashboard.tsx:45",
+      "query": "db.collection(`studios/${studioId}/subscriptions`).where(\"status\", \"==\", \"paused\").count()"
+    },
+    {
+      "location": "app/components/studio-dashboard.tsx:46",
+      "query": "db.collection(`studios/${studioId}/subscriptions`).where(\"status\", \"==\", \"inactive\").where(\"inactiveReason\", \"==\", \"expired\").count()"
+    },
+    {
+      "location": "app/components/studio-dashboard.tsx:47",
+      "query": "db.collection(`studios/${studioId}/subscriptions`).where(\"status\", \"==\", \"inactive\").where(\"inactiveReason\", \"==\", \"cancelled_immediate\").count()"
+    },
+    {
+      "location": "app/components/studio-dashboard.tsx:48",
+      "query": "db.collection(`studios/${studioId}/incidents`).where(\"status\", \"==\", \"active\").count()"
+    },
+    {
+      "location": "app/components/studio-dashboard.tsx:63",
+      "query": "db.collection(`studios/${studioId}/bookings`).where(\"slotId\", \"in\", ids).where(\"status\", \"==\", status).count()"
+    },
+    {
+      "location": "lib/bookings.ts:183",
+      "query": "upcoming.count()"
+    },
+    {
+      "location": "lib/incidents.ts:118",
+      "query": "db.collection(`studios/${studioId}/incidents`).where(\"customerUid\", \"==\", uid).where(\"status\", \"==\", \"active\").where(\"sourceTimestamp\", \">=\", cutoff).limit(50).count()"
+    },
+    {
+      "location": "lib/trainer-schedule.ts:43",
+      "query": "db.collection(`studios/${studioId}/bookings`).where(\"slotId\", \"==\", slot.id).where(\"status\", \"in\", [\"confirmed\", \"attended\", \"no-show\"]).count()"
+    }
+  ],
+  "referenceReads": [
+    {
+      "location": "app/studio/customers/[customerUid]/page.tsx:21",
+      "query": "memberRef"
+    },
+    {
+      "location": "app/studio/waitlist/page.tsx:36",
+      "query": "db.doc(`studios/${studioId}/slots/${String(entry.data().slotId)}`)"
+    },
+    {
+      "location": "lib/entitlements.ts:73",
+      "query": "db.doc(memberPath)"
+    },
+    {
+      "location": "lib/entitlements.ts:76",
+      "query": "db.doc(`studios/${studioId}/subscriptions/${nextId}`)"
+    },
+    {
+      "location": "lib/firebase/reads.ts:17",
+      "query": "getAdminDb().doc(path)"
+    },
+    {
+      "location": "lib/incidents.ts:79",
+      "query": "db.doc(`studios/${studioId}`)"
+    },
+    {
+      "location": "lib/incidents.ts:79",
+      "query": "db.doc(`studios/${studioId}/members/${principal.uid}`)"
+    },
+    {
+      "location": "lib/schedule.ts:42",
+      "query": "db.doc(`studios/${studioId}`)"
+    },
+    {
+      "location": "lib/schedule.ts:43",
+      "query": "db.doc(`studios/${studioId}/classes/${input.classId}`)"
+    },
+    {
+      "location": "lib/schedule.ts:43",
+      "query": "db.doc(`studios/${studioId}/members/${input.trainerUid}`)"
+    },
+    {
+      "location": "lib/schedule.ts:57",
+      "query": "db.doc(`studios/${studioId}`)"
+    },
+    {
+      "location": "lib/team.ts:36",
+      "query": "db.doc(`userMemberships/${existingUserUid}`)"
+    },
+    {
+      "location": "lib/team.ts:72",
+      "query": "db.doc(`invitationLookups/${invitationId}`)"
+    },
+    {
+      "location": "lib/team.ts:74",
+      "query": "db.doc(`studios/${lookup.data()?.studioId}/invitations/${invitationId}`)"
+    },
+    {
+      "location": "lib/team.ts:82",
+      "query": "db.doc(`invitationLookups/${invitationId}`)"
+    },
+    {
+      "location": "lib/team.ts:160",
+      "query": "db.doc(`studios/${studioId}/members/${input.uid}`)"
+    },
+    {
+      "location": "lib/waitlist.ts:19",
+      "query": "db.doc(`studios/${studioId}/waitlists/${id}`)"
+    },
+    {
+      "location": "lib/waitlist.ts:19",
+      "query": "db.doc(`studios/${studioId}/slots/${slotId}`)"
+    },
+    {
+      "location": "lib/waitlist.ts:19",
+      "query": "db.doc(`studios/${studioId}/waitlists/${id}`)"
+    }
+  ],
+  "catalogScans": [
+    {
+      "location": "app/studio/schedule/page.tsx:25",
+      "query": "db.collection(`studios/${studioId}/classes`).where(\"status\", \"==\", \"active\").orderBy(\"createdAt\", \"desc\")"
+    },
+    {
+      "location": "app/studio/schedule/page.tsx:26",
+      "query": "db.collection(`studios/${studioId}/members`).where(\"roles\", \"array-contains\", \"trainer\").where(\"status\", \"==\", \"active\")"
+    },
+    {
+      "location": "lib/brand-palettes.ts:17",
+      "query": "getAdminDb().collection(\"brandPalettes\").where(\"status\", \"==\", \"active\")"
+    }
+  ],
+  "pagedQueries": [
+    "app/studio/classes/page.tsx:20",
+    "app/studio/customers/page.tsx:17",
+    "app/studio/schedule/page.tsx:27",
+    "app/studio/staff/page.tsx:16",
+    "app/studio/trainer/page.tsx:20",
+    "app/studio/trainer/page.tsx:23",
+    "app/super-admin/page.tsx:25",
+    "lib/bookings.ts:182"
+  ],
+  "transactions": [
+    "lib/attendance.ts:126",
+    "lib/attendance.ts:203",
+    "lib/bookings.ts:228",
+    "lib/bookings.ts:325",
+    "lib/bookings.ts:369",
+    "lib/brand-palettes.ts:19",
+    "lib/entitlements.ts:53",
+    "lib/entitlements.ts:85",
+    "lib/entitlements.ts:96",
+    "lib/entitlements.ts:106",
+    "lib/entitlements.ts:111",
+    "lib/entitlements.ts:137",
+    "lib/entitlements.ts:161",
+    "lib/entitlements.ts:170",
+    "lib/entitlements.ts:179",
+    "lib/incidents.ts:87",
+    "lib/incidents.ts:94",
+    "lib/incidents.ts:99",
+    "lib/incidents.ts:107",
+    "lib/provisioning.ts:21",
+    "lib/provisioning.ts:40",
+    "lib/provisioning.ts:51",
+    "lib/schedule.ts:37",
+    "lib/schedule.ts:47",
+    "lib/schedule.ts:53",
+    "lib/schedule.ts:63",
+    "lib/schedule.ts:86",
+    "lib/studio-theme.ts:20",
+    "lib/team.ts:45",
+    "lib/team.ts:87",
+    "lib/team.ts:126",
+    "lib/team.ts:176",
+    "lib/team.ts:193",
+    "lib/waitlist.ts:16",
+    "lib/waitlist.ts:17",
+    "lib/waitlist.ts:18",
+    "lib/waitlist.ts:30"
+  ]
+}

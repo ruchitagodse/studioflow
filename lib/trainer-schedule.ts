@@ -1,3 +1,4 @@
+import { readDocument, readQuery } from "@/lib/firebase/reads";
 import "server-only";
 
 import type { Principal } from "@/lib/auth/server";
@@ -14,7 +15,7 @@ function requireTrainer(principal: Principal) {
 export async function getAssignedTrainerSlots(principal: Principal): Promise<TrainerSlot[]> {
   const studioId = requireTrainer(principal);
   const db = getAdminDb();
-  const [docs, trainer] = await Promise.all([db.collection(`studios/${studioId}/slots`).where("trainerUid", "==", principal.uid).limit(100).get(), db.doc(`studios/${studioId}/members/${principal.uid}`).get()]);
+  const [docs, trainer] = await Promise.all([readQuery(db.collection(`studios/${studioId}/slots`).where("trainerUid", "==", principal.uid).limit(100)), readDocument(`studios/${studioId}/members/${principal.uid}`)]);
   const trainerName = String(trainer.data()?.displayName ?? "").trim();
   const slots = docs.docs.map((doc) => {
     const data = doc.data();
@@ -39,8 +40,8 @@ export async function getAssignedTrainerSlots(principal: Principal): Promise<Tra
   }).filter((slot): slot is TrainerSlot => slot !== null && trainerCanSeeSlot(principal.uid, slot));
   const rosterCounts = new Map<string, number>();
   await Promise.all(slots.map(async (slot) => {
-    const bookings = await db.collection(`studios/${studioId}/bookings`).where("slotId", "==", slot.id).limit(Math.max(slot.capacity + 1, 1)).get();
-    rosterCounts.set(slot.id, bookings.docs.filter((booking) => ["confirmed", "attended", "no-show"].includes(String(booking.data().status ?? ""))).length);
+    const bookings = await readQuery(db.collection(`studios/${studioId}/bookings`).where("slotId", "==", slot.id).where("status", "in", ["confirmed", "attended", "no-show"]).count());
+    rosterCounts.set(slot.id, bookings.data().count);
   }));
   return orderTrainerSlots(slots.map((slot) => ({ ...slot, rosterBookingCount: rosterCounts.get(slot.id) ?? 0 })));
 }

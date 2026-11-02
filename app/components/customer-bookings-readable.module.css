@@ -1,156 +1,31 @@
-.bookingsLayout {
-  max-width: 980px;
-}
+.bookingsLayout{max-width:760px;font-family:"Segoe UI",Arial,sans-serif}
+.tabList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;max-width:440px;margin:0 0 20px;padding:4px;border:1px solid var(--color-border);border-radius:12px;background:var(--color-surface)}
+.tabList a{display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:9px 12px;border:0;border-radius:9px;background:transparent;color:var(--color-text-muted);font:600 13px/1.3 "Segoe UI",Arial,sans-serif;cursor:pointer}
+.tabList svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.tabList .activeTab{background:var(--color-button-background);color:var(--color-button-text)}
+.tabList a:focus-visible,.empty a:focus-visible{outline:2px solid var(--color-primary);outline-offset:3px}
+.tabList a:not(.activeTab):hover{background:var(--color-surface-secondary);color:var(--color-text)}
+.bookingsLayout>section[hidden]{display:none}
+.timeline{display:grid;gap:14px}
+.bookingCard{min-width:0;padding:16px;border:1px solid var(--color-border);border-radius:16px;background:var(--color-surface)}
+.upcomingCard{border-color:color-mix(in srgb,var(--color-primary) 25%,var(--color-border))}
+.classSummary{display:grid;grid-template-columns:80px minmax(0,1fr);gap:14px;align-items:center}
+.bookingThumb{width:80px;height:96px;border-radius:11px;object-fit:cover}
+.bookingBody{display:grid;gap:6px;min-width:0}
+.bookingBody h2{margin:0;color:var(--color-text);font:600 20px/1.25 "Segoe UI",Arial,sans-serif;overflow-wrap:anywhere}
+.bookingDate,.bookingFact{display:flex;align-items:center;gap:7px;color:var(--color-text-muted);font-size:12px;line-height:1.4}
+.bookingDate{color:var(--color-primary);font-size:11px;font-weight:600}
+.bookingDate svg,.bookingFact svg{width:14px;height:14px;flex-shrink:0;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.statusRow{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-top:14px;color:var(--color-text-muted);font-size:10px}
+.bookingStatus{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:20px;background:color-mix(in srgb,var(--color-success) 10%,var(--color-surface));color:var(--color-success);font-size:11px;font-weight:600;text-transform:capitalize}
+.bookingStatus i{width:5px;height:5px;border-radius:50%;background:currentColor}
+.cancelledStatus{background:var(--color-surface-secondary);color:var(--color-text-muted)}
+.empty{display:grid;justify-items:center;gap:10px;padding:36px 20px;border:1px dashed var(--color-border);border-radius:16px;background:var(--color-surface);text-align:center}
+.empty>svg{width:30px;height:30px;fill:none;stroke:var(--color-primary);stroke-width:1.5}
+.empty h2{margin:0;font:600 17px/1.4 "Segoe UI",Arial,sans-serif;color:var(--color-text)}
+.empty p{margin:0;color:var(--color-text-muted);font-size:12px;line-height:1.6}
+.empty a{display:flex;align-items:center;gap:18px;min-height:44px;margin-top:6px;padding:10px 18px;border-radius:9px;background:var(--color-button-background);color:var(--color-button-text);font-size:12px;font-weight:600;text-decoration:none}
+@media(min-width:700px){.timeline{grid-template-columns:repeat(2,minmax(0,1fr))}.bookingCard{align-self:start}}
+@media(max-width:699px){.tabList{max-width:none;margin-bottom:16px}.bookingCard{padding:14px}.classSummary{gap:12px}.bookingBody h2{font-size:18px}}
 
-.tabList {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 4px;
-  width: min(100%, 520px);
-  margin: 0 0 24px;
-  padding: 4px;
-  border: 1px solid var(--color-border);
-  border-radius: 16px;
-  background: color-mix(in srgb, var(--color-surface-secondary) 52%, var(--color-surface));
-  box-shadow: 0 7px 20px color-mix(in srgb, var(--color-primary) 5%, transparent);
-}
-
-.tabList button {
-  display: inline-flex;
-  min-height: 48px;
-  align-items: center;
-  justify-content: center;
-  gap: 9px;
-  padding: 10px 12px;
-  border: 0;
-  border-radius: 12px;
-  background: transparent;
-  color: var(--color-text);
-  font: inherit;
-  font-size: .9rem;
-  font-weight: 800;
-  cursor: pointer;
-  transition: background-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
-}
-
-.tabList button svg {
-  width: 19px;
-  height: 19px;
-  fill: none;
-  stroke: currentColor;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 1.9;
-}
-
-@media (hover: hover) {
-  .tabList button:not(.activeTab):hover {
-    background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));
-    color: var(--color-text);
-  }
-}
-.tabList button:focus-visible { outline: 3px solid var(--color-primary); outline-offset: 2px; }
-
-.tabList .activeTab {
-  background: var(--color-primary);
-  color: var(--color-button-text);
-  box-shadow: 0 5px 13px color-mix(in srgb, var(--color-primary) 25%, transparent);
-}
-
-.bookingsLayout > section[hidden] {
-  display: none;
-}
-
-.timeline {
-  gap: 14px;
-}
-
-.bookingCard {
-  display: grid;
-  grid-template-columns: 74px minmax(0, 1fr);
-  gap: 16px;
-  align-items: start;
-  margin-top: 0;
-  padding: 18px;
-}
-
-.bookingCard > div {
-  gap: 6px;
-}
-
-.bookingCard > div > b {
-  color: var(--color-text);
-  font-size: 1.2rem;
-  line-height: 1.15;
-}
-
-.bookingCard > div > span {
-  font-size: .9375rem;
-  line-height: 1.45;
-}
-
-.bookingCard > div > p {
-  margin: 0;
-  font-size: .75rem;
-}
-
-.bookingCard > div > em {
-  margin-top: 4px;
-  font-size: .75rem;
-}
-
-.upcomingCard {
-  grid-template-columns: 136px minmax(0, 1fr);
-  gap: 18px;
-  padding: 16px;
-  border-radius: 18px;
-  box-shadow: 0 10px 24px color-mix(in srgb, var(--color-primary) 8%, transparent);
-}
-
-.bookingThumb { width: 136px; height: 136px; border-radius: 14px; object-fit: cover; }
-.upcomingCard > div { gap: 4px; }
-.upcomingCard > div > b { font-family: Georgia, serif; font-size: 1.35rem; }
-.bookingDate, .bookingFact { display: inline-flex !important; align-items: center; gap: 7px; color: var(--color-text-muted) !important; font-size: .8rem !important; }
-.bookingDate { color: var(--color-text) !important; font-weight: 800; letter-spacing: .07em; }
-.bookingDate svg, .bookingFact svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
-.bookingFact { margin-top: 0 !important; }
-.bookingStatus { gap: 5px; margin-top: 7px; background: color-mix(in srgb, var(--color-success) 15%, var(--color-surface)); color: var(--color-success); }
-.bookingStatus i { display: inline-block; width: 6px; height: 6px; flex: 0 0 6px; border-radius: 50%; background: currentColor; }
-.cancelledStatus { background: color-mix(in srgb, var(--color-danger) 14%, var(--color-surface)); color: var(--color-danger); }
-
-@media (min-width: 1024px) {
-  .bookingsLayout {
-    max-width: 1020px;
-  }
-}
-
-@media (max-width: 767px) {
-  .tabList { width: 100%; margin-bottom: 18px; border-radius: 14px; }
-  .tabList button { min-height: 46px; padding: 9px 8px; font-size: .82rem; }
-
-  .bookingCard {
-    grid-template-columns: 64px minmax(0, 1fr);
-    gap: 87px;
-    padding: 16px;
-  }
-
-  .upcomingCard {
-    display: grid;
-    --booking-actions-bleed: 94px;
-    --booking-actions-offset: -94px;
-    grid-template-columns: 78px minmax(0, 1fr);
-    gap: 16px;
-    padding: 16px;
-    align-items: start;
-    border-color: color-mix(in srgb, var(--color-primary) 18%, var(--color-border));
-    box-shadow: 0 9px 22px color-mix(in srgb, var(--color-primary) 9%, transparent);
-  }
-
-  .upcomingCard .bookingThumb { width: 78px; height: 78px; margin: 0; border-radius: 12px; }
-  .upcomingCard > div { display: grid; align-content: start; gap: 4px; min-width: 0; padding-top: 1px; }
-  .upcomingCard > div > b { display: block; font-size: 1.28rem; line-height: 1.08; }
-  .bookingDate, .bookingFact { font-size: .84rem !important; line-height: 1.32; }
-  .bookingDate svg, .bookingFact svg { width: 16px; height: 16px; flex: 0 0 auto; }
-  .bookingStatus { justify-self: start; margin-top: 7px; padding: 6px 10px; font-size: .78rem; }
-
-}
+.tabList a{text-decoration:none}

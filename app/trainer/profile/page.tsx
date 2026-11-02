@@ -1,10 +1,10 @@
+import { readDocument } from "@/lib/firebase/reads";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import Image from "next/image";
 import { TrainerMobileNav } from "@/app/components/trainer-mobile-nav";
 import styles from "@/app/trainer/trainer-dashboard.module.css";
 import { requireWorkspace } from "@/lib/auth/server";
-import { getAdminDb } from "@/lib/firebase/admin";
 import heroImage from "@/app/assets/pilates-hero-v2.png";
 
 function initials(value: string) {
@@ -22,7 +22,7 @@ export default async function TrainerProfilePage() {
   await connection();
   let principal;
   try { principal = await requireWorkspace("/trainer"); } catch { redirect("/access-denied"); }
-  const member = await getAdminDb().doc(`studios/${principal.studioId}/members/${principal.uid}`).get();
+  const member = await readDocument(`studios/${principal.studioId}/members/${principal.uid}`);
   const name = String(member.data()?.displayName ?? "").trim() || "Trainer";
   return <main className={`${styles.page} ${styles.profilePage}`}>
     <header className={styles.profileHeader}><h1>Your profile</h1><p>Account details for your Studio Calendar trainer access.</p></header>

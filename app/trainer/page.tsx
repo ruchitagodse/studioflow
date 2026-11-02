@@ -1,3 +1,4 @@
+import { readDocument } from "@/lib/firebase/reads";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import Image from "next/image";
@@ -8,7 +9,6 @@ import { getAssignedTrainerSlots } from "@/lib/trainer-schedule";
 import { trainerSessionStatus, type TrainerSessionStatus } from "@/lib/trainer-schedule-logic";
 import studioImage from "@/app/assets/pilates-studio.png";
 import { TrainerMobileNav } from "@/app/components/trainer-mobile-nav";
-import { getAdminDb } from "@/lib/firebase/admin";
 
 function localDateKey(date: Date, timezone: string) {
   const parts = new Intl.DateTimeFormat("en-CA", { timeZone: timezone, year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(date);
@@ -65,7 +65,7 @@ export default async function TrainerWorkspace() {
 
   const [slots, memberSnapshot] = await Promise.all([
     getAssignedTrainerSlots(principal),
-    getAdminDb().doc(`studios/${principal.studioId}/members/${principal.uid}`).get(),
+    readDocument(`studios/${principal.studioId}/members/${principal.uid}`),
   ]);
   const timezone = slots[0]?.timezone || "UTC";
   const now = new Date();
@@ -95,7 +95,7 @@ export default async function TrainerWorkspace() {
     <section className={styles.schedule} aria-labelledby="assigned-classes">
       <div className={styles.sectionHeader}>
         <div><p className={styles.kicker}>ASSIGNED CLASSES</p><h2 id="assigned-classes">Your schedule</h2></div>
-        <Link className={styles.scheduleLink} href="#class-list" aria-label={`View all ${slots.length} assigned ${slots.length === 1 ? "class" : "classes"}`}>{slots.length} {slots.length === 1 ? "class" : "classes"} <b aria-hidden="true">›</b></Link>
+        <Link prefetch={false} className={styles.scheduleLink} href="#class-list" aria-label={`View all ${slots.length} assigned ${slots.length === 1 ? "class" : "classes"}`}>{slots.length} {slots.length === 1 ? "class" : "classes"} <b aria-hidden="true">›</b></Link>
       </div>
       {slots.length === 0 ? <div className={styles.empty}><span aria-hidden="true">◌</span><h3>No classes assigned</h3><p>Your assigned classes will appear here.</p></div> : <div className={styles.classList} id="class-list">{slots.map((slot) => {
         const available = Math.max(0, slot.capacity - slot.rosterBookingCount);
@@ -113,7 +113,7 @@ export default async function TrainerWorkspace() {
           </div>
           <footer className={styles.cardFooter}>
             {isNext ? <span className={styles.nextLabel}><i aria-hidden="true">›</i>Next up</span> : <span />}
-            {slot.status === "published" ? <Link className={styles.rosterLink} href={`/trainer/slots/${slot.id}`}>View attendance <span aria-hidden="true">→</span></Link> : <span className={styles.unavailable}>Attendance opens when published</span>}
+            {slot.status === "published" ? <Link prefetch={false} className={styles.rosterLink} href={`/trainer/slots/${slot.id}`}>View attendance <span aria-hidden="true">→</span></Link> : <span className={styles.unavailable}>Attendance opens when published</span>}
           </footer>
         </article>;
       })}</div>}

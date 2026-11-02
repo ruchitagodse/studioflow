@@ -1,3 +1,4 @@
+import { withFirestoreQuota } from "@/lib/firebase/reads";
 import "server-only";
 
 import { randomUUID } from "node:crypto";
@@ -17,7 +18,7 @@ export async function provisionStudio(actorUid: string, rawInput: ProvisionInput
   const db = getAdminDb();
   const studioId = `studio_${randomUUID()}`;
 
-  await db.runTransaction(async (transaction) => {
+  await withFirestoreQuota(() => db.runTransaction(async (transaction) => {
     const membershipIndex = db.doc(`userMemberships/${owner.uid}`);
     if ((await transaction.get(membershipIndex)).exists) throw new Error("OWNER_ALREADY_HAS_STUDIO");
     const studioRef = db.doc(`studios/${studioId}`);
@@ -27,7 +28,7 @@ export async function provisionStudio(actorUid: string, rawInput: ProvisionInput
     transaction.set(memberRef, { uid: owner.uid, email: owner.email ?? null, roles: ["owner"], status: "active", createdAt: FieldValue.serverTimestamp(), createdBy: actorUid });
     transaction.set(membershipIndex, { studioId, roles: ["owner"], status: "active", updatedAt: FieldValue.serverTimestamp() });
     transaction.set(auditRef, { action: "studio.provisioned", actorUid, studioId, ownerUid: owner.uid, createdAt: FieldValue.serverTimestamp() });
-  });
+  }));
 
   const ownerRecoveryLink = input.ownerMode === "create" ? await auth.generatePasswordResetLink(input.ownerEmail!) : null;
   return { studioId, ownerUid: owner.uid, ownerEmail: owner.email ?? null, ownerRecoveryLink };
@@ -36,16 +37,16 @@ export async function provisionStudio(actorUid: string, rawInput: ProvisionInput
 export async function updateStudioLifecycle(actorUid: string, rawInput: unknown) {
   const { studioId, status } = studioLifecycleSchema.parse(rawInput);
   const db = getAdminDb();
-  await db.runTransaction(async (transaction) => {
+  await withFirestoreQuota(() => db.runTransaction(async (transaction) => {
     const studioRef = db.doc(`studios/${studioId}`);
     const studio = await transaction.get(studioRef);
     if (!studio.exists) throw new Error("STUDIO_NOT_FOUND");
     transaction.update(studioRef, { status, updatedAt: FieldValue.serverTimestamp(), updatedBy: actorUid });
     transaction.set(db.doc(`platformAuditEvents/${randomUUID()}`), { action: `studio.${status}`, actorUid, studioId, createdAt: FieldValue.serverTimestamp() });
-  });
+  }));
 }
 
 export async function updateStudioManagement(actorUid: string, rawInput: unknown) {
   const { studioId, name, status } = studioManagementSchema.parse(rawInput); const db = getAdminDb();
-  await db.runTransaction(async (transaction) => { const studioRef = db.doc(`studios/${studioId}`); const studio = await transaction.get(studioRef); if (!studio.exists) throw new Error("STUDIO_NOT_FOUND"); const before = studio.data()!; transaction.update(studioRef, { name, status, updatedAt: FieldValue.serverTimestamp(), updatedBy: actorUid }); transaction.set(db.doc(`platformAuditEvents/${randomUUID()}`), { action: "studio.updated", actorUid, studioId, createdAt: FieldValue.serverTimestamp(), result: "success", before: { name: before.name, status: before.status }, after: { name, status } }); });
+  await withFirestoreQuota(() => db.runTransaction(async (transaction) => { const studioRef = db.doc(`studios/${studioId}`); const studio = await transaction.get(studioRef); if (!studio.exists) throw new Error("STUDIO_NOT_FOUND"); const before = studio.data()!; transaction.update(studioRef, { name, status, updatedAt: FieldValue.serverTimestamp(), updatedBy: actorUid }); transaction.set(db.doc(`platformAuditEvents/${randomUUID()}`), { action: "studio.updated", actorUid, studioId, createdAt: FieldValue.serverTimestamp(), result: "success", before: { name: before.name, status: before.status }, after: { name, status } }); }));
 }

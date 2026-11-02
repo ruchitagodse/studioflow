@@ -2,9 +2,17 @@
 
 import { revalidatePath } from "next/cache";
 import { requireWorkspace } from "@/lib/auth/server";
-import { cancelCustomerBooking, createBooking, rescheduleCustomerBooking } from "@/lib/bookings";
+import { cancelCustomerBooking, createBooking, getCustomerSchedule, rescheduleCustomerBooking } from "@/lib/bookings";
 
 export type BookingActionState = { error?: string; success?: string; bookingId?: string };
+
+export async function getRescheduleTargetsAction() {
+  try {
+    const principal = await requireWorkspace("/customer");
+    const schedule = await getCustomerSchedule(principal, false);
+    return { targets: schedule.slots.filter((slot) => !slot.alreadyBooked && slot.remainingCapacity > 0) };
+  } catch (error) { return { error: message(error), targets: [] }; }
+}
 
 function message(error: unknown) {
   const code = error instanceof Error ? error.message : "We could not complete that booking. Please try again.";

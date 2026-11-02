@@ -4,5 +4,5 @@ import { getEntitlementData } from "@/app/studio/entitlements/data";
 
 export default async function PlansPage() {
   await connection();
-  return <EntitlementManager {...await getEntitlementData(null)} view="plans" />;
+  return <EntitlementManager {...await getEntitlementData(null, null, "plans")} view="plans" />;
 }

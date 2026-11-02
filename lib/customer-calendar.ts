@@ -11,6 +11,12 @@ export function calendarWeek(value: string) {
   return Array.from({ length: 7 }, (_, index) => shiftCalendarDate(monday, index));
 }
 
+/** A rolling seven-day view never displays a date before studio-local today. */
+export function upcomingCalendarDays(anchor: string, today: string) {
+  const start = anchor < today ? today : anchor;
+  return Array.from({ length: 7 }, (_, index) => shiftCalendarDate(start, index));
+}
+
 export function calendarLabel(value: string, options: Intl.DateTimeFormatOptions) {
   return new Intl.DateTimeFormat("en-IN", { ...options, timeZone: "UTC" }).format(new Date(`${value}T12:00:00Z`));
 }

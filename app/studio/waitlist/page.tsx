@@ -1,3 +1,4 @@
+import { readDocument, readQuery } from "@/lib/firebase/reads";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { WaitlistManagement } from "@/app/components/waitlist-management";
@@ -23,18 +24,18 @@ export default async function StudioWaitlistPage() {
   const db = getAdminDb();
   const studioId = principal.studioId!;
   const waitlists = db.collection(`studios/${studioId}/waitlists`);
-  let activeEntries = await waitlists.where("status", "==", "active").orderBy("createdAt", "asc").limit(100).get();
-  let slots = await Promise.all(activeEntries.docs.map((entry) => db.doc(`studios/${studioId}/slots/${String(entry.data().slotId)}`).get()));
+  let activeEntries = await readQuery(waitlists.where("status", "==", "active").orderBy("createdAt", "asc").limit(100));
+  let slots = await Promise.all(activeEntries.docs.map((entry) => readDocument(`studios/${studioId}/slots/${String(entry.data().slotId)}`)));
   const expiredSlotIds = [...new Set(slots.filter((slot) => {
     const startsAt = timestampDate(slot.data()?.startsAt);
     return startsAt && startsAt <= new Date();
   }).map((slot) => slot.id))];
   if (expiredSlotIds.length) {
     await Promise.all(expiredSlotIds.map((slotId) => promoteOneWaitlistEntry(studioId, slotId, principal.uid)));
-    activeEntries = await waitlists.where("status", "==", "active").orderBy("createdAt", "asc").limit(100).get();
-    slots = await Promise.all(activeEntries.docs.map((entry) => db.doc(`studios/${studioId}/slots/${String(entry.data().slotId)}`).get()));
+    activeEntries = await readQuery(waitlists.where("status", "==", "active").orderBy("createdAt", "asc").limit(100));
+    slots = await Promise.all(activeEntries.docs.map((entry) => readQuery(db.doc(`studios/${studioId}/slots/${String(entry.data().slotId)}`))));
   }
-  const members = await Promise.all(activeEntries.docs.map((entry) => db.doc(`studios/${studioId}/members/${String(entry.data().customerUid)}`).get()));
+  const members = await Promise.all(activeEntries.docs.map((entry) => readDocument(`studios/${studioId}/members/${String(entry.data().customerUid)}`)));
   const positions = new Map<string, number>();
   const entries = activeEntries.docs.map((entry, index) => {
     const data = entry.data(); const slotId = String(data.slotId); const position = (positions.get(slotId) ?? 0) + 1;

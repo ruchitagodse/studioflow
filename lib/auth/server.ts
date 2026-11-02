@@ -1,8 +1,9 @@
+import { readDocument } from "@/lib/firebase/reads";
 import "server-only";
 
 import { cache } from "react";
 import { cookies } from "next/headers";
-import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
+import { getAdminAuth } from "@/lib/firebase/admin";
 import { isVerifiedMembership, resolveWorkspace, type StudioRole, type Workspace } from "@/lib/access";
 
 export const sessionCookieName = "studioflow_session";
@@ -20,21 +21,19 @@ export type Principal = {
 export const getCurrentPrincipal = cache(async (): Promise<Principal | null> => {
   const session = (await cookies()).get(sessionCookieName)?.value;
   if (!session) return null;
-
   const auth = getAdminAuth();
   const decoded = await auth.verifySessionCookie(session, true);
   const user = await auth.getUser(decoded.uid);
-  const db = getAdminDb();
-  const superAdmin = (await db.doc(`platformAdmins/${decoded.uid}`).get()).data()?.status === "active";
-  const index = (await db.doc(`userMemberships/${decoded.uid}`).get()).data();
+  const superAdmin = (await readDocument(`platformAdmins/${decoded.uid}`)).data()?.status === "active";
+  const index = (await readDocument(`userMemberships/${decoded.uid}`)).data();
   const membership = index ? {
     studioId: index.studioId as string,
     status: index.status as "active" | "inactive",
     roles: (index.roles ?? []) as StudioRole[],
   } : null;
   const [studioSnapshot, membershipSnapshot] = membership ? await Promise.all([
-    db.doc(`studios/${membership.studioId}`).get(),
-    db.doc(`studios/${membership.studioId}/members/${decoded.uid}`).get(),
+    readDocument(`studios/${membership.studioId}`),
+    readDocument(`studios/${membership.studioId}/members/${decoded.uid}`),
   ]) : [null, null];
   const memberRecord = membershipSnapshot?.exists ? {
     studioId: membership?.studioId ?? "",

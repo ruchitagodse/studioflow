@@ -1,3 +1,4 @@
+import { readDocument, readQuery } from "@/lib/firebase/reads";
 import Link from "next/link";
 import { connection } from "next/server";
 import { redirect } from "next/navigation";
@@ -47,11 +48,11 @@ export default async function StudioActivityPage() {
 
   const db = getAdminDb();
   const [studio, auditDocs] = await Promise.all([
-    db.doc(`studios/${principal.studioId}`).get(),
-    db.collection(`studios/${principal.studioId}/auditEvents`).orderBy("createdAt", "desc").limit(50).get(),
+    readDocument(`studios/${principal.studioId}`),
+    readQuery(db.collection(`studios/${principal.studioId}/auditEvents`).orderBy("createdAt", "desc").limit(50)),
   ]);
   const actorIds = [...new Set(auditDocs.docs.map((doc) => String(doc.data().actorUid ?? "")).filter((uid) => uid && uid !== "system"))];
-  const members = await Promise.all(actorIds.map((uid) => db.doc(`studios/${principal.studioId}/members/${uid}`).get()));
+  const members = await Promise.all(actorIds.map((uid) => readDocument(`studios/${principal.studioId}/members/${uid}`)));
   const names = new Map(members.map((doc) => [doc.id, String(doc.data()?.displayName ?? "").trim() || "Studio member"]));
   const rows: AuditRow[] = auditDocs.docs.map((doc) => {
     const data = doc.data();
@@ -62,8 +63,8 @@ export default async function StudioActivityPage() {
   const timezone = String(studio.data()?.timezone ?? "Asia/Kolkata");
 
   return <main className={styles.page}>
-    <Link className={styles.back} href="/studio">← Studio dashboard</Link>
+    <Link prefetch={false} className={styles.back} href="/studio">← Studio dashboard</Link>
     <header><p>STUDIO ACTIVITY</p><h1>Recent operational history</h1><span>Showing the latest {rows.length} recorded events for this studio.</span></header>
-    {rows.length ? <section className={styles.table} aria-label="Recent studio activity"><div className={styles.heading}><span>Time</span><span>Customer / user</span><span>Action</span><span>Details</span></div>{rows.map((row) => <Link key={row.id} href={row.href} className={styles.row} aria-label={`View related record for ${row.action}`}><time>{displayTime(row.createdAt, timezone)}</time><b>{row.actor}</b><span>{row.action}</span><small>{row.detail}</small><i aria-hidden="true">›</i></Link>)}</section> : <p className={styles.empty}>No studio activity has been recorded yet.</p>}
+    {rows.length ? <section className={styles.table} aria-label="Recent studio activity"><div className={styles.heading}><span>Time</span><span>Customer / user</span><span>Action</span><span>Details</span></div>{rows.map((row) => <Link prefetch={false} key={row.id} href={row.href} className={styles.row} aria-label={`View related record for ${row.action}`}><time>{displayTime(row.createdAt, timezone)}</time><b>{row.actor}</b><span>{row.action}</span><small>{row.detail}</small><i aria-hidden="true">›</i></Link>)}</section> : <p className={styles.empty}>No studio activity has been recorded yet.</p>}
   </main>;
 }

@@ -1,3 +1,4 @@
+import { readDocument, readQuery, withFirestoreQuota } from "@/lib/firebase/reads";
 import "server-only";
 
 import { FieldValue } from "firebase-admin/firestore";
@@ -67,19 +68,19 @@ export async function getAttendanceRoster(principal: Principal, slotId: string):
   const studioId = principal.studioId;
   const db = getAdminDb();
   const [studio, member, slot] = await Promise.all([
-    db.doc(`studios/${studioId}`).get(),
-    db.doc(`studios/${studioId}/members/${principal.uid}`).get(),
-    db.doc(`studios/${studioId}/slots/${slotId}`).get(),
+    readDocument(`studios/${studioId}`),
+    readDocument(`studios/${studioId}/members/${principal.uid}`),
+    readDocument(`studios/${studioId}/slots/${slotId}`),
   ]);
   assertActiveStudioMember(studio, member);
   const slotContext = assertAttendanceSlot(slot);
   const role = attendanceRole(principal, member.data()!, slotContext.data);
-  const [bookingDocs, trainer] = await Promise.all([db.collection(`studios/${studioId}/bookings`).where("slotId", "==", slotId).limit(100).get(), db.doc(`studios/${studioId}/members/${String(slotContext.data.trainerUid ?? "")}`).get()]);
+  const [bookingDocs, trainer] = await Promise.all([readQuery(db.collection(`studios/${studioId}/bookings`).where("slotId", "==", slotId).limit(100)), readDocument(`studios/${studioId}/members/${String(slotContext.data.trainerUid ?? "")}`)]);
   const eligibleBookings = bookingDocs.docs.filter((doc) => {
     const status = String(doc.data().status ?? "");
     return isAttendanceCandidate(status) || isAttendanceOutcome(status);
   });
-  const customerDocs = await Promise.all(eligibleBookings.map((booking) => db.doc(`studios/${studioId}/members/${String(booking.data().customerUid ?? "")}`).get()));
+  const customerDocs = await Promise.all(eligibleBookings.map((booking) => readDocument(`studios/${studioId}/members/${String(booking.data().customerUid ?? "")}`)));
   const entries = eligibleBookings.map((booking, index) => {
     const data = booking.data();
     const customer = customerDocs[index]?.data();
@@ -122,7 +123,7 @@ export async function markAttendance(principal: Principal, raw: unknown): Promis
   const memberRef = db.doc(`studios/${studioId}/members/${principal.uid}`);
   const slotRef = db.doc(paths.slot);
   const bookingRef = db.doc(paths.booking);
-  return db.runTransaction(async (transaction) => {
+  return withFirestoreQuota(() => db.runTransaction(async (transaction) => {
     const [studio, member, slot, booking] = await Promise.all([transaction.get(studioRef), transaction.get(memberRef), transaction.get(slotRef), transaction.get(bookingRef)]);
     assertActiveStudioMember(studio, member);
     const slotContext = assertAttendanceSlot(slot);
@@ -186,7 +187,7 @@ export async function markAttendance(principal: Principal, raw: unknown): Promis
       after: { bookingId: bookingRef.id, outcome: input.outcome, reservedCreditsAfter: counts.reservedCredits },
     }));
     return { bookingId: bookingRef.id, outcome: input.outcome, idempotent: false };
-  });
+  }));
 }
 
 export async function correctAttendance(principal: Principal, raw: unknown): Promise<AttendanceResult> {
@@ -199,7 +200,7 @@ export async function correctAttendance(principal: Principal, raw: unknown): Pro
   const memberRef = db.doc(`studios/${studioId}/members/${principal.uid}`);
   const slotRef = db.doc(paths.slot);
   const bookingRef = db.doc(paths.booking);
-  return db.runTransaction(async (transaction) => {
+  return withFirestoreQuota(() => db.runTransaction(async (transaction) => {
     const [studio, member, slot, booking] = await Promise.all([transaction.get(studioRef), transaction.get(memberRef), transaction.get(slotRef), transaction.get(bookingRef)]);
     assertActiveStudioMember(studio, member);
     const slotContext = assertAttendanceSlot(slot);
@@ -232,5 +233,5 @@ export async function correctAttendance(principal: Principal, raw: unknown): Pro
       after: { outcome: input.outcome, slotId: slotRef.id },
     }));
     return { bookingId: bookingRef.id, outcome: input.outcome, idempotent: false };
-  });
+  }));
 }

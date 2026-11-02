@@ -18,12 +18,12 @@ export function BookingConfirmation({ slotId, credits }: { slotId: string; credi
   return <section className={`${styles.confirmation} ${styles.bookingConfirmation}`} aria-labelledby="booking-confirmation-title">
     <p className={styles.kicker}>BOOKING CONFIRMATION</p>
     <h2 id="booking-confirmation-title">Reserve your place</h2>
+    <p id="booking-credit-impact" className={styles.note}>{available ? `Reserves 1 of your ${credits} available class passes.` : "You need an active membership with an available class pass before you can book."}</p>
     <form onSubmit={submit} className={styles.form}>
       <input type="hidden" name="slotId" value={slotId} />
       <input type="hidden" name="operationId" value={operationId} />
       {error && <p className={styles.error} role="alert">{error}</p>}
-      <button type="submit" disabled={!available || pending}>{pending ? "Confirming…" : "Confirm booking"}</button>
+      <button type="submit" aria-describedby="booking-credit-impact" disabled={!available || pending}>{pending ? "Confirming…" : "Confirm booking"}</button>
     </form>
-    <p className={styles.note}>{available ? `This confirms your class and reserves 1 of your ${credits} available class passes.` : "You need an active membership with an available class pass before you can book."}</p>
   </section>;
 }

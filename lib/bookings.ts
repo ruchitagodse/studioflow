@@ -1,13 +1,16 @@
+import { readPage } from "@/lib/firebase/pagination";
+import { readDocument, readQuery, withFirestoreQuota } from "@/lib/firebase/reads";
 import "server-only";
 
 import { randomUUID } from "node:crypto";
-import { FieldValue, Timestamp } from "firebase-admin/firestore";
+import { FieldValue, Filter, Timestamp } from "firebase-admin/firestore";
 import type { Principal } from "@/lib/auth/server";
 import { bookingPaths, bookingRejection, canReschedule, cancellationBalances, cancellationCreditOutcome, cancellationKind, hasActiveBooking, isIdempotentBookingRetry, remainingSlotCapacity, reservationBalance, reservationMoveRejection, rescheduledBookingCounts, type BookingCheck, type CancellationKind } from "@/lib/booking-logic";
-import { expireSubscriptionIfDue, subscriptionUsableCredits } from "@/lib/entitlements";
+import { readCustomerSubscription, subscriptionUsableCredits } from "@/lib/entitlements";
 import { getAdminDb } from "@/lib/firebase/admin";
 import { recordIncidentInTransaction } from "@/lib/incidents";
 import { promoteOneWaitlistEntry } from "@/lib/waitlist";
+import { waitlistEntryId } from "@/lib/waitlist-logic";
 import { bookingCancellationSchema, bookingRequestSchema, bookingRescheduleSchema, bookingSlotIdSchema } from "@/lib/validation";
 
 type SlotView = {
@@ -85,26 +88,17 @@ async function currentTrainerName(studioId: string, data: FirebaseFirestore.Docu
   const fallback = "Trainer";
   let uid = String(data.trainerUid ?? "");
   if (!uid && data.slotId) {
-    const slot = await getAdminDb().doc(`studios/${studioId}/slots/${String(data.slotId)}`).get();
+    const slot = await readDocument(`studios/${studioId}/slots/${String(data.slotId)}`);
     uid = String(slot.data()?.trainerUid ?? "");
   }
   if (!uid) return fallback;
-  const member = await getAdminDb().doc(`studios/${studioId}/members/${uid}`).get();
+  const member = await readDocument(`studios/${studioId}/members/${uid}`);
   return String(member.data()?.displayName ?? "").trim() || fallback;
 }
 
 async function currentSubscription(studioId: string, customerUid: string): Promise<CustomerSubscriptionView> {
-  const db = getAdminDb();
-  const memberRef = db.doc(`studios/${studioId}/members/${customerUid}`);
-  let member = await memberRef.get();
-  const activeSubscriptionId = member.data()?.activeSubscriptionId;
-  if (!activeSubscriptionId) return { usableCredits: 0, state: "none", endsAt: null };
-  await expireSubscriptionIfDue(studioId, String(activeSubscriptionId));
-  member = await memberRef.get();
-  const refreshedId = member.data()?.activeSubscriptionId;
-  if (!refreshedId) return { usableCredits: 0, state: "inactive", endsAt: null };
-  const subscription = await db.doc(`studios/${studioId}/subscriptions/${refreshedId}`).get();
-  if (!subscription.exists) return { usableCredits: 0, state: "none", endsAt: null };
+  const subscription = await readCustomerSubscription(studioId, customerUid);
+  if (!subscription) return { usableCredits: 0, state: "none", endsAt: null };
   const data = subscription.data()!;
   const endsAt = asDate(data.effectiveEndsAt) ?? asDate(data.endsAt);
   if (!endsAt) return { usableCredits: 0, state: "inactive", endsAt: null };
@@ -114,32 +108,32 @@ async function currentSubscription(studioId: string, customerUid: string): Promi
 
 async function existingBookingIds(studioId: string, customerUid: string) {
   const db = getAdminDb();
-  const bookings = await db.collection(`studios/${studioId}/bookings`)
+  const bookings = await readQuery(db.collection(`studios/${studioId}/bookings`)
     .where("customerUid", "==", customerUid)
-    .limit(50)
-    .get();
+    .where("status", "==", "confirmed")
+    .where("slotStartsAt", ">", Timestamp.now())
+    .limit(50));
   return new Set(bookings.docs.filter((doc) => doc.data().status === "confirmed").map((doc) => String(doc.data().slotId)));
 }
 
 async function existingWaitlistSlotIds(studioId: string, customerUid: string) {
   const db = getAdminDb();
-  const entries = await db.collection(`studios/${studioId}/waitlists`)
+  const entries = await readQuery(db.collection(`studios/${studioId}/waitlists`)
     .where("customerUid", "==", customerUid)
     .where("status", "==", "active")
-    .limit(50)
-    .get();
+    .limit(50));
   return new Set(entries.docs.map((doc) => String(doc.data().slotId)));
 }
 
-export async function getCustomerSchedule(principal: Principal) {
+export async function getCustomerSchedule(principal: Principal, includeSubscription = true) {
   const studioId = requireCustomer(principal);
   const db = getAdminDb();
   const [studio, slots, bookedSlotIds, waitlistedSlotIds, subscription] = await Promise.all([
-    db.doc(`studios/${studioId}`).get(),
-    db.collection(`studios/${studioId}/slots`).where("startsAt", ">", Timestamp.fromDate(new Date())).orderBy("startsAt", "asc").limit(100).get(),
+    readDocument(`studios/${studioId}`),
+    readQuery(db.collection(`studios/${studioId}/slots`).where("status", "==", "published").where("startsAt", ">", Timestamp.fromDate(new Date())).orderBy("startsAt", "asc").limit(60)),
     existingBookingIds(studioId, principal.uid),
     existingWaitlistSlotIds(studioId, principal.uid),
-    currentSubscription(studioId, principal.uid),
+    includeSubscription ? currentSubscription(studioId, principal.uid) : Promise.resolve({ usableCredits: 0, state: "none" as const, endsAt: null }),
   ]);
   if (!studio.exists || studio.data()?.status !== "active") throw new Error("INACTIVE_STUDIO");
   const visibleSlots = slots.docs.filter((doc) => doc.data().status === "published").slice(0, 60);
@@ -159,29 +153,45 @@ export async function getCustomerSlot(principal: Principal, slotId: string) {
   const studioId = requireCustomer(principal);
   bookingSlotIdSchema.parse(slotId);
   const db = getAdminDb();
-  const [studio, slot, bookedSlotIds, waitlistedSlotIds, subscription] = await Promise.all([
-    db.doc(`studios/${studioId}`).get(),
-    db.doc(`studios/${studioId}/slots/${slotId}`).get(),
-    existingBookingIds(studioId, principal.uid),
-    existingWaitlistSlotIds(studioId, principal.uid),
+  const [studio, slot, bookings, waitlist, subscription] = await Promise.all([
+    readDocument(`studios/${studioId}`),
+    readDocument(`studios/${studioId}/slots/${slotId}`),
+    readQuery(db.collection(`studios/${studioId}/bookings`).where("customerUid", "==", principal.uid).where("slotId", "==", slotId).where("status", "==", "confirmed").limit(1)),
+    readDocument(`studios/${studioId}/waitlists/${waitlistEntryId(slotId, principal.uid)}`),
     currentSubscription(studioId, principal.uid),
   ]);
   if (!studio.exists || studio.data()?.status !== "active") throw new Error("INACTIVE_STUDIO");
   if (!slot.exists || slot.data()?.status !== "published") return null;
-  const initialView = slotView(slot.id, slot.data()!, bookedSlotIds.has(slot.id), waitlistedSlotIds.has(slot.id));
+  const initialView = slotView(slot.id, slot.data()!, !bookings.empty, waitlist.data()?.status === "active");
   const view = initialView ? { ...initialView, trainerName: await currentTrainerName(studioId, slot.data()!) } : null;
   if (!view) return null;
   return { slot: view, subscription, started: new Date(view.startsAt).getTime() <= Date.now() };
 }
 
-export async function getCustomerBookings(principal: Principal): Promise<CustomerBookingView[]> {
+export async function getCustomerBookingsPage(principal: Principal, view: "upcoming" | "history", after?: string) {
   const studioId = requireCustomer(principal);
   const db = getAdminDb();
-  const bookings = await db.collection(`studios/${studioId}/bookings`).where("customerUid", "==", principal.uid).limit(50).get();
+  const path = `studios/${studioId}/bookings`;
+  const owned = db.collection(path).where("customerUid", "==", principal.uid);
+  const upcoming = owned.where("status", "==", "confirmed").where("slotStartsAt", ">", Timestamp.now());
+  const history = owned.where(Filter.or(
+    Filter.where("slotStartsAt", "<=", Timestamp.now()),
+    Filter.where("status", "in", ["cancelled-free", "cancelled-late", "rescheduled", "voided", "attended", "no-show"]),
+  ));
+  const [page, count] = await Promise.all([
+    readPage(view === "upcoming" ? upcoming.orderBy("slotStartsAt", "asc") : history.orderBy("slotStartsAt", "desc"), path, after, 20),
+    readQuery(upcoming.count()),
+  ]);
+  const items = await bookingViews(studioId, page.docs);
+  return { items: items.filter((item) => view === "upcoming" ? item.isUpcoming : !item.isUpcoming), nextCursor: page.nextCursor, upcomingCount: count.data().count };
+}
+
+async function bookingViews(studioId: string, docs: FirebaseFirestore.QueryDocumentSnapshot[]): Promise<CustomerBookingView[]> {
   const now = Date.now();
-  const sorted = bookings.docs.sort((left, right) => Number(right.data().slotStartsAt?.toMillis?.() ?? 0) - Number(left.data().slotStartsAt?.toMillis?.() ?? 0));
-  const trainerNames = await Promise.all(sorted.map((doc) => currentTrainerName(studioId, doc.data())));
-  return sorted.map((doc, index) => {
+  // Preserve Firestore's order, including its document-ID tie-breaker, so the
+  // displayed page agrees with the cursor for both Upcoming and History.
+  const trainerNames = await Promise.all(docs.map((doc) => currentTrainerName(studioId, doc.data())));
+  return docs.map((doc, index) => {
     const data = doc.data();
     const slotStartsAt = asDate(data.slotStartsAt);
     const isConfirmed = String(data.status ?? "confirmed") === "confirmed";
@@ -215,7 +225,7 @@ export async function createBooking(principal: Principal, raw: unknown): Promise
   const memberRef = db.doc(`studios/${studioId}/members/${principal.uid}`);
   const bookingRef = db.doc(paths.booking);
 
-  return db.runTransaction(async (transaction) => {
+  return withFirestoreQuota(() => db.runTransaction(async (transaction) => {
     const [studio, member, slot, existingBooking, customerSlotBookings] = await Promise.all([
       transaction.get(db.doc(`studios/${studioId}`)),
       transaction.get(memberRef),
@@ -297,7 +307,7 @@ export async function createBooking(principal: Principal, raw: unknown): Promise
       createdAt: FieldValue.serverTimestamp(), result: "success", after: { bookingId: bookingRef.id, amount: -1, balanceAfter },
     });
     return { bookingId: bookingRef.id, idempotent: false };
-  });
+  }));
 }
 
 function assertCustomerContext(studio: FirebaseFirestore.DocumentSnapshot, member: FirebaseFirestore.DocumentSnapshot) {
@@ -312,7 +322,7 @@ export async function cancelCustomerBooking(principal: Principal, raw: unknown):
   const studioId = requireCustomer(principal); const input = bookingCancellationSchema.parse(raw); const db = getAdminDb();
   const bookingRef = db.doc(`studios/${studioId}/bookings/${input.bookingId}`); const memberRef = db.doc(`studios/${studioId}/members/${principal.uid}`);
   let openedSlotId: string | null = null;
-  const result = await db.runTransaction(async (transaction) => {
+  const result = await withFirestoreQuota(() => db.runTransaction(async (transaction) => {
     const [studio, member, booking] = await Promise.all([transaction.get(db.doc(`studios/${studioId}`)), transaction.get(memberRef), transaction.get(bookingRef)]);
     assertCustomerContext(studio, member);
     if (!booking.exists || booking.data()?.customerUid !== principal.uid) throw new Error("BOOKING_NOT_FOUND");
@@ -345,7 +355,7 @@ export async function cancelCustomerBooking(principal: Principal, raw: unknown):
     transaction.set(db.doc(`studios/${studioId}/auditEvents/${randomUUID()}`), { action: creditOutcome === "released" ? "credit.released" : creditOutcome === "expired" ? "credit.expired" : "credit.consumed", actorUid: principal.uid, targetId: subscriptionRef.id, createdAt: FieldValue.serverTimestamp(), result: "success", after: { bookingId: bookingRef.id, balanceAfter: outcome.availableCredits, reservedCreditsAfter: outcome.reservedCredits } });
     openedSlotId = slotId;
     return { bookingId: bookingRef.id, kind, creditOutcome, idempotent: false };
-  });
+  }));
   if (openedSlotId) await promoteOneWaitlistEntry(studioId, openedSlotId, principal.uid);
   return result;
 }
@@ -356,7 +366,7 @@ export async function rescheduleCustomerBooking(principal: Principal, raw: unkno
   const studioId = requireCustomer(principal); const input = bookingRescheduleSchema.parse(raw); const db = getAdminDb();
   const originalRef = db.doc(`studios/${studioId}/bookings/${input.bookingId}`); const memberRef = db.doc(`studios/${studioId}/members/${principal.uid}`); const targetPaths = bookingPaths(studioId, input.targetSlotId, principal.uid, input.operationId); const targetSlotRef = db.doc(targetPaths.slot); const targetBookingRef = db.doc(targetPaths.booking);
   let openedSlotId: string | null = null;
-  const result = await db.runTransaction(async (transaction) => {
+  const result = await withFirestoreQuota(() => db.runTransaction(async (transaction) => {
     const [studio, member, original, targetSlot, targetBooking, targetCustomerBookings] = await Promise.all([transaction.get(db.doc(`studios/${studioId}`)), transaction.get(memberRef), transaction.get(originalRef), transaction.get(targetSlotRef), transaction.get(targetBookingRef), transaction.get(db.collection(`studios/${studioId}/bookings`).where("customerUid", "==", principal.uid).where("slotId", "==", input.targetSlotId))]);
     assertCustomerContext(studio, member);
     if (!original.exists || original.data()?.customerUid !== principal.uid) throw new Error("BOOKING_NOT_FOUND");
@@ -390,7 +400,7 @@ export async function rescheduleCustomerBooking(principal: Principal, raw: unkno
     transaction.set(db.doc(`studios/${studioId}/auditEvents/${randomUUID()}`), { action: "booking.rescheduled", actorUid: principal.uid, targetId: targetBookingRef.id, createdAt: FieldValue.serverTimestamp(), result: "success", before: { bookingId: originalRef.id, slotId: originalSlotId }, after: { slotId: targetSlotRef.id, reservationLedgerId } });
     openedSlotId = originalSlotId;
     return { bookingId: targetBookingRef.id, idempotent: false };
-  });
+  }));
   if (openedSlotId) await promoteOneWaitlistEntry(studioId, openedSlotId, principal.uid);
   return result;
 }

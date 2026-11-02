@@ -1,0 +1,31 @@
+.profile{display:grid;gap:20px;width:min(100%,720px);font-family:"Segoe UI",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+.identityCard{overflow:hidden;border:1px solid var(--color-border);border-radius:16px;background:var(--color-surface)}
+.cover{position:relative;height:100px;overflow:hidden;background:var(--color-surface-secondary)}
+.cover img{object-fit:cover;object-position:center 48%;filter:brightness(.68)}
+.cover:after{position:absolute;inset:0;background:linear-gradient(90deg,#0007,transparent);content:""}
+.cover>span{position:absolute;z-index:1;bottom:16px;left:22px;color:#fff;font-size:10px;font-weight:500;letter-spacing:.14em}
+.identity{display:flex;align-items:center;gap:16px;padding:22px;min-width:0}
+.avatar{display:grid;place-items:center;flex:none;width:62px;height:62px;border:1px solid color-mix(in srgb,var(--color-primary) 35%,var(--color-border));border-radius:50%;background:color-mix(in srgb,var(--color-primary) 11%,var(--color-surface));color:var(--color-primary);font-size:23px;font-weight:500}
+.identity>div{min-width:0}.memberLabel{color:var(--color-text-muted);font-size:9px;font-weight:500;letter-spacing:.11em}
+.identity h2{margin:5px 0;color:var(--color-text);font-size:22px;font-weight:600;line-height:1.2;letter-spacing:-.02em}
+.identity p{margin:0;color:var(--color-text-muted);font-size:12px;line-height:1.45;overflow-wrap:anywhere}
+.shortcuts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.shortcuts>a{display:grid;grid-template-columns:1fr auto;gap:8px;min-width:0;padding:18px;border:1px solid var(--color-border);border-radius:13px;background:var(--color-surface)}
+.shortcutIcon{display:grid;place-items:center;width:30px;height:30px;color:var(--color-primary)}
+.shortcutIcon svg,.rowIcon svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.arrow{color:var(--color-text-muted);font-size:16px}.shortcuts strong{grid-column:1/-1;margin-top:3px;color:var(--color-text);font-size:14px;font-weight:600;line-height:1.3}
+.shortcuts small{grid-column:1/-1;color:var(--color-text-muted);font-size:11px;line-height:1.4}
+.shortcuts a:hover,.accountCard a:hover{border-color:var(--color-primary);background:color-mix(in srgb,var(--color-primary) 5%,var(--color-surface))}
+.account h2{margin:0 0 11px;color:var(--color-text);font-size:14px;font-weight:600;letter-spacing:0}
+.accountCard{overflow:hidden;border:1px solid var(--color-border);border-radius:13px;background:var(--color-surface)}
+.accountRow{display:grid;grid-template-columns:30px minmax(0,1fr) auto;align-items:center;gap:12px;min-height:72px;padding:14px 18px}
+.accountRow+.accountRow{border-top:1px solid var(--color-border)}
+.rowIcon{display:grid;place-items:center;color:var(--color-text-muted)}
+.accountRow>div{display:grid;gap:4px;min-width:0}
+.accountRow strong{color:var(--color-text);font-size:13px;font-weight:500;line-height:1.4;overflow-wrap:anywhere}
+.accountRow>div>span{color:var(--color-text-muted);font-size:11px;line-height:1.4}
+.accountRow>small{padding:5px 8px;border-radius:6px;background:var(--color-surface-secondary);color:var(--color-text-muted);font-size:10px}
+.chevron{color:var(--color-text-muted);font-size:23px;font-weight:300}
+.footer{display:grid;gap:12px}.signOut{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;min-height:44px;border:1px solid var(--color-border);border-radius:10px;background:transparent;color:var(--color-text-muted);font-size:12px;font-weight:500}.signOut svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.footer p{margin:0;color:var(--color-text-muted);font-size:11px;line-height:1.5;text-align:center}
+@media(max-width:767px){.profile{gap:16px}.cover{height:65px}.cover>span{bottom:12px;left:16px;font-size:9px}.identity{gap:13px;padding:16px}.avatar{width:54px;height:54px;font-size:21px}.identity h2{font-size:20px}.identity p{font-size:11px}.shortcuts{gap:10px}.shortcuts>a{gap:5px;padding:14px}.shortcuts strong{font-size:13px}.shortcuts small{font-size:10px}.shortcutIcon{width:25px;height:25px}.accountRow{min-height:64px;gap:10px;padding:12px 14px}.account h2{font-size:13px}.footer p{font-size:10px}}
