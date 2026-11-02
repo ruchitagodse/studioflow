@@ -1,0 +1,7 @@
+{
+  "projects": {
+    "default": "bookingsystem-27cdc",
+    "testing": "bookingsystem-27cdc",
+    "production": "studiocalendar-91fb0"
+  }
+}
