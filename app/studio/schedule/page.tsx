@@ -1,6 +1,5 @@
 import { Timestamp } from "firebase-admin/firestore";
 import { scheduleWindow } from "@/lib/schedule-window";
-import { shiftCalendarDate } from "@/lib/customer-calendar";
 import { studioLocalInstant } from "@/lib/schedule-time";
 import { readPage } from "@/lib/firebase/pagination";
 import { ListPagination } from "@/app/components/list-pagination";
@@ -38,5 +37,5 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
     // This is a request-time server read used to prevent stale UI actions on elapsed slots.
     id: doc.id, className: String(doc.data().className), trainerUid: String(doc.data().trainerUid), trainerName: trainerNames.get(String(doc.data().trainerUid)) ?? "Trainer", localDate: String(doc.data().localDate), startTime: String(doc.data().startTime), endTime: String(doc.data().endTime), capacity: Number(doc.data().capacity), confirmedBookingCount: Number(doc.data().confirmedBookingCount ?? 0), status: String(doc.data().status), isPast: doc.data().startsAt.toDate().getTime() <= /* eslint-disable-line react-hooks/purity */ Date.now(),
   }));
-  return <><p style={{ padding: "0 24px", fontSize: 12, color: "var(--color-text-muted)" }}>Classes from {period.start} through {shiftCalendarDate(period.end, -1)}. Showing up to 40 per page.</p><ScheduleManager timezone={timezone} classes={classes} trainers={trainers} slots={slots} calendarDate={period.date} calendarView={period.view} calendarToday={today} /><ListPagination pathname="/studio/schedule" after={after} nextCursor={slotDocs.nextCursor} params={{ date: period.date, view: period.view }} /></>;
+  return <><ScheduleManager timezone={timezone} classes={classes} trainers={trainers} slots={slots} calendarDate={period.date} calendarView={period.view} calendarToday={today} /><ListPagination pathname="/studio/schedule" after={after} nextCursor={slotDocs.nextCursor} params={{ date: period.date, view: period.view }} /></>;
 }

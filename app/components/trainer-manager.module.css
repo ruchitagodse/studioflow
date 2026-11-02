@@ -1,4 +1,97 @@
 .page{max-width:none!important;color:var(--color-text)}
+.page .panel { min-width: 0; }
+.page .panel .table, .page .panel .invitationTable {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  gap: 14px;
+  width: 100%;
+  min-width: 0;
+  overflow: visible;
+}
+.page .panel .head, .page .panel .invitationHead { display: none !important; }
+.page .panel .row, .page .panel .invitationRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  align-content: start;
+  gap: 14px;
+  min-width: 0 !important;
+  width: 100%;
+  padding: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: var(--color-surface-elevated);
+}
+.page .panel .trainer { grid-column: 1 / -1; }
+.page .panel .trainer b { font-size: 1rem; white-space: normal; overflow-wrap: anywhere; }
+.page .panel .row > span:first-of-type, .page .panel .invitationRow > span {
+  grid-column: 1 / -1;
+  color: var(--color-text-muted);
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.page .panel .row > span:nth-of-type(2)::before,
+.page .panel .row > span:nth-of-type(3)::before {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--color-text-muted);
+  font-size: .65rem;
+  font-weight: 750;
+}
+.page .panel .row > span:nth-of-type(2)::before { content: "Specialization"; }
+.page .panel .row > span:nth-of-type(3)::before { content: "Upcoming classes"; }
+.page .panel .specialization { white-space: normal; }
+.page .panel .actions {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+}
+.page .panel .actions button, .page .panel .actions a {
+  min-height: 44px;
+  white-space: normal;
+  text-align: center;
+  text-decoration: none;
+}
+.page .panel .actions .more, .page .panel .actions a:nth-of-type(2) { display: none; }
+.page .panel .invitationActions { grid-column: 1 / -1; flex-wrap: wrap; }
+.page .panel .invitationActions button { min-height: 44px; }
+.page .panel .invitationRow time { font-size: .75rem; }
+.page .panel .invitationRow time::before { content: "Expires "; }
+.page .panel .toolbar p, .page .panel .inviteHeading p { display: none; }
+.page .header h1 { margin: 0; font-family: inherit; font-size: 1.7rem; font-weight: 700; line-height: 1.2; letter-spacing: -.025em; }
+.page .toolbar p, .page .inviteHeading p { display: none; }
+
+@media (max-width: 960px) {
+  .page .header { flex-direction: row; align-items: center; gap: 12px; padding: 0; }
+  .page .header > button { width: auto; min-height: 44px; padding: 10px 12px; font-size: .8rem; }
+  .page .toolbar, .page .inviteHeading { flex-direction: column; align-items: stretch; }
+  .page .filters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; }
+  .page .search { grid-column: 1 / -1; }
+  .page .search input { width: 100%; min-width: 0; }
+  .page .filters input, .page .filters select { min-width: 0; width: 100%; min-height: 46px; height: auto; font-size: .85rem; }
+  .page .table, .page .invitationTable { display: grid; gap: 12px; overflow: visible; }
+  .page .head, .page .invitationHead { display: none !important; }
+  .page .row, .page .invitationRow { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 14px; min-width: 0 !important; padding: 16px; border: 1px solid var(--color-border); border-radius: 14px; background: var(--color-surface-elevated); }
+  .page .trainer { grid-column: 1 / -1; }
+  .page .trainer b { font-size: 1rem; white-space: normal; overflow-wrap: anywhere; }
+  .page .row > span:first-of-type, .page .invitationRow > span { grid-column: 1 / -1; overflow-wrap: anywhere; color: var(--color-text-muted); }
+  .page .row > span:nth-of-type(2)::before, .page .row > span:nth-of-type(3)::before { display: block; margin-bottom: 7px; color: var(--color-text-muted); font-size: .65rem; font-weight: 750; }
+  .page .row > span:nth-of-type(2)::before { content: "Specialization"; }
+  .page .row > span:nth-of-type(3)::before { content: "Upcoming classes"; }
+  .page .specialization { white-space: normal; }
+  .page .actions { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); padding-top: 12px; border-top: 1px solid var(--color-border); }
+  .page .actions a, .page .actions button { min-height: 44px; white-space: normal; text-align: center; text-decoration: none; }
+  .page .actions a:nth-of-type(2), .page .actions .more { display: none; }
+  .page .invitationActions { grid-column: 1 / -1; flex-wrap: wrap; }
+  .page .invitationActions button { min-height: 44px; }
+  .page .invitationRow time::before { content: "Expires "; }
+  .page .modal { padding: 22px 16px; }
+  .page .modal h2 { padding-right: 44px; overflow-wrap: anywhere; }
+  .page .close { width: 44px; min-height: 44px !important; }
+  .page .modal input, .page .modal select { min-height: 46px; font-size: 1rem; }
+  .page .modal form button { min-height: 44px; }
+}
 .header{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin:4px 0 22px;padding:0 6px}.header h1{margin:4px 0 3px;font-family:Georgia,serif;font-size:clamp(2.5rem,4.5vw,3.9rem);letter-spacing:-.055em;line-height:1.02}.header p{margin:0;color:var(--color-text-muted)}.header>button,.secondaryButton,.modal button{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:42px;border:1px solid transparent;border-radius:8px;padding:10px 16px;background:var(--color-button-background);color:var(--color-button-text);font:inherit;font-size:.86rem;font-weight:800;box-shadow:0 5px 11px color-mix(in srgb,var(--color-primary) 14%,transparent);cursor:pointer}.header>button{margin-left:auto}.header>button span{font-size:1.15rem;line-height:1}
 .panel{margin-bottom:18px;padding:18px;border:1px solid var(--color-border);border-radius:15px;background:var(--color-surface);box-shadow:0 10px 28px color-mix(in srgb,var(--color-primary) 4%,transparent)}.toolbar,.inviteHeading{display:flex;align-items:center;justify-content:space-between;gap:18px;margin:0 2px 17px}.toolbar h2,.inviteHeading h2{margin:0 0 4px;font-family:Georgia,serif;font-size:1.35rem;letter-spacing:-.025em}.toolbar p,.inviteHeading p{margin:0;color:var(--color-text-muted);font-size:.84rem}.inviteHeading h2>span{display:inline-grid;width:34px;height:34px;margin-right:12px;border-radius:9px;place-items:center;background:var(--color-nav-active-background);color:var(--color-primary);font-family:var(--font-geist-sans);font-size:1rem;vertical-align:middle}
 .filters{display:flex;align-items:center;gap:8px}.filters input,.filters select{height:38px;border:1px solid var(--color-border);border-radius:8px;padding:8px 11px;background:var(--color-input-background);color:var(--color-text);font-size:.76rem;font-weight:650}.filters select{min-width:132px}.search{position:relative}.search>span:first-child{position:absolute;z-index:1;top:8px;left:11px;color:var(--color-text-muted);font-size:1rem}.search input{width:275px;padding-left:34px}

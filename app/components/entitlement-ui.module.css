@@ -1,4 +1,74 @@
 .entUi { max-width: 1440px !important; }
+.compactTitle { margin: 0 0 16px; color: var(--color-text); font-size: 1.7rem; line-height: 1.2; }
+.entUi[data-view="plans"] .entHeader h1 { margin: 0 !important; font-size: 1.7rem !important; }
+.entUi[data-view="plans"] .entHeader p:empty { display: none; }
+.entUi[data-view="plans"] .entHeader { align-items: center; }
+.entUi[data-view="plans"] .createPlanButton { min-height: 44px; background: var(--color-primary); }
+.planLibrary .planFilters { width: 100%; }
+.planLibrary .planFilters label { min-height: 44px; }
+.planLibrary .planFilters input { font-size: .85rem; }
+.planLibrary .planFilters select { width: 130px; min-height: 44px; font-size: .8rem; }
+
+@media (max-width: 960px) {
+  .entUi[data-view="plans"] .entHeader { flex-direction: row; }
+  .planLibrary .libraryHeader { display: block; }
+  .entUi .planLibrary .planIdentity b { font-size: 1rem; overflow-wrap: anywhere; }
+  .planLibrary .planDescription { white-space: normal; font-size: .8rem; line-height: 1.5; }
+  .planLibrary .planPrice { font-size: 1.3rem; color: var(--color-text); font-weight: 750; }
+  .planLibrary .planCredits { font-size: .9rem; justify-self: end; }
+  .planLibrary .planDuration { font-size: .8rem; }
+  .planLibrary .planStatus { font-size: .7rem !important; padding: 7px 10px !important; }
+  .planLibrary .planActions { padding-top: 12px; border-top: 1px solid var(--color-border); gap: 10px; }
+  .entUi .planLibrary .planEditButton { flex: 1; min-height: 44px; font-size: .8rem; }
+  .entUi .planLibrary .planOverflow summary { width: 44px; height: 44px; }
+  .entUi .planDrawer { padding: 20px 16px; max-height: 100dvh; }
+  .entUi .planDrawerHeader button { flex-shrink: 0; width: 44px; height: 44px; }
+  .entUi .planDrawer form { gap: 16px !important; }
+  .entUi .planDrawer form label { font-size: .85rem !important; }
+  .entUi .planDrawer form input:not([type="radio"]),
+  .entUi .planDrawer form select { min-height: 46px !important; font-size: 1rem; }
+  .entUi .planDrawer form textarea { min-height: 88px !important; font-size: 1rem; }
+  .entUi .planDrawer form button { min-height: 44px !important; }
+  .entUi .durationOption { min-height: 44px; }
+  .entUi .durationLegend { font-size: .8rem; }
+}
+
+@media (max-width: 960px) {
+  .entUi[data-view="subscriptions"] .subscriptionToolbar { gap: 14px; }
+  .entUi[data-view="subscriptions"] .subscriptionChips { flex-wrap: nowrap; width: 100%; overflow-x: auto; padding-bottom: 4px; }
+  .entUi[data-view="subscriptions"] .subscriptionChips button { flex: 0 0 auto; min-height: 44px; font-size: .75rem; }
+  .entUi[data-view="subscriptions"] .subscriptionTools { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; }
+  .entUi[data-view="subscriptions"] .planFilters { display: grid; grid-template-columns: minmax(0, 1fr); }
+  .entUi[data-view="subscriptions"] .planFilters label { width: 100%; min-height: 46px; }
+  .entUi[data-view="subscriptions"] .planFilters input { min-width: 0; font-size: .85rem; }
+  .entUi[data-view="subscriptions"] .planFilters select { display: none; }
+  .entUi[data-view="subscriptions"] .exportButton { min-height: 46px; }
+  .entUi[data-view="subscriptions"] .subscriptionRow { gap: 14px !important; }
+  .entUi[data-view="subscriptions"] .subscriptionCustomer { grid-column: 1 / -1; padding-bottom: 12px; border-bottom: 1px solid var(--color-border); }
+  .entUi[data-view="subscriptions"] .customerAvatar { width: 40px; height: 40px; font-size: .8rem; }
+  .entUi[data-view="subscriptions"] .subscriptionCustomer b { font-size: 1rem; overflow-wrap: anywhere; }
+  .entUi[data-view="subscriptions"] .subscriptionPlan b,
+  .entUi[data-view="subscriptions"] .creditBalance b { font-size: .9rem; }
+  .entUi[data-view="subscriptions"] .subscriptionPlan small { max-width: none; font-size: .72rem; }
+  .entUi[data-view="subscriptions"] .creditBalance::before,
+  .entUi[data-view="subscriptions"] .subscriptionRow time::before { display: block; margin-bottom: 5px; color: var(--color-text-muted); font-size: .65rem; font-weight: 700; }
+  .entUi[data-view="subscriptions"] .creditBalance::before { content: "Available credits"; }
+  .entUi[data-view="subscriptions"] .subscriptionRow time { font-size: .85rem; }
+  .entUi[data-view="subscriptions"] .subscriptionRow time:first-of-type::before { content: "Started"; }
+  .entUi[data-view="subscriptions"] .subscriptionRow time:last-of-type::before { content: "Expires"; }
+  .entUi[data-view="subscriptions"] .subscriptionStatus { min-height: 30px; font-size: .75rem !important; }
+  .entUi[data-view="subscriptions"] .cancellationDetail { font-size: .75rem; line-height: 1.5; overflow-wrap: anywhere; }
+  .entUi[data-view="subscriptions"] .subscriptionActions { padding-top: 12px; border-top: 1px solid var(--color-border); gap: 8px; }
+  .entUi[data-view="subscriptions"] .subscriptionActions > a { display: inline-flex; align-items: center; min-height: 44px; color: var(--color-primary); font-size: .8rem; }
+  .entUi[data-view="subscriptions"] .subscriptionActions button,
+  .entUi[data-view="subscriptions"] .subscriptionActions summary { min-height: 44px; }
+  .entUi[data-view="subscriptions"] .subscriptionEditor { margin-left: auto; }
+  .entUi[data-view="subscriptions"] .subscriptionEditor[open] > form { position: static; width: 100%; margin-top: 12px !important; box-shadow: none; }
+  .entUi[data-view="subscriptions"] .subscriptionEditor[open] { flex-basis: 100%; }
+  .entUi[data-view="subscriptions"] form input,
+  .entUi[data-view="subscriptions"] form select { min-height: 44px !important; font-size: .9rem; }
+  .entUi[data-view="subscriptions"] form label { font-size: .8rem !important; }
+}
 .entHeader { display: flex !important; margin-bottom: 16px !important; padding-bottom: 0 !important; border: 0 !important; }
 .entHeader h1 { margin: 4px 0 6px !important; font-size: clamp(2.3rem, 4vw, 3.5rem) !important; }
 .entHeader > div > p:last-child { color: var(--color-text-muted); font-size: .8rem; }
@@ -374,3 +444,72 @@
 .historyList{display:grid;gap:10px;margin-top:18px}.historyList article{display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px;padding:16px;border:1px solid var(--color-border);border-radius:10px}.historyList h3{margin:0 0 7px;font-size:16px}.historyList span,.historyList small{display:block;margin-top:5px;color:var(--color-text-muted);font-size:12px}.historyList em{font-size:12px;font-style:normal}.historyList a{grid-column:1/-1;justify-self:end;min-height:36px;padding:9px 0;color:var(--color-primary);font-size:12px;font-weight:600}
 @media(max-width:767px){.membershipHistory{padding:18px}.historyList article{padding:13px}.historyButton{min-height:44px}}
 .subscriptionActions,.creditActions{flex-wrap:wrap}.subscriptionActions .historyButton,.creditActions .historyButton{flex:none;font-size:11px}
+
+.entUi[data-view="credits"] > .entHeader { display: none; }
+.creditActivity .libraryHeader p { display: none; }
+.creditActivity .libraryHeader h2 { font-size: 1.7rem !important; }
+.ledgerHeader p, .ledgerHeader span { display: none; }
+.ledgerHeader a { flex-shrink: 0; width: 44px; height: 44px; }
+.ledgerFilters button { min-height: 44px; font-size: .75rem; }
+
+@media (max-width: 960px) {
+  .creditActivity .libraryHeader { display: grid; gap: 14px; }
+  .creditActivity .planFilters { width: 100%; }
+  .creditActivity .planFilters input { min-width: 0; font-size: .9rem; }
+  .subscriptionLibrary .creditRow { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; padding: 16px !important; }
+  .creditActivity .creditRow .subscriptionCustomer { grid-column: 1 / 3; }
+  .creditActivity .creditRow .subscriptionStatus { grid-column: 3; grid-row: 1; justify-self: end; }
+  .creditActivity .creditRow .creditPlan { grid-column: 1 / -1; }
+  .creditActivity .creditMeasure { gap: 8px; }
+  .creditActivity .creditMeasure b { font-size: 1.4rem; }
+  .creditActivity .creditMeasure small { font-size: .65rem; white-space: normal; }
+  .creditActivity .creditActions { grid-column: 1 / -1; padding-top: 12px; border-top: 1px solid var(--color-border); }
+  .creditActivity .creditActions > a { display: inline-flex; min-height: 44px; align-items: center; color: var(--color-primary); }
+  .creditActions .subscriptionEditor summary { min-height: 44px; }
+  .ledgerTable { display: grid; gap: 10px; padding-top: 10px; border: 0; }
+  .ledgerTable article { padding: 14px; border: 1px solid var(--color-border); border-radius: 12px; background: var(--color-surface-elevated); }
+  .ledgerTable time { grid-column: 1; }
+  .ledgerTable .ledgerType { grid-column: 2; grid-row: 1; }
+  .ledgerTable .ledgerDescription { grid-column: 1; }
+  .ledgerTable strong { grid-column: 2; grid-row: 2; }
+  .ledgerBalance { flex-wrap: wrap; }
+}
+
+.entUi[data-view="pauses"] > .entHeader { display: none !important; }
+.pauseHeader h1 { margin: 0; font-size: 1.7rem; line-height: 1.2; }
+
+@media (max-width: 960px) {
+  .entUi .pauseLibrary { padding: 18px !important; }
+  .pauseHeader { display: grid; gap: 18px; }
+  .pauseFilters { display: grid; grid-template-columns: minmax(0, 1fr) 140px; width: 100%; gap: 10px; }
+  .pauseFilters label { grid-column: 1; grid-row: 1; width: 100%; min-width: 0; padding: 10px; }
+  .pauseFilters select { grid-column: 2; grid-row: 1; width: 100%; padding: 10px; }
+  .pauseFilters input { min-width: 0; font-size: .85rem; }
+  .pauseTableHead { display: none; }
+  .pauseRows { display: grid; gap: 12px; margin-top: 18px; border: 0; }
+  .pauseRow { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 12px; min-height: 0; padding: 16px; border: 1px solid var(--color-border); border-radius: 14px; background: var(--color-surface-elevated); }
+  .pauseCustomer { grid-column: 1 / -1; min-width: 0; padding-bottom: 12px; border-bottom: 1px solid var(--color-border); }
+  .pauseCustomer > span:last-child { min-width: 0; }
+  .pauseCustomer b { font-size: 1rem; overflow-wrap: anywhere; }
+  .pauseCustomer small { max-width: none; white-space: normal; overflow-wrap: anywhere; }
+  .pauseAvatar { width: 44px; height: 44px; background: var(--color-surface-secondary); color: var(--color-primary); }
+  .pauseAllowance::before, .pauseStart::before, .pauseEnd::before { display: block; margin-bottom: 6px; color: var(--color-text-muted); font-size: .65rem; font-weight: 750; }
+  .pauseAllowance::before { content: "Pause allowance"; }
+  .pauseStart { display: block; }
+  .pauseStart::before { content: "Membership started"; }
+  .pauseStart > svg { display: none; }
+  .pauseEnd::before { content: "Pause ends"; }
+  .pausePlan { padding: 10px; }
+  .pausePlan b, .pauseAllowance b, .pauseStart b, .pauseEnd b { font-size: .85rem; }
+  .pauseStatus { min-height: 32px; padding: 6px 10px; font-size: .75rem; }
+  .pauseActions { grid-column: 1 / -1; }
+  .pauseEditor summary { width: 100%; min-height: 46px; border-color: var(--color-border); background: var(--color-surface); color: var(--color-primary); }
+  .entUi .pauseEditor form label { font-size: .85rem !important; }
+  .entUi .pauseEditor form input { min-height: 46px !important; font-size: 1rem; }
+  .entUi .pauseEditor form button { min-height: 44px !important; }
+}
+
+@media (max-width: 390px) {
+  .pauseFilters { grid-template-columns: 1fr; }
+  .pauseFilters select { grid-column: 1; grid-row: 2; }
+}

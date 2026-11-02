@@ -20,10 +20,11 @@ The existing testing configuration was preserved in `.env.local` and copied to
 
 The production web configuration supplied by the owner has been placed in
 `.env.production.local`, including the matching server project ID. Production
-`FIREBASE_CLIENT_EMAIL` and `FIREBASE_PRIVATE_KEY` are intentionally empty until
-the production project's Admin SDK credentials are supplied securely. Those
-empty values prevent accidental fallback to the testing project's credentials.
-Production sign-in/server operations require both fields to be configured.
+`FIREBASE_CLIENT_EMAIL` and `FIREBASE_PRIVATE_KEY` must come from that same
+production project's Admin SDK credentials. Leave them explicitly empty when
+credentials have not yet been supplied, to prevent accidental fallback to the
+testing project's credentials. Production sign-in/server operations require both
+fields to be configured.
 
 Obtain the Admin SDK credentials from the production project's Firebase settings
 and put them in the ignored local file or the hosting provider's secret settings.
@@ -50,10 +51,10 @@ Work on `dev` or a feature branch, review the testing preview, and open a PR fro
 `dev` into `main` for an approved release. A push to `main` triggers production
 once the Vercel Git integration is enabled. Never merge only to test a change.
 
-The Vercel project has not yet been created. Import
-`ruchitagodse/studioflow`, select Next.js, repository root, Node.js 22.x,
-`npm run build`, and the default Next.js output directory. Before the first
-production build, configure the following variables with separate values for
+The [Studioflow Vercel project](https://vercel.com/ruchitagodses-projects/studioflow)
+is connected to `ruchitagodse/studioflow`. Use Next.js, repository root, Node.js
+22.x, `npm run build`, and the default Next.js output directory. Configure the
+following variables with separate values for
 **Production** and **Preview + Development**:
 
 | Variable | Production value source | Preview / Development value source |

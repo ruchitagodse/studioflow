@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import styles from "./customers-ui.module.css";
-import { AdminPageHeader } from "./admin-ui";
+import mobileStyles from "./customers-mobile-polish.module.css";
 
 export type CustomerRow = {
   uid: string;
@@ -22,12 +22,11 @@ export function CustomersManager({ customers }: { customers: CustomerRow[] }) {
     return (!term || `${customer.name} ${customer.email}`.toLowerCase().includes(term)) && (status === "all" || customer.status === status);
   }), [customers, query, status]);
 
-  return <main className={styles.page}>
-    <AdminPageHeader eyebrow="Customers" title="Customer relationships, in context." description="Search and manage existing studio customers. New customer access is provisioned in Team." />
+  return <main className={`${styles.page} ${mobileStyles.root}`}>
     <section className={styles.panel} aria-labelledby="customers-list-title">
-      <div className={styles.panelHeading}><div><p>EXISTING CUSTOMERS</p><h2 id="customers-list-title">Customers</h2></div><span>{customers.length} total</span></div>
-      <div className={styles.filters}><label><span className="sr-only">Search customers</span><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search name or email…" /></label><label><span className="sr-only">Filter customer status</span><select value={status} onChange={(event) => setStatus(event.target.value as "all" | CustomerRow["status"])}><option value="all">All statuses</option><option value="active">Active</option><option value="inactive">Inactive</option></select></label></div>
-      {visible.length ? <div className={styles.table}><div className={styles.tableHead} aria-hidden="true"><span>Customer</span><span>Membership</span><span>Credits</span><span>Status</span><span /></div>{visible.map((customer) => <article key={customer.uid}><div><b>{customer.name}</b><small>{customer.email}</small></div><span>{customer.subscription}</span><span>{customer.credits === null ? "—" : `${customer.credits} available`}</span><em data-status={customer.status}>{customer.status}</em><Link prefetch={false} href={`/studio/customers/${customer.uid}`}>View profile <span aria-hidden="true">→</span></Link></article>)}</div> : <p className={styles.empty}>{customers.length ? "No customers match those filters." : "No customers are available yet. Customer access is created from Team."}</p>}
+      <div className={styles.panelHeading}><h1 className={mobileStyles.title} id="customers-list-title">Customers</h1><span>{customers.length} total</span></div>
+      <div className={`${styles.filters} ${mobileStyles.filters}`}><label><span className="sr-only">Search customers</span><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search name or email…" /></label><label><span className="sr-only">Filter customer status</span><select value={status} onChange={(event) => setStatus(event.target.value as "all" | CustomerRow["status"])}><option value="all">All statuses</option><option value="active">Active</option><option value="inactive">Inactive</option></select></label></div>
+      {visible.length ? <div className={`${styles.table} ${mobileStyles.table}`}><div className={styles.tableHead} aria-hidden="true"><span>Customer</span><span>Membership</span><span>Credits</span><span>Status</span><span /></div>{visible.map((customer) => <article key={customer.uid}><div><b>{customer.name}</b><small>{customer.email}</small></div><span>{customer.subscription}</span><span>{customer.credits === null ? "—" : `${customer.credits} available`}</span><em data-status={customer.status}>{customer.status}</em><Link prefetch={false} href={`/studio/customers/${customer.uid}`}>View profile <span aria-hidden="true">→</span></Link></article>)}</div> : <p className={styles.empty}>{customers.length ? "No customers match those filters." : "No customers are available yet. Customer access is created from Team."}</p>}
     </section>
   </main>;
 }
@@ -37,10 +36,10 @@ const tabs = ["Overview", "Bookings", "Membership", "Credits", "Attendance", "Ac
 
 export function CustomerProfile({ customer }: { customer: CustomerProfile }) {
   const [tab, setTab] = useState<(typeof tabs)[number]>("Overview");
-  return <main className={styles.page}>
+  return <main className={`${styles.page} ${mobileStyles.root}`}>
     <Link prefetch={false} className={styles.back} href="/studio/customers">← Customers</Link>
     <header className={styles.profileHeader}><div className={styles.avatar}>{customer.name.slice(0, 1).toUpperCase()}</div><div><p>CUSTOMER PROFILE</p><h1>{customer.name}</h1><span>{customer.email} · <b>{customer.status}</b></span></div></header>
-    <div className={styles.tabs} role="tablist" aria-label="Customer profile sections">{tabs.map((item) => <button key={item} type="button" role="tab" aria-selected={tab === item} onClick={() => setTab(item)}>{item}</button>)}</div>
+    <div className={`${styles.tabs} ${mobileStyles.tabs}`} role="tablist" aria-label="Customer profile sections">{tabs.map((item) => <button key={item} type="button" role="tab" aria-selected={tab === item} onClick={() => setTab(item)}>{item}</button>)}</div>
     <section className={styles.panel} role="tabpanel">
       {tab === "Overview" && <div className={styles.overview}><article><small>Membership</small><b>{customer.subscription}</b><span>Pause status: {customer.pauseStatus}</span></article><article><small>Available credits</small><b>{customer.credits ?? "—"}</b><span>See the credit history for details.</span></article><article><small>Booking history</small><b>{customer.bookings.length}</b><span>All records remain in their original systems.</span></article></div>}
       {tab === "Bookings" && <RecordList records={customer.bookings} empty="No booking records are available." />}
@@ -53,5 +52,5 @@ export function CustomerProfile({ customer }: { customer: CustomerProfile }) {
 }
 
 function RecordList({ records, empty }: { records: Array<{ id: string; className?: string; label?: string; localDate?: string; createdAt?: string; status?: string }>; empty: string }) {
-  return records.length ? <div className={styles.records}>{records.map((record) => <article key={record.id}><b>{record.className ?? record.label}</b><span>{record.localDate ?? record.createdAt}</span><em>{record.status ?? "Recorded"}</em></article>)}</div> : <p className={styles.empty}>{empty}</p>;
+  return records.length ? <div className={`${styles.records} ${mobileStyles.records}`}>{records.map((record) => <article key={record.id}><b>{record.className ?? record.label}</b><span>{record.localDate ?? record.createdAt}</span><em>{record.status ?? "Recorded"}</em></article>)}</div> : <p className={styles.empty}>{empty}</p>;
 }

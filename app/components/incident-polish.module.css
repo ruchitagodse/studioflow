@@ -1,0 +1,53 @@
+.page { width: min(100%, 1280px); margin: auto; padding: clamp(20px, 3vw, 40px); color: var(--color-text); }
+.header { margin-bottom: 20px; }
+.header h1 { margin: 0; font-size: 1.7rem; }
+.topGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.panel, .records { padding: 20px; border: 1px solid var(--color-border); border-radius: 16px; background: var(--color-surface); }
+.panelHeading { display: flex; gap: 12px; }
+.panelHeading > span { display: none; }
+.kicker { margin: 0 0 6px; color: var(--color-text-muted); font-size: .65rem; font-weight: 750; letter-spacing: .08em; }
+.panel h2, .records h2, .modal h2 { margin: 0 0 8px; font-size: 1.2rem; }
+.panel small, .note { color: var(--color-text-muted); font-size: .8rem; line-height: 1.5; }
+.note { padding: 12px; border-radius: 10px; background: var(--color-surface-secondary); }
+.form, .modalActions, .modalActions form { display: grid; gap: 12px; }
+.form label, .modalActions label { display: grid; gap: 7px; font-size: .8rem; font-weight: 700; }
+.form select, .modalActions input { width: 100%; min-height: 46px; padding: 10px; border: 1px solid var(--color-border); border-radius: 9px; color: var(--color-text); background: var(--color-input-background); font: inherit; }
+.form button, .modalActions button { min-height: 44px; padding: 10px 14px; border: 0; border-radius: 9px; background: var(--color-primary); color: var(--color-button-text); font: inherit; font-size: .85rem; font-weight: 750; cursor: pointer; }
+.form button:disabled, .modalActions button:disabled { opacity: .6; cursor: not-allowed; }
+.historyTools label { display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 10px 12px; border: 1px solid var(--color-border); border-radius: 10px; }
+.historyTools input { width: 100%; min-width: 0; border: 0; color: var(--color-text); background: transparent; font: inherit; font-size: .9rem; }
+.filters { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.filters button { min-height: 44px; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: 10px; background: var(--color-surface-secondary); color: var(--color-text); font: inherit; font-size: .8rem; cursor: pointer; }
+.filters .activeFilter { border-color: var(--color-primary); color: var(--color-primary); }
+.records { margin-top: 16px; }
+.recordsHeading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.recordsHeading > span { color: var(--color-text-muted); font-size: .8rem; }
+.tableHead, .row { display: grid; grid-template-columns: 1.2fr 1fr 1.2fr .7fr 1fr auto; align-items: center; gap: 14px; }
+.tableHead { margin-top: 18px; padding-bottom: 10px; color: var(--color-text-muted); font-size: .65rem; font-weight: 750; }
+.row { padding: 16px 0; border-top: 1px solid var(--color-border); font-size: .8rem; }
+.client { display: flex; gap: 10px; align-items: center; font-weight: 750; overflow-wrap: anywhere; }
+.client i { display: grid; flex: 0 0 36px; height: 36px; place-items: center; border-radius: 50%; background: var(--color-surface-secondary); color: var(--color-primary); font-style: normal; }
+.row em, .status { font-style: normal; text-transform: capitalize; }
+.noShow, .late { display: inline-block; padding: 5px 8px; border-radius: 8px; background: var(--color-surface-secondary); }
+.row time, .review { color: var(--color-text-muted); line-height: 1.5; }
+.row button { min-height: 44px; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: 9px; background: var(--color-surface); color: var(--color-primary); font: inherit; cursor: pointer; }
+.empty, .error, .success { padding: 12px; background: var(--color-surface-secondary); border-radius: 10px; font-size: .85rem; line-height: 1.5; }
+.backdrop { position: fixed; z-index: 100; inset: 0; display: grid; place-items: center; padding: 16px; background: #0009; }
+.modal { position: relative; width: min(100%, 500px); max-height: calc(100dvh - 32px); overflow: auto; padding: 24px; border: 1px solid var(--color-border); border-radius: 18px; background: var(--color-surface); }
+.modal h2 { padding-right: 44px; overflow-wrap: anywhere; }
+.modalMeta { color: var(--color-text-muted); font-size: .85rem; line-height: 1.5; }
+.close { position: absolute; top: 12px; right: 12px; width: 44px; height: 44px; border: 1px solid var(--color-border); border-radius: 50%; background: var(--color-surface); color: var(--color-text); font-size: 1.5rem; cursor: pointer; }
+.modalActions .secondary { border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text); }
+@media(max-width: 960px) {
+  .topGrid { grid-template-columns: 1fr; }
+  .tableHead { display: none; }
+  .rows { display: grid; gap: 12px; margin-top: 16px; }
+  .row { grid-template-columns: minmax(0, 1fr) auto; padding: 16px; border: 1px solid var(--color-border); border-radius: 12px; background: var(--color-surface-elevated); }
+  .client { grid-column: 1 / -1; font-size: 1rem; }
+  .row time { grid-column: 1 / -1; grid-row: 3; }
+  .row .review { grid-column: 1 / -1; }
+  .row > div { grid-column: 1 / -1; }
+  .row button { width: 100%; }
+  .page { padding: 22px 14px 64px; }
+  .panel, .records { padding: 16px; }
+}
