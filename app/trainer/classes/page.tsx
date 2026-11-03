@@ -1,93 +1,31 @@
+import { readDocument } from "@/lib/firebase/reads";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
-import Image from "next/image";
 import Link from "next/link";
-import { TrainerMobileNav } from "@/app/components/trainer-mobile-nav";
-import studioImage from "@/app/assets/pilates-studio.png";
 import { requireWorkspace } from "@/lib/auth/server";
 import { getAssignedTrainerSlots } from "@/lib/trainer-schedule";
-import styles from "./trainer-classes.module.css";
+import { trainerDateKey,trainerDisplayDate } from "@/lib/trainer-display";
+import { TrainerSessionCard } from "@/app/components/trainer-session-card";
+import { StudioAction,StudioIcon } from "@/app/components/studio-icon";
+import styles from "../trainer-ui.module.css";
 
-type View = "today" | "tomorrow" | "week";
-
-function localDateKey(date: Date, timezone: string) {
-  const parts = new Intl.DateTimeFormat("en-CA", { timeZone: timezone, year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(date);
-  const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((item) => item.type === type)?.value ?? "";
-  return `${part("year")}-${part("month")}-${part("day")}`;
-}
-
-function addDays(dateKey: string, days: number) {
-  const [year, month, day] = dateKey.split("-").map(Number);
-  return new Date(Date.UTC(year, month - 1, day + days)).toISOString().slice(0, 10);
-}
-
-function calendarWeekRange(dateKey: string) {
-  const [year, month, day] = dateKey.split("-").map(Number);
-  const weekday = new Date(Date.UTC(year, month - 1, day)).getUTCDay();
-  const daysSinceMonday = (weekday + 6) % 7;
-  const firstDate = addDays(dateKey, -daysSinceMonday);
-  return { firstDate, lastDate: addDays(firstDate, 6) };
-}
-
-function displayDate(dateKey: string) {
-  const [year, month, day] = dateKey.split("-").map(Number);
-  if (!year || !month || !day) return dateKey;
-  const date = new Date(Date.UTC(year, month - 1, day));
-  return new Intl.DateTimeFormat("en-GB", { weekday: "short", day: "2-digit", month: "short", year: "numeric", timeZone: "UTC" }).format(date);
-}
-
-function shortTime(value: string) {
-  const match = /^(\d{1,2}):(\d{2})/.exec(value);
-  if (!match) return value;
-  const hour = Number(match[1]);
-  return { hour: String(((hour + 11) % 12) + 1).padStart(2, "0"), period: hour >= 12 ? "PM" : "AM" };
-}
-
-function DateTabs({ active }: { active: View }) {
-  const tabs: { value: View; label: string }[] = [{ value: "today", label: "Today" }, { value: "tomorrow", label: "Tomorrow" }, { value: "week", label: "This week" }];
-  return <nav className={styles.tabs} aria-label="Class date range">{tabs.map((tab) => <Link prefetch={false} key={tab.value} href={tab.value === "today" ? "/trainer/classes" : `/trainer/classes?view=${tab.value}`} aria-current={active === tab.value ? "page" : undefined}>{tab.label}</Link>)}</nav>;
-}
-
-export default async function TrainerClassesPage({ searchParams }: { searchParams: Promise<{ view?: string | string[] }> }) {
-  await connection();
-  let principal;
-  try { principal = await requireWorkspace("/trainer"); } catch { redirect("/access-denied"); }
-
-  const requestedView = (await searchParams).view;
-  const view: View = requestedView === "tomorrow" || requestedView === "week" ? requestedView : "today";
-  const slots = await getAssignedTrainerSlots(principal);
-  const timezone = slots[0]?.timezone || "UTC";
-  const today = localDateKey(new Date(), timezone);
-  const week = calendarWeekRange(today);
-  const firstDate = view === "week" ? week.firstDate : view === "tomorrow" ? addDays(today, 1) : today;
-  const lastDate = view === "week" ? week.lastDate : view === "tomorrow" ? addDays(today, 1) : today;
-  const visibleSlots = slots.filter((slot) => slot.localDate >= firstDate && slot.localDate <= lastDate).sort((left, right) => left.startsAt.getTime() - right.startsAt.getTime());
-  const slotsByDate = visibleSlots.reduce<Record<string, typeof visibleSlots>>((groups, slot) => {
-    (groups[slot.localDate] ??= []).push(slot);
-    return groups;
-  }, {});
-
-  return <main className={styles.page}>
-    <header className={styles.header}>
-      <p className={styles.eyebrow}>TRAINER SCHEDULE</p>
-      <h1>My classes</h1>
-      <DateTabs active={view} />
-    </header>
-
-    {visibleSlots.length === 0 ? <section className={styles.empty} aria-live="polite"><span aria-hidden="true">◌</span><h2>No classes scheduled</h2><p>You have no assigned classes in this period.</p></section> : <div className={styles.days}>
-      {Object.entries(slotsByDate).map(([date, daySlots]) => <section className={styles.day} key={date} aria-labelledby={`date-${date}`}>
-        <header><h2 id={`date-${date}`}>{displayDate(date)}</h2><span>{daySlots.length} {daySlots.length === 1 ? "class" : "classes"}</span></header>
-        <div className={styles.classList}>{daySlots.map((slot) => {
-          const time = shortTime(slot.startTime);
-          return <Link prefetch={false} key={slot.id} className={styles.classCard} href={`/trainer/slots/${slot.id}`} aria-label={`Open ${slot.className}, ${slot.localDate}, ${slot.startTime}`}>
-            <time className={styles.time} dateTime={slot.startsAt.toISOString()}><strong>{typeof time === "string" ? time : time.hour}</strong>{typeof time !== "string" && <span>{time.period}</span>}</time>
-            <Image src={studioImage} alt="" className={styles.classImage} sizes="56px" />
-            <span className={styles.classInfo}><b>{slot.className}</b><small>{slot.startTime} – {slot.endTime}</small><small className={styles.location}><span aria-hidden="true">⌖</span>{slot.timezone}</small><em><span aria-hidden="true">♙</span>{slot.rosterBookingCount} / {slot.capacity} booked</em></span>
-            <span className={styles.chevron} aria-hidden="true">›</span>
-          </Link>;
-        })}</div>
-      </section>)}
-    </div>}
-    <TrainerMobileNav active="classes" />
+type View="today"|"tomorrow"|"week";
+function addDays(key:string,days:number){const [y,m,d]=key.split("-").map(Number);return new Date(Date.UTC(y,m-1,d+days)).toISOString().slice(0,10);}
+export default async function TrainerClassesPage({searchParams}:{searchParams:Promise<{view?:string|string[]}>}) {
+  await connection();let principal;
+  try{principal=await requireWorkspace("/trainer");}catch{redirect("/access-denied");}
+  const requested=(await searchParams).view;
+  const view:View=requested==="tomorrow"||requested==="week"?requested:"today";
+  const [slots,studio]=await Promise.all([getAssignedTrainerSlots(principal),readDocument(`studios/${principal.studioId}`)]);
+  const timezone=String(studio.data()?.timezone??"UTC");const now=new Date();const today=trainerDateKey(now,timezone);
+  const [y,m,d]=today.split("-").map(Number);const monday=addDays(today,-((new Date(Date.UTC(y,m-1,d)).getUTCDay()+6)%7));
+  const first=view==="week"?monday:view==="tomorrow"?addDays(today,1):today;
+  const last=view==="week"?addDays(monday,6):first;
+  const visible=slots.filter(slot=>slot.localDate>=first&&slot.localDate<=last).sort((a,b)=>a.startsAt.getTime()-b.startsAt.getTime());
+  const dates=[...new Set(visible.map(slot=>slot.localDate))];
+  return <main className={styles.page}><header className={styles.header}><p className={styles.eyebrow}>Your assigned schedule</p><h1><StudioAction icon="calendar">My classes</StudioAction></h1></header>
+    <nav className={styles.tabs} aria-label="Class date range">{([['today','Today','calendar'],['tomorrow','Tomorrow','arrow'],['week','This week','list']] as const).map(([value,label,icon])=><Link prefetch={false} key={value} href={`/trainer/classes?view=${value}`} aria-current={value===view?"page":undefined}><StudioAction icon={icon}>{label}</StudioAction></Link>)}</nav>
+    {!visible.length?<section className={styles.empty}><StudioIcon name="calendar"/><h2>No classes in this period</h2><p>Only classes assigned to you appear here.</p>{view!=="week"&&<Link prefetch={false} href="/trainer/classes?view=week" className={styles.secondary}>View this week <StudioIcon name="arrow"/></Link>}</section>:dates.map(date=><section key={date} className={styles.day} aria-label={trainerDisplayDate(date)}><header><h2><StudioAction icon="calendar">{trainerDisplayDate(date)}</StudioAction></h2><span>{visible.filter(slot=>slot.localDate===date).length} classes</span></header><div className={styles.sessionList}>{visible.filter(slot=>slot.localDate===date).map(slot=><TrainerSessionCard key={slot.id} slot={slot} now={now}/>)}</div></section>)}
+    <p className={styles.timezone}><StudioIcon name="clock"/>Studio time · {timezone}</p>
   </main>;
 }

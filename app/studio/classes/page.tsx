@@ -1,9 +1,8 @@
 import { readPage } from "@/lib/firebase/pagination";
 import { ListPagination } from "@/app/components/list-pagination";
-import { readDocument } from "@/lib/firebase/reads";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
-import { ScheduleManager } from "@/app/components/schedule-manager";
+import { StudioClassLibrary } from "@/app/components/studio-class-library";
 import { requireWorkspace } from "@/lib/auth/server";
 import { getAdminDb } from "@/lib/firebase/admin";
 
@@ -15,10 +14,7 @@ export default async function ClassesPage({ searchParams }: { searchParams: Prom
 
   const db = getAdminDb();
   const studioId = principal.studioId!;
-  const [studio, classDocs] = await Promise.all([
-    readDocument(`studios/${studioId}`),
-    readPage(db.collection(`studios/${studioId}/classes`).orderBy("createdAt", "desc"), `studios/${studioId}/classes`, after),
-  ]);
+  const classDocs = await readPage(db.collection(`studios/${studioId}/classes`).orderBy("createdAt", "desc"), `studios/${studioId}/classes`, after);
   const classes = classDocs.docs.map((doc) => ({
     id: doc.id,
     name: String(doc.data().name),
@@ -27,5 +23,6 @@ export default async function ClassesPage({ searchParams }: { searchParams: Prom
     status: String(doc.data().status),
   }));
 
-  return <><ScheduleManager mode="classes" timezone={String(studio.data()?.timezone)} classes={classes} trainers={[]} slots={[]} /><ListPagination pathname="/studio/classes" after={after} nextCursor={classDocs.nextCursor} /></>;
+  return <><StudioClassLibrary classes={classes} /><ListPagination pathname="/studio/classes" after={after} nextCursor={classDocs.nextCursor} /></>;
 }
+

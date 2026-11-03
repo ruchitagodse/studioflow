@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { StudioAction } from "@/app/components/studio-icon";
 import { connection } from "next/server";
 import { requireWorkspace } from "@/lib/auth/server";
 import styles from "./roles-permissions.module.css";
@@ -17,7 +18,7 @@ export default async function RolesPermissionsPage() {
   return <main className={styles.page}>
     <header className={styles.header}>
       <p className={styles.kicker}>TEAM</p>
-      <h1>Roles &amp; Permissions</h1>
+      <h1><StudioAction icon="shield">Roles &amp; Permissions</StudioAction></h1>
       <p>Role access is defined by the studio’s approved permissions model.</p>
     </header>
     <section className={styles.panel} aria-labelledby="role-access-title">

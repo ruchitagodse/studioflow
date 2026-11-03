@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { StudioAppearance } from "@/app/components/studio-appearance";
 import { requireWorkspace } from "@/lib/auth/server";
-import { listApprovedBrandPalettes } from "@/lib/brand-palettes";
+import { listApprovedBrandPalettes, paletteVariables } from "@/lib/brand-palettes";
 import { studioThemeSettings } from "@/lib/studio-theme";
 
 export default async function StudioThemePage() {
@@ -14,9 +14,12 @@ export default async function StudioThemePage() {
 
   const settings = studioThemeSettings((await readDocument(`studios/${principal.studioId}`)).data());
   if (!settings.allowOwnerThemeCustomization) redirect("/access-denied");
-  const palettes = await listApprovedBrandPalettes();
+  const palettes = (await listApprovedBrandPalettes()).map(palette => {
+    const variables = paletteVariables(palette);
+    return { ...palette, text: variables["--color-text"], buttonText: variables["--color-button-text"] };
+  });
 
-  return <main style={{ minHeight: "100dvh", padding: "clamp(24px, 4vw, 56px)", background: "var(--canvas)" }}>
+  return <main>
     <StudioAppearance theme={settings.theme} brandPaletteId={settings.brandPaletteId} palettes={palettes} />
   </main>;
 }

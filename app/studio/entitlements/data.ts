@@ -1,4 +1,4 @@
-import { readQuery } from "@/lib/firebase/reads";
+import { readDocument, readQuery } from "@/lib/firebase/reads";
 import { redirect } from "next/navigation";
 import { requireWorkspace } from "@/lib/auth/server";
 import { isSubscriptionExpired } from "@/lib/entitlement-logic";
@@ -45,5 +45,7 @@ export async function getEntitlementData(requestedSubscriptionId: string | null,
     const ledgerDocs = await readQuery(db.collection(`studios/${studioId}/subscriptions/${selectedSubscriptionId}/ledger`).orderBy("createdAt", "desc").limit(25));
     ledger = ledgerDocs.docs.map((doc) => { const data = doc.data(); return { id: doc.id, action: String(data.action), amount: Number(data.amount), balanceBefore: Number(data.balanceBefore), balanceAfter: Number(data.balanceAfter), reason: String(data.reason ?? ""), createdAt: data.createdAt?.toDate().toISOString() ?? new Date(0).toISOString() }; });
   }
-  return { plans, customers, subscriptions, ledger, selectedSubscriptionId };
+  const studio = view === "pauses" ? await readDocument(`studios/${studioId}`) : null;
+  const timezone = String(studio?.data()?.timezone ?? "UTC");
+  return { plans, customers, subscriptions, ledger, selectedSubscriptionId, timezone };
 }

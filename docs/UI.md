@@ -16,9 +16,47 @@ not displayed.
 
 The Nature Minimal alternative retains warm off-white surfaces, deep leaf-green
 actions, and sage accents. Across themes, keep the experience calm and focused.
+Avoid decorative colored side stripes on studio cards and notices. Prefer
+neutral dividers and flatter sections, with restrained color in icons, actions,
+and explicit status labels.
+Use the shared StudioIcon/StudioAction outline icons for studio actions and
+section cues. Pair icons with meaningful visible labels; icon-only close and
+overflow controls require accessible names. Do not use decorative Unicode
+symbols as substitutes for actions or add nonfunctional controls.
 Customer booking is mobile-first; operations is desktop-first and responsive.
 Workspace data loads on page entry and explicit Refresh, without global polling
 or focus-triggered reloads. Successful mutations revalidate affected routes.
+Studio activity presents readable event labels with category icons, studio-time
+date grouping, and search/category filters over the latest bounded results.
+The dashboard uses the same event-label mapping. Display formatting never
+changes stored audit records or their ordering.
+The studio Classes page leads with searchable, status-filtered class rows.
+Create and edit open native modal forms with contained feedback and fixed action
+footers on mobile; the class library stays visible without an introductory form.
+Membership pauses display recorded allowance used/remaining and explicit
+unavailable reasons. The immediate-pause confirmation follows BR-10, keeps errors
+inside its native dialog, and formats pause dates in the studio timezone.
+The mobile studio menu uses searchable grouped links to implemented screens.
+Attendance rosters remain in Schedule and policy controls remain in Incidents;
+unimplemented settings/notification shortcuts are omitted. The menu locks page
+scroll, contains keyboard focus, and restores focus when dismissed.
+Appearance previews a selection locally before saving, labels the saved theme,
+and provides pending/success/error feedback. A preview never changes the active
+studio theme; persistence continues through the owner-authorized theme action.
+Memberships and Pauses share labelled icon navigation. Mobile status filters
+show icons and counts without horizontal scrolling; green active/ready, amber
+paused, and danger cancelled accents supplement text. Keep color on badges,
+icons, and actions rather than decorative card stripes.
+Trainer home prioritizes the current/next published session and today’s assigned
+schedule. Classes, Attendance, roster and Profile share compact icon navigation
+and studio-time context. Drafts are labelled and do not link to attendance;
+ended session labels describe time rather than claiming attendance is complete.
+Trainer roster actions use a confirmation dialog and follow BR-07; correction
+controls stay out of the trainer surface. Profile presents real account/studio
+details with functional navigation and sign-out rather than decorative actions.
+Trainer home keeps empty schedule states compact, uses one studio-image greeting
+header, and presents daily counts and functional Classes/Attendance shortcuts
+before the schedule. Never fabricate activity when the assigned schedule is empty.
 Availability displayed on a page is a snapshot; booking decisions always use
 fresh transactional validation under BR-02 and BR-18. Paginated directories and
 histories expose explicit next/first page controls. Studio calendar navigation
@@ -77,6 +115,9 @@ role they hold, as defined in `ROLES_PERMISSIONS.md`, but cannot switch studios.
 - **Staff/Owner attendance:** provide a scannable today view showing class,
   trainer, booked count, attendance state, and roster access. It follows the
   same attendance module rather than duplicating a second CRUD workflow.
+  The studio roster includes customer search and outcome filters. Confirm the
+  selected customer/outcome and show its BR-07 credit impact before submission;
+  marking and reasoned corrections retain their existing trusted authorization.
 - **Staff schedule/slot editor:** calendar/list switch only when justified;
   creation/edit form captures required class, time, capacity, and trainer data.
   Existing booking impact is surfaced before a change.
@@ -87,6 +128,9 @@ role they hold, as defined in `ROLES_PERMISSIONS.md`, but cannot switch studios.
   dynamic position, status, and a reasoned removal action where BR-12 permits.
   Do not show reordering, manual promotion, offers, priority configuration, or
   analytics.
+  The studio queue uses session filters and a labelled position per entry.
+  Removal opens a reasoned confirmation sheet with the customer and session
+  context; errors remain inside the sheet. Timestamps use the studio timezone.
 - **Plans and entitlements:** Owner/Staff can create, edit, activate, retire,
   and list Plans; manually renew or cancel customer Subscriptions; view bounded
   ledger history; and make a reasoned adjustment.
@@ -143,6 +187,12 @@ appropriate access-denied/account-configuration presentation; the UI cannot
 offer client-side reactivation, studio creation, or studio selection.
 
 ## Responsive behaviour
+
+Studio mobile navigation provides Overview, Schedule, Customers, and More;
+More opens the existing role-filtered navigation drawer. Booking and roster
+work remains under Schedule. Mobile Overview prioritizes today's next/current
+class and roster access; weekly and membership summaries expand under Studio
+details. The desktop overview retains its operational layout.
 
 Customer screens prioritize a single-column touch layout, persistent bottom
 navigation, 44px minimum interactive targets, and dialogs that become bottom

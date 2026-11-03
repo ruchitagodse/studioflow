@@ -1,5 +1,6 @@
 import type { ButtonHTMLAttributes, HTMLAttributes, InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from "react";
 import styles from "./admin-ui.module.css";
+import { StudioAction, type StudioIconName } from "./studio-icon";
 
 type Tone = "neutral" | "success" | "warning" | "danger" | "info";
 
@@ -15,8 +16,8 @@ export function AdminStatCard({ icon, value, label, context }: { icon?: ReactNod
   return <AdminCard className={styles.statCard}>{icon && <span className={styles.statIcon}>{icon}</span>}<strong>{value}</strong><span>{label}</span>{context && <small>{context}</small>}</AdminCard>;
 }
 
-export function AdminButton({ variant = "primary", size = "medium", className = "", ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: "primary" | "secondary" | "ghost" | "danger" | "outline" | "icon"; size?: "small" | "medium" | "large" }) {
-  return <button {...props} className={`${styles.button} ${styles[variant]} ${styles[size]} ${className}`} />;
+export function AdminButton({ variant = "primary", size = "medium", className = "", icon, children, ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { icon?: StudioIconName; variant?: "primary" | "secondary" | "ghost" | "danger" | "outline" | "icon"; size?: "small" | "medium" | "large" }) {
+  return <button {...props} className={`${styles.button} ${styles[variant]} ${styles[size]} ${className}`}>{icon ? <StudioAction icon={icon}>{children}</StudioAction> : children}</button>;
 }
 
 export function AdminBadge({ tone = "neutral", children }: { tone?: Tone; children: ReactNode }) {

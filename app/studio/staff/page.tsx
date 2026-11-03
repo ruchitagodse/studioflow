@@ -1,4 +1,5 @@
 import { readPage } from "@/lib/firebase/pagination";
+import { StudioAction } from "@/app/components/studio-icon";
 import { ListPagination } from "@/app/components/list-pagination";
 
 import { redirect } from "next/navigation";
@@ -18,7 +19,7 @@ export default async function StaffPage({ searchParams }: { searchParams: Promis
   return <><main className={styles.page}>
     <header className={styles.header}>
       <p className={styles.kicker}>TEAM</p>
-      <h1>Staff</h1>
+      <h1><StudioAction icon="users">Staff</StudioAction></h1>
       <p>View staff members separately from trainer management.</p>
     </header>
     <section className={styles.panel} aria-labelledby="staff-members-title">
@@ -37,3 +38,4 @@ export default async function StaffPage({ searchParams }: { searchParams: Promis
     </section>
   </main><ListPagination pathname="/studio/staff" after={after} nextCursor={docs.nextCursor} /></>;
 }
+

@@ -4,7 +4,7 @@
 .topGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .panel, .records { padding: 20px; border: 1px solid var(--color-border); border-radius: 16px; background: var(--color-surface); }
 .panelHeading { display: flex; gap: 12px; }
-.panelHeading > span { display: none; }
+.panelHeading > span { display: grid; flex: 0 0 32px; width: 32px; height: 32px; place-items: center; color: var(--color-primary); }
 .kicker { margin: 0 0 6px; color: var(--color-text-muted); font-size: .65rem; font-weight: 750; letter-spacing: .08em; }
 .panel h2, .records h2, .modal h2 { margin: 0 0 8px; font-size: 1.2rem; }
 .panel small, .note { color: var(--color-text-muted); font-size: .8rem; line-height: 1.5; }

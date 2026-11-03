@@ -1,44 +1,22 @@
 import { readDocument } from "@/lib/firebase/reads";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
-import Image from "next/image";
-import { TrainerMobileNav } from "@/app/components/trainer-mobile-nav";
-import styles from "@/app/trainer/trainer-dashboard.module.css";
+import Link from "next/link";
 import { requireWorkspace } from "@/lib/auth/server";
-import heroImage from "@/app/assets/pilates-hero-v2.png";
-
-function initials(value: string) {
-  return value.trim().split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase()).join("") || "T";
-}
-
-function ProfileIcon({ name }: { name: "person" | "account" }) {
-  const paths = name === "person"
-    ? <><circle cx="12" cy="8" r="3" /><path d="M5.5 20c.7-3.6 2.9-5.5 6.5-5.5s5.8 1.9 6.5 5.5" /></>
-    : <><path d="m5 9 2.2 9h9.6L19 9l-3-2.5-4 2-4-2L5 9Z" /><path d="M9 11.5h6" /></>;
-  return <span className={styles.trainerProfileDetailIcon} aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false">{paths}</svg></span>;
-}
+import { StudioAction,StudioIcon } from "@/app/components/studio-icon";
+import { LogoutButton } from "@/app/components/logout-button";
+import styles from "../trainer-ui.module.css";
 
 export default async function TrainerProfilePage() {
-  await connection();
-  let principal;
-  try { principal = await requireWorkspace("/trainer"); } catch { redirect("/access-denied"); }
-  const member = await readDocument(`studios/${principal.studioId}/members/${principal.uid}`);
-  const name = String(member.data()?.displayName ?? "").trim() || "Trainer";
-  return <main className={`${styles.page} ${styles.profilePage}`}>
-    <header className={styles.profileHeader}><h1>Your profile</h1><p>Account details for your Studio Calendar trainer access.</p></header>
-    <section className={styles.trainerProfileSurface} aria-labelledby="trainer-profile-name">
-      <div className={styles.trainerProfileHeroImage} aria-hidden="true"><Image src={heroImage} alt="" fill sizes="100vw" priority /></div>
-      <div className={styles.trainerProfileCard}>
-        <span className={styles.trainerAvatar} aria-hidden="true">{initials(name)}</span>
-        <p className={styles.kicker}>TRAINER</p>
-        <h2 id="trainer-profile-name">{name}</h2>
-        <p className={styles.profileEmail}>{principal.email ?? "Email not available"}</p>
-        <dl className={styles.profileDetails}>
-          <div><ProfileIcon name="person" /><dt>Role</dt><dd>Trainer</dd><span className={styles.trainerProfileChevron} aria-hidden="true">›</span></div>
-          <div><ProfileIcon name="account" /><dt>Account</dt><dd>Studio Calendar member</dd><span className={styles.trainerProfileChevron} aria-hidden="true">›</span></div>
-        </dl>
-      </div>
-    </section>
-    <TrainerMobileNav active="profile" />
+  await connection();let principal;
+  try{principal=await requireWorkspace("/trainer");}catch{redirect("/access-denied");}
+  const [member,studio]=await Promise.all([readDocument(`studios/${principal.studioId}/members/${principal.uid}`),readDocument(`studios/${principal.studioId}`)]);
+  const name=String(member.data()?.displayName??"").trim()||"Trainer";
+  const initials=name.split(/\s+/).slice(0,2).map(word=>word[0]).join("").toUpperCase();
+  return <main className={styles.page}><header className={styles.header}><h1><StudioAction icon="user">Profile</StudioAction></h1></header>
+    <div className={styles.profileIdentity}><span className={styles.avatar} aria-hidden="true">{initials}</span><div><h2>{name}</h2><p>{principal.email??"Email not available"}</p></div></div>
+    <section className={styles.profilePanel} aria-labelledby="trainer-account"><h2 id="trainer-account">Your account</h2><dl className={styles.profileDetails}><div><dt><StudioAction icon="user">Role</StudioAction></dt><dd>Trainer</dd></div><div><dt><StudioAction icon="membership">Studio</StudioAction></dt><dd>{String(studio.data()?.name??"Your studio")}</dd></div><div><dt><StudioAction icon="clock">Studio time</StudioAction></dt><dd>{String(studio.data()?.timezone??"UTC")}</dd></div></dl></section>
+    <nav className={styles.profileLinks} aria-label="Trainer shortcuts"><Link prefetch={false} href="/trainer/classes"><StudioAction icon="calendar">My classes</StudioAction><StudioIcon name="arrow"/></Link><Link prefetch={false} href="/trainer/attendance"><StudioAction icon="check">Attendance</StudioAction><StudioIcon name="arrow"/></Link></nav>
+    <LogoutButton className={styles.signout} withIcon/>
   </main>;
 }

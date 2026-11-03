@@ -1,8 +1,9 @@
 import { connection } from "next/server";
-import { EntitlementManager } from "@/app/components/entitlement-manager";
+import { StudioPauseBoard } from "@/app/components/studio-pause-board";
 import { getEntitlementData } from "@/app/studio/entitlements/data";
 
 export default async function PauseRequestsPage() {
   await connection();
-  return <EntitlementManager {...await getEntitlementData(null, null, "pauses")} view="pauses" />;
+  const { subscriptions, timezone } = await getEntitlementData(null, null, "pauses");
+  return <StudioPauseBoard subscriptions={subscriptions} timezone={timezone} />;
 }

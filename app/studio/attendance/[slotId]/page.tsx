@@ -4,6 +4,9 @@ import { AttendanceRosterActions } from "@/app/components/attendance-roster";
 import { requireWorkspace } from "@/lib/auth/server";
 import { getAttendanceRoster } from "@/lib/attendance";
 import styles from "@/app/trainer/slots/trainer-roster.module.css";
+import ui from "@/app/components/studio-attendance.module.css";
+import { StudioAction } from "@/app/components/studio-icon";
+import { calendarLabel } from "@/lib/customer-calendar";
 
 function RosterIcon({ name }: { name: "calendar" | "clock" | "pin" | "trainer" | "people" }) {
   const paths = {
@@ -27,20 +30,20 @@ export default async function StudioAttendancePage({ params }: { params: Promise
     console.error("Studio Calendar attendance roster failed.", error);
     redirect("/access-denied");
   }
-  return <main className={styles.page}>
-    <a className={styles.back} href="/studio"><span aria-hidden="true">←</span> Studio dashboard</a>
+  return <main className={`${styles.page} ${ui.page}`}>
+    <a className={styles.back} href="/studio/schedule"><StudioAction icon="back">Schedule</StudioAction></a>
     <header className={styles.header}>
       <p className={styles.kicker}>CLASS ATTENDANCE</p>
       <h1>{roster.className}</h1>
       <div className={styles.slotMeta} aria-label="Class details">
-        <span><RosterIcon name="calendar" />{roster.localDate}</span>
+        <span><RosterIcon name="calendar" />{calendarLabel(roster.localDate, { weekday: "short", day: "numeric", month: "short", year: "numeric" })}</span>
         <span><RosterIcon name="clock" />{roster.startTime} – {roster.endTime}</span>
         <span><RosterIcon name="pin" />{roster.timezone}</span>
       </div>
     </header>
     <section className={styles.facts} aria-label="Class summary">
       <div><RosterIcon name="trainer" /><span>Trainer<strong>{roster.trainerName}</strong></span></div>
-      <div><RosterIcon name="people" /><span>Booked<strong>{roster.confirmedBookingCount} / {roster.capacity}</strong></span></div>
+      <div><RosterIcon name="people" /><span>Current bookings<strong>{roster.confirmedBookingCount} / {roster.capacity}</strong></span></div>
     </section>
     <AttendanceRosterActions roster={roster} />
   </main>;

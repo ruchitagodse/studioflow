@@ -1,0 +1,60 @@
+.surface { min-width: 0; padding: clamp(16px, 3vw, 28px); border: 1px solid var(--color-border); border-radius: 18px; background: var(--color-surface); color: var(--color-text); }
+.header, .range, .listHeader, .cardTop, .facts, .actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.header h1 { margin: 0; font-size: 1.5rem; }
+.controls { display: flex; gap: 6px; }
+.surface button, .surface input, .surface a { font: inherit; }
+.controls button, .listHeader button, .actions button, .actions a { min-height: 44px; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: 10px; background: var(--color-surface-elevated); color: var(--color-text); cursor: pointer; text-decoration: none; font-size: .8rem; }
+.controls button:not(:first-child) { min-width: 44px; font-size: 1.2rem; }
+.range { margin: 16px 0; flex-wrap: wrap; }
+.range p, .listHeader p { margin: 0; color: var(--color-text-muted); font-size: .8rem; }
+.range input { min-width: 0; min-height: 44px; max-width: 100%; padding: 8px; border: 1px solid var(--color-border); border-radius: 9px; background: var(--color-input-background); color: var(--color-text); font-size: .85rem; }
+.week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
+.week button { display: grid; justify-items: center; gap: 8px; min-width: 0; min-height: 92px; padding: 12px 2px; border: 1px solid var(--color-border); border-radius: 14px; background: var(--color-surface-elevated); color: var(--color-text-muted); cursor: pointer; }
+.week button[aria-pressed="true"] { border-color: var(--color-primary); background: var(--color-primary); color: var(--color-button-text); }
+.week span { font-size: .75rem; }
+.week strong { font-size: 1.3rem; }
+.week i { width: 5px; height: 5px; border-radius: 50%; background: transparent; }
+.week i[data-listed="true"] { background: currentColor; }
+.listHeader { margin: 24px 0 14px; }
+.listHeader h2 { margin: 0 0 5px; font-size: 1.15rem; }
+.listHeader button { white-space: nowrap; }
+.search { display: block; margin-bottom: 14px; }
+.tools { display: flex; gap: 10px; align-items: start; margin-bottom: 14px; }
+.tools .search { flex: 1; min-width: 0; margin: 0; }
+.filters { flex: 0 0 auto; }
+.filters summary { display: flex; align-items: center; justify-content: center; min-height: 46px; padding: 10px 12px; border: 1px solid var(--color-border); border-radius: 10px; color: var(--color-text); background: var(--color-surface-elevated); font-size: .8rem; font-weight: 750; cursor: pointer; list-style: none; }
+.filters summary::-webkit-details-marker { display: none; }
+.filters summary { gap: 7px; }
+.time, .trainer { display: inline-flex; align-items: center; gap: 7px; }
+.filterPanel { display: grid; gap: 12px; padding-top: 12px; }
+.filterPanel label { display: grid; gap: 6px; color: var(--color-text-muted); font-size: .8rem; }
+.filterPanel select, .filterPanel button { min-height: 44px; max-width: 100%; padding: 10px; border: 1px solid var(--color-border); border-radius: 9px; background: var(--color-input-background); color: var(--color-text); }
+.tools:has(.filters[open]) { display: grid; grid-template-columns: minmax(0, 1fr) auto; }
+.tools .filters[open] { display: contents; }
+.filters[open] .filterPanel { grid-column: 1 / -1; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.filterPanel button { grid-column: 1 / -1; cursor: pointer; }
+.filterNote { margin: 0 0 12px; color: var(--color-text-muted); font-size: .8rem; }
+.search input { width: 100%; min-height: 46px; padding: 12px; border: 1px solid var(--color-border); border-radius: 10px; background: var(--color-input-background); color: var(--color-text); font-size: .9rem; }
+.slots { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 14px; }
+.card { min-width: 0; padding: 18px; border: 1px solid var(--color-border); border-radius: 15px; background: var(--color-surface-elevated); }
+.time { color: var(--color-primary); font-size: .9rem; font-weight: 750; }
+.status { padding: 5px 8px; border-radius: 8px; background: var(--color-surface-secondary); font-size: .7rem; text-transform: capitalize; }
+.cardTop { flex-wrap: wrap; }
+.card h3 { margin: 16px 0 6px; font-size: 1.2rem; overflow-wrap: anywhere; }
+.trainer { margin: 0; color: var(--color-text-muted); font-size: .85rem; }
+.facts { flex-wrap: wrap; margin: 18px 0 12px; font-size: .8rem; color: var(--color-text-muted); }
+.facts b { color: var(--color-text); }
+.actions { flex-wrap: wrap; justify-content: flex-start; }
+.actions:empty { display: none; }
+.card[data-cancelled="true"] { border-color: var(--color-border); }
+.card[data-cancelled="true"] .status { background: color-mix(in srgb, var(--color-danger, #e35c64) 16%, var(--color-surface)); color: var(--color-text); border: 1px solid var(--color-danger, #e35c64); font-weight: 800; }
+.card[data-cancelled="true"] .time { color: var(--color-text-muted); }
+.card .cancelledNotice { display: flex; align-items: baseline; gap: 8px; margin: 18px 0 0; padding: 12px; border-radius: 10px; background: color-mix(in srgb, var(--color-danger, #e35c64) 10%, var(--color-surface)); color: var(--color-text); font-size: .85rem; line-height: 1.5; }
+.cancelledNotice > span { font-size: 1.1rem; }
+.actions a, .actions button { display: inline-flex; align-items: center; color: var(--color-primary); }
+.empty { grid-column: 1 / -1; padding: 24px 12px; text-align: center; color: var(--color-text-muted); }
+.empty h3 { margin: 0 0 8px; font-size: 1rem; color: var(--color-text); }
+.empty p { margin: 0; font-size: .85rem; }
+.surface button:disabled { opacity: .6; cursor: wait; }
+.surface button:focus-visible, .surface a:focus-visible, .surface input:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; }
+@media(max-width: 480px) { .week { gap: 4px; } .week button { min-height: 82px; border-radius: 10px; } .week span { font-size: .65rem; } .week strong { font-size: 1.1rem; } .surface { padding: 14px; } .card { padding: 16px; } }

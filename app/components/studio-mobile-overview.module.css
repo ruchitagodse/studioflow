@@ -1,0 +1,27 @@
+.mobile { display: none; }
+.detailsToggle { display: none; }
+.detailsBody { display: contents; }
+@media(max-width: 1099px) {
+  .dashboard { height: auto !important; min-height: 0 !important; overflow: visible !important; zoom: 1 !important; width: 100% !important; }
+  .dashboard > header { display: none; }
+  .mobile { display: grid; gap: 16px; margin-bottom: 16px; }
+  .greeting { display: grid; gap: 5px; }
+  .greeting h1 { margin: 0; color: var(--color-text); font: 700 1.5rem/1.2 var(--font-geist-sans); letter-spacing: -.025em; }
+  .greeting time { color: var(--color-text-muted); font-size: .8rem; }
+  .next { padding: 20px; border: 1px solid var(--color-border); border-radius: 18px; background: linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 12%, var(--color-surface)), var(--color-surface)); }
+  .eyebrow { display: flex; justify-content: space-between; gap: 12px; margin: 0 0 10px; color: var(--color-primary); font-size: .7rem; font-weight: 800; }
+  .next h2 { margin: 0 0 8px; color: var(--color-text); font: 700 1.4rem/1.2 var(--font-geist-sans); }
+  .next p:not(.eyebrow) { margin: 6px 0; color: var(--color-text-muted); font-size: .85rem; line-height: 1.5; }
+  .next a { display: inline-flex; align-items: center; justify-content: center; min-height: 46px; margin-top: 12px; padding: 10px 16px; border-radius: 11px; background: var(--color-primary); color: var(--color-button-text); font-size: .85rem; font-weight: 750; text-decoration: none; }
+  .attention { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .attention a { display: grid; align-content: center; gap: 6px; min-height: 74px; padding: 14px; border: 1px solid var(--color-border); border-radius: 13px; color: var(--color-text); background: var(--color-surface); text-decoration: none; }
+  .attention strong { font-size: .85rem; }
+  .attention span { color: var(--color-text-muted); font-size: .72rem; line-height: 1.4; }
+  .details { display: block !important; }
+  .detailsToggle { display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 48px; padding: 12px 16px; border: 1px solid var(--color-border); border-radius: 12px; background: var(--color-surface); color: var(--color-text); font: inherit; font-weight: 750; cursor: pointer; }
+  .detailsBody { display: grid; gap: 12px; margin-top: 12px; }
+  .detailsBody[data-expanded="false"] { display: none; }
+  .dashboard > section[aria-label="Today’s studio totals"] { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .dashboard > section[aria-label="Today’s studio totals"] > a { min-height: 98px; border-radius: 14px; }
+  .mobile a:focus-visible, .detailsToggle:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; }
+}

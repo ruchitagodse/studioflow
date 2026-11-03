@@ -1,12 +1,57 @@
 .root {}
+.root .summaryCard { --card-accent: var(--color-primary); grid-template-columns: minmax(0, 1fr) minmax(70px, .8fr); align-items: center; gap: 6px 14px; padding: 18px 0; border: 0; border-bottom: 1px solid var(--color-border); border-radius: 0; background: transparent; }
+.root .summaryCard[data-kind="credits"] { --card-accent: var(--color-success); }
+.root .summaryCard[data-kind="bookings"] { --card-accent: color-mix(in srgb, #9b8fff 70%, var(--color-text)); }
+.root .summaryCard small { display: flex; align-items: center; gap: 9px; color: var(--color-text); font-weight: 700; }
+.summaryCard svg { width: 22px; height: 22px; flex: 0 0 auto; padding: 0; color: var(--card-accent); fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.root .summaryCard b { grid-column: 2; grid-row: 1 / span 2; text-align: right; font-size: 1.2rem; }
+.root .summaryCard span { grid-column: 1; }
+.root .summaryCard:hover { background: color-mix(in srgb, var(--color-primary) 3%, transparent); }
+.root .profileStatus[data-status="active"] { border: 1px solid color-mix(in srgb, var(--color-success) 40%, var(--color-border)); background: color-mix(in srgb, var(--color-success) 12%, var(--color-surface)); color: var(--color-text); }
+.root .profileStatus[data-status="inactive"] { border: 1px solid color-mix(in srgb, var(--color-warning) 40%, var(--color-border)); background: color-mix(in srgb, var(--color-warning) 12%, var(--color-surface)); color: var(--color-text); }
+.root .profileStatus::before { content: ""; display: inline-block; width: 6px; height: 6px; margin-right: 6px; border-radius: 50%; background: var(--color-success); vertical-align: middle; }
+.root .profileStatus[data-status="inactive"]::before { background: var(--color-warning); }
+.profile > header > div:first-child { background: color-mix(in srgb, var(--color-primary) 14%, var(--color-surface)); color: var(--color-primary); border: 1px solid color-mix(in srgb, var(--color-primary) 30%, var(--color-border)); }
+.statusFilters, .sectionPicker { display: none; }
+.profileStatus { display: block; width: max-content; margin-top: 8px; padding: 5px 10px; border-radius: 8px; background: var(--color-surface-secondary); color: var(--color-text); font-size: .75rem; font-weight: 750; text-transform: capitalize; }
+.summaryCard { display: grid; gap: 8px; min-width: 0; padding: 18px; border: 1px solid var(--color-border); border-radius: 13px; background: var(--color-surface-elevated); color: var(--color-text); font: inherit; text-align: left; text-decoration: none; cursor: pointer; }
+.summaryCard small, .summaryCard span { color: var(--color-text-muted); font-size: .8rem; }
+.summaryCard b { overflow-wrap: anywhere; font-size: 1.35rem; }
+.summaryCard:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; }
+.searchResult { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 12px 0; color: var(--color-text-muted); font-size: .8rem; }
+.searchResult button { min-height: 44px; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: 9px; background: var(--color-surface); color: var(--color-primary); font: inherit; cursor: pointer; }
 
 .title {
   margin: 0;
   color: var(--color-text);
-  font: 400 1.7rem Georgia, serif;
+  font-family: inherit;
+  font-size: 1.7rem;
+  font-weight: 750;
 }
 
 @media (max-width: 700px) {
+.root .filters { grid-template-columns: 1fr; margin-bottom: 10px; }
+.root .filters > label:last-child { display: none; }
+.statusFilters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; margin-bottom: 16px; padding: 4px; border: 1px solid var(--color-border); border-radius: 12px; }
+.statusFilters button { min-height: 44px; border: 0; border-radius: 9px; background: transparent; color: var(--color-text-muted); font: inherit; font-size: .8rem; font-weight: 750; cursor: pointer; }
+.statusFilters button[aria-pressed="true"] { background: var(--color-nav-active-background); color: var(--color-nav-active); }
+.profile > header { padding: 16px; border: 1px solid var(--color-border); border-radius: 16px; background: var(--color-surface); }
+.profile > header > div:first-child { flex-shrink: 0; }
+.profile > header > div:last-child { min-width: 0; }
+.profile > header h1 { margin: 0 0 6px; font-family: inherit; font-size: 1.4rem; font-weight: 750; letter-spacing: -.025em; overflow-wrap: anywhere; }
+.profile > header span { overflow-wrap: anywhere; font-size: .8rem; }
+.profile > a:first-child { min-height: 44px; align-items: center; margin-bottom: 12px; text-decoration: none; }
+.profile .tabs { display: none; }
+.sectionPicker { display: grid; gap: 7px; margin: 0 0 16px; color: var(--color-text-muted); font-size: .8rem; font-weight: 750; }
+.sectionPicker select { width: 100%; min-height: 48px; padding: 10px 12px; border: 1px solid var(--color-border); border-radius: 11px; background: var(--color-input-background); color: var(--color-text); font: inherit; font-size: 1rem; }
+.profile .summaryCard { padding: 16px; }
+.profile .summaryCard b { font-family: inherit; font-weight: 750; }
+.profile > section:has(.summaryCard) { padding: 0; border: 0; background: transparent; box-shadow: none; }
+.profile > section a { display: inline-flex; min-height: 44px; align-items: center; }
+.profile > section .summaryCard { display: grid; }
+.root .table small { overflow-wrap: anywhere; }
+.root .table article > div b { font-size: 1rem; }
+.root .table article a { min-height: 44px; }
 .filters {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 124px;
@@ -74,6 +119,8 @@
   .table article > span:nth-of-type(1)::before { content: "Membership"; }
   .table article > span:nth-of-type(2)::before { content: "Credits"; }
   .table article em::before { content: "Status"; }
+.root .table article em[data-status="active"] { color: var(--color-success); }
+.root .table article em[data-status="inactive"] { color: var(--color-warning); opacity: 1; }
 
   .table article a {
     display: inline-flex;

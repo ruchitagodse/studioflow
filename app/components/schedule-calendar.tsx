@@ -1,28 +1,79 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { StudioIcon, StudioAction } from "@/app/components/studio-icon";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import styles from "./schedule-calendar.module.css";
+import { calendarLabel, calendarWeek, shiftCalendarDate } from "@/lib/customer-calendar";
+import styles from "./studio-daily-calendar.module.css";
 
 export type CalendarSlot = { id: string; className: string; trainerUid: string; trainerName: string; localDate: string; startTime: string; endTime: string; capacity: number; confirmedBookingCount: number; status: string; isPast: boolean };
 
-function key(date: Date) { return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`; }
-function label(date: Date) { return new Intl.DateTimeFormat("en-IN", { month: "long", year: "numeric" }).format(date); }
-function startOfWeek(date: Date) { const next = new Date(date); next.setDate(next.getDate() - ((next.getDay() + 6) % 7)); return next; }
-function addDays(date: Date, days: number) { const next = new Date(date); next.setDate(next.getDate() + days); return next; }
-
-export function ScheduleCalendar({ slots, onSelect, onViewAll, date, period = "month", today }: { date?: string; period?: "day" | "week" | "month"; today?: string; slots: CalendarSlot[]; onSelect: (slot: CalendarSlot) => void; onViewAll: () => void }) {
+export function ScheduleCalendar({ slots, onSelect, onViewAll, date, today }: { date?: string; period?: "day" | "week" | "month"; today?: string; slots: CalendarSlot[]; onSelect: (slot: CalendarSlot) => void; onViewAll: () => void }) {
   const router = useRouter();
-  const view = period;
-  const selected = new Date(`${date ?? today ?? key(new Date())}T12:00:00`);
-  function setSelected(next: Date) { router.push(`/studio/schedule?date=${key(next)}&view=${view}`); }
-  function setView(next: "day" | "week" | "month") { router.push(`/studio/schedule?date=${key(selected)}&view=${next}`); }
-  const [query, setQuery] = useState(""); const [classFilter, setClassFilter] = useState("all"); const [trainerFilter, setTrainerFilter] = useState("all"); const [statusFilter, setStatusFilter] = useState("all");
-  const classes = [...new Set(slots.map((slot) => slot.className))]; const trainers = [...new Set(slots.map((slot) => slot.trainerName))];
-  const filtered = useMemo(() => slots.filter((slot) => (!query || `${slot.className} ${slot.trainerName} ${slot.localDate}`.toLowerCase().includes(query.toLowerCase())) && (classFilter === "all" || slot.className === classFilter) && (trainerFilter === "all" || slot.trainerName === trainerFilter) && (statusFilter === "all" || slot.status === statusFilter)), [slots, query, classFilter, trainerFilter, statusFilter]);
-  const navigate = (direction: number) => { const next = new Date(selected); if (view === "month") next.setMonth(next.getMonth() + direction, 1); else next.setDate(next.getDate() + direction * (view === "week" ? 7 : 1)); setSelected(next); };
-  const days = view === "month" ? Array.from({ length: new Date(selected.getFullYear(), selected.getMonth() + 1, 0).getDate() }, (_, index) => new Date(selected.getFullYear(), selected.getMonth(), index + 1)) : Array.from({ length: view === "week" ? 7 : 1 }, (_, index) => addDays(view === "week" ? startOfWeek(selected) : selected, index));
-  const upcoming = filtered.filter((slot) => !slot.isPast).slice(0, 5);
-  const firstWeekday = view === "month" ? (new Date(selected.getFullYear(), selected.getMonth(), 1).getDay() + 6) % 7 : 0;
-  return <section className={styles.surface}><div className={styles.header}><div><p>CALENDAR</p><h2>Scheduled classes</h2><span>Planned class occurrences with class, trainer, bookings, availability, and status.</span></div><div className={styles.controls}><button onClick={() => setSelected(new Date(`${today ?? key(new Date())}T12:00:00`))}>Today</button><button aria-label="Previous period" onClick={() => navigate(-1)}>‹</button><b>{label(selected)}</b><button aria-label="Next period" onClick={() => navigate(1)}>›</button><div role="tablist">{(["day", "week", "month"] as const).map((item) => <button key={item} role="tab" aria-selected={view === item} onClick={() => setView(item)}>{item}</button>)}</div></div></div><div className={styles.filters}><select value={classFilter} onChange={(event) => setClassFilter(event.target.value)}><option value="all">All classes</option>{classes.map((item) => <option key={item}>{item}</option>)}</select><select value={trainerFilter} onChange={(event) => setTrainerFilter(event.target.value)}><option value="all">All trainers</option>{trainers.map((item) => <option key={item}>{item}</option>)}</select><select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}><option value="all">All statuses</option>{[...new Set(slots.map((slot) => slot.status))].map((item) => <option key={item}>{item}</option>)}</select><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search by class, trainer or date…" /></div><div className={styles.layout}><div className={`${styles.calendar} ${styles[view]}`}><div className={styles.weekdays}>{["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].slice(0, view === "day" ? 1 : 7).map((day) => <b key={day}>{day}</b>)}</div><div className={styles.grid}>{view === "month" && Array.from({ length: firstWeekday }, (_, index) => <div key={`blank-${index}`} className={styles.blank} />)}{days.map((day) => { const dayKey = key(day); const daySlots = filtered.filter((slot) => slot.localDate === dayKey); return <div key={dayKey} className={styles.cell}><button className={styles.day} onClick={() => { setSelected(day); setView("day"); }}>{day.getDate()}</button>{daySlots.map((slot) => <button key={slot.id} className={styles.event} onClick={() => onSelect(slot)}><b>{slot.className}</b><span>{slot.startTime}–{slot.endTime}</span><span>{slot.trainerName} · {slot.confirmedBookingCount}/{slot.capacity}</span><em>{slot.isPast ? "Past" : slot.status}</em></button>)}</div>; })}</div></div><aside><section className={styles.mini}><b>{label(selected)}</b><div>{days.map((day) => <button key={key(day)} data-selected={key(day) === key(selected)} onClick={() => { setSelected(day); setView("day"); }}>{day.getDate()}</button>)}</div></section><section className={styles.upcoming}><header><b>UPCOMING SLOTS</b><button onClick={onViewAll}>View all →</button></header>{upcoming.map((slot) => <button key={slot.id} onClick={() => onSelect(slot)}><b>{slot.className}</b><span>{slot.localDate} · {slot.startTime}–{slot.endTime}</span><small>{slot.trainerName} · {slot.confirmedBookingCount}/{slot.capacity}</small></button>)}</section></aside></div></section>;
+  const [pending, startTransition] = useTransition();
+  const [query, setQuery] = useState("");
+  const [trainer, setTrainer] = useState("all");
+  const [status, setStatus] = useState("all");
+  const selected = date ?? today ?? new Date().toISOString().slice(0, 10);
+  const days = calendarWeek(selected);
+  const visible = slots.filter((slot) => slot.localDate === selected && (trainer === "all" || slot.trainerUid === trainer) && (status === "all" || slot.status === status) && `${slot.className} ${slot.trainerName}`.toLowerCase().includes(query.trim().toLowerCase())).sort((a, b) => a.startTime.localeCompare(b.startTime) || a.className.localeCompare(b.className));
+  const trainers = [...new Map(slots.map((slot) => [slot.trainerUid, slot.trainerName])).entries()];
+  const filterCount = Number(trainer !== "all") + Number(status !== "all");
+  const navigate = (next: string) => startTransition(() => router.push(`/studio/schedule?date=${next}&view=week`));
+  const cancelledCount = visible.filter((slot) => slot.status === "cancelled").length;
+
+  return <section className={styles.surface} aria-label="Studio calendar" aria-busy={pending}>
+    <header className={styles.header}>
+      <h1>Schedule</h1>
+      <div className={styles.controls}>
+        <button type="button" disabled={pending} onClick={() => navigate(today ?? selected)}><StudioAction icon="calendar">Today</StudioAction></button>
+        <button type="button" disabled={pending} aria-label="Previous week" onClick={() => navigate(shiftCalendarDate(selected, -7))}><StudioIcon name="back" /></button>
+        <button type="button" disabled={pending} aria-label="Next week" onClick={() => navigate(shiftCalendarDate(selected, 7))}><StudioIcon name="arrow" /></button>
+      </div>
+    </header>
+    <div className={styles.range}>
+      <p>{calendarLabel(days[0], { day: "numeric", month: "short" })} – {calendarLabel(days[6], { day: "numeric", month: "short", year: "numeric" })}</p>
+      <label><span className="sr-only">Go to studio date</span><input type="date" value={selected} disabled={pending} onChange={(event) => { if (event.target.value) navigate(event.target.value); }} /></label>
+    </div>
+    <div className={styles.week} role="group" aria-label="Choose a studio date">
+      {days.map((day) => {
+        const count = slots.filter((slot) => slot.localDate === day && slot.status !== "cancelled").length;
+        return <button type="button" key={day} disabled={pending} aria-pressed={selected === day} aria-label={`${calendarLabel(day, { weekday: "long", day: "numeric", month: "long" })}${day === today ? ", today" : ""}`} onClick={() => navigate(day)}>
+          <span>{calendarLabel(day, { weekday: "short" })}</span>
+          <strong><time dateTime={day} aria-current={day === today ? "date" : undefined}>{day.slice(-2)}</time></strong>
+          <i aria-hidden="true" data-listed={count > 0} />
+        </button>;
+      })}
+    </div>
+    <div className={styles.listHeader}>
+      <div><h2>{calendarLabel(selected, { weekday: "long", day: "numeric", month: "short" })}</h2><p>{pending ? "Loading schedule…" : `${visible.length} listed slot${visible.length === 1 ? "" : "s"}${cancelledCount ? ` · ${cancelledCount} cancelled` : ""}`}</p></div>
+      <button type="button" onClick={onViewAll}><StudioAction icon="list">View list</StudioAction></button>
+    </div>
+    <div className={styles.tools}>
+      <label className={styles.search}><span className="sr-only">Search classes or trainers</span><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search class or trainer…" /></label>
+      <details className={styles.filters}><summary><StudioIcon name="filter" /> Filters{filterCount ? ` (${filterCount})` : ""}</summary><div className={styles.filterPanel}>
+        <label>Trainer<select value={trainer} onChange={(event) => setTrainer(event.target.value)}><option value="all">All trainers</option>{trainers.map(([uid, name]) => <option key={uid} value={uid}>{name}</option>)}</select></label>
+        <label>Status<select value={status} onChange={(event) => setStatus(event.target.value)}><option value="all">All statuses</option>{[...new Set(slots.map((slot) => slot.status))].map((value) => <option key={value} value={value}>{value}</option>)}</select></label>
+        <button type="button" onClick={() => { setTrainer("all"); setStatus("all"); }}>Clear filters</button>
+      </div></details>
+    </div>
+    {(filterCount > 0 || query) && <p className={styles.filterNote}>Showing filtered slots for this date.</p>}
+    <div className={styles.slots} aria-live="polite">
+      {!visible.length && <div className={styles.empty}><h3>{query || filterCount ? "No matching slots" : "No slots listed for this day"}</h3><p>{query || filterCount ? "Try another search or clear the filters." : "Choose another date or create a slot."}</p></div>}
+      {visible.map((slot) => {
+        const cancelled = slot.status === "cancelled";
+        const editable = !slot.isPast && !["cancelled", "completed"].includes(slot.status);
+        const available = Math.max(0, slot.capacity - slot.confirmedBookingCount);
+        return <article key={slot.id} className={styles.card} data-cancelled={cancelled}>
+          <div className={styles.cardTop}><span className={styles.time}><StudioIcon name="clock" />{slot.startTime}–{slot.endTime}</span><span className={styles.status}>{cancelled ? "Cancelled" : `${slot.status}${slot.isPast ? " · Past" : ""}`}</span></div>
+          <h3>{slot.className}</h3><p className={styles.trainer}><StudioIcon name="user" />With {slot.trainerName}</p>
+          {cancelled ? <p className={styles.cancelledNotice}><StudioIcon name="close" /> Session cancelled · This class will not take place.</p> : <div className={styles.facts}><span><b>{slot.confirmedBookingCount} / {slot.capacity}</b> booked</span>{!slot.isPast && slot.status !== "completed" && <span>{available ? `${available} seats available` : "Full"}</span>}</div>}
+          <div className={styles.actions}>
+            {["published", "completed"].includes(slot.status) && <a href={`/studio/attendance/${slot.id}`}><StudioAction icon="users">View roster</StudioAction></a>}
+            {editable && <button type="button" aria-label={`Edit ${slot.className} at ${slot.startTime}`} onClick={() => onSelect(slot)}><StudioAction icon="edit">Edit slot</StudioAction></button>}
+          </div>
+        </article>;
+      })}
+    </div>
+  </section>;
 }

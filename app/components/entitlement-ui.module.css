@@ -1,4 +1,41 @@
 .entUi { max-width: 1440px !important; }
+.meaningIcon { width: 20px; height: 20px; flex: 0 0 auto; }
+.meaningIcon { display: inline-flex; align-items: center; justify-content: center; }
+.customerContext nav a { gap: 8px; }
+.entUi .creditActivity .creditMeasure { gap: 8px; }
+.entUi .creditActivity .creditMetricLabel { display: grid; gap: 6px; margin: 0; color: var(--color-text); font-size: .75rem; font-weight: 700; white-space: normal; }
+.creditMetricLabel .meaningIcon { color: var(--color-primary); }
+.creditMeasure[data-kind="reserved"] .meaningIcon { color: var(--color-warning); }
+.creditMeasure[data-kind="used"] .meaningIcon { color: var(--color-text-muted); }
+.creditUnit { color: var(--color-text-muted); font-size: .7rem; }
+.entUi .creditActivity .creditActions { display: flex; gap: 8px; flex-wrap: wrap; }
+.entUi .creditActivity .creditActions > a, .entUi .creditActivity .creditActions > button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 46px; font-size: .8rem; }
+.entUi .creditActions .subscriptionEditor summary { gap: 8px; min-height: 46px; }
+.entUi .creditActions .subscriptionEditor summary span { position: static; width: auto; height: auto; overflow: visible; clip: auto; white-space: normal; }
+@media(max-width: 960px) {
+  .entUi .creditActivity .creditActions > a { flex-basis: 100%; }
+  .entUi .creditActivity .creditActions > button { flex: 1; }
+  .entUi .creditActivity .creditActions > details { flex: 1; }
+  .entUi .creditActivity .creditActions > details summary { width: 100%; justify-content: center; }
+}
+.customerContext { display: grid; gap: 14px; margin-bottom: 20px; padding: 16px; border: 1px solid var(--color-border); border-radius: 16px; background: var(--color-surface); }
+.customerContext > a { display: inline-flex; align-items: center; min-height: 44px; color: var(--color-primary); text-decoration: none; font-size: .85rem; font-weight: 750; }
+.customerContext > div { display: flex; align-items: center; gap: 12px; color: var(--color-text); }
+.customerContext strong { overflow-wrap: anywhere; font-size: 1.1rem; }
+.contextAvatar { display: grid; flex: 0 0 auto; width: 42px; height: 42px; place-items: center; border-radius: 50%; color: var(--color-primary); background: color-mix(in srgb, var(--color-primary) 12%, var(--color-surface)); font-weight: 750; }
+.customerContext nav { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; padding: 4px; border: 1px solid var(--color-border); border-radius: 12px; }
+.customerContext nav a { display: flex; align-items: center; justify-content: center; min-height: 44px; border-radius: 9px; color: var(--color-text-muted); text-decoration: none; font-size: .85rem; font-weight: 750; }
+.customerContext nav a[aria-current="page"] { color: var(--color-nav-active); background: var(--color-nav-active-background); }
+.entUi[data-view="credits"] > .entHeader { display: none !important; }
+.entUi[data-view="credits"] .creditActivity .libraryHeader > div:first-child { display: none; }
+.entUi .creditActivity .planFilters, .entUi .creditActivity .planFilters label { width: 100%; max-width: none; }
+@media(max-width: 960px) {
+  .entUi .subscriptionLibrary .subscriptionRow { border: 0 !important; border-bottom: 1px solid var(--color-border) !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; padding: 18px 0 !important; }
+  .entUi .creditActivity .creditPlan { padding: 0; background: transparent; }
+  .entUi .creditActivity .creditMeasure { padding: 12px 8px; border-radius: 0; background: transparent; }
+  .entUi .creditActivity .creditMeasure b { font-size: 1.5rem; }
+  .entUi .subscriptionLibrary .subscriptionStatus { font-size: .75rem !important; }
+}
 .compactTitle { margin: 0 0 16px; color: var(--color-text); font-size: 1.7rem; line-height: 1.2; }
 .entUi[data-view="plans"] .entHeader h1 { margin: 0 !important; font-size: 1.7rem !important; }
 .entUi[data-view="plans"] .entHeader p:empty { display: none; }
@@ -512,4 +549,45 @@
 @media (max-width: 390px) {
   .pauseFilters { grid-template-columns: 1fr; }
   .pauseFilters select { grid-column: 1; grid-row: 2; }
+}
+
+/* Membership status uses color together with icons and visible labels. */
+.entUi[data-view="subscriptions"] .subscriptionChips button{--tone:var(--color-primary);border:1px solid var(--color-border);border-radius:12px;background:var(--color-surface);min-height:46px;font-size:.8rem}
+.entUi[data-view="subscriptions"] .subscriptionChips button[data-kind="active"]{--tone:var(--color-success)}
+.entUi[data-view="subscriptions"] .subscriptionChips button[data-kind="paused"]{--tone:var(--color-warning)}
+.entUi[data-view="subscriptions"] .subscriptionChips button[data-kind="expired"]{--tone:var(--color-text-muted)}
+.entUi[data-view="subscriptions"] .subscriptionChips button[data-kind="cancelled"]{--tone:var(--color-danger)}
+.entUi[data-view="subscriptions"] .subscriptionChips button>svg{color:var(--tone)}
+.entUi[data-view="subscriptions"] .subscriptionChips button[data-active="true"]{border-color:var(--tone);background:color-mix(in srgb,var(--tone) 12%,var(--color-surface))}
+.entUi[data-view="subscriptions"] .subscriptionChips b{color:var(--tone);background:color-mix(in srgb,var(--tone) 14%,var(--color-surface));font-size:.75rem;min-width:24px;height:24px;border-radius:8px}
+.entUi[data-view="subscriptions"] .subscriptionRow{--membership-tone:var(--color-text-muted)}
+.entUi[data-view="subscriptions"] .subscriptionRow[data-status="active"]{--membership-tone:var(--color-success)}
+.entUi[data-view="subscriptions"] .subscriptionRow[data-status="paused"]{--membership-tone:var(--color-warning)}
+.entUi[data-view="subscriptions"] .subscriptionRow[data-status="cancelled"]{--membership-tone:var(--color-danger)}
+.entUi[data-view="subscriptions"] .subscriptionStatus{color:var(--membership-tone)!important;background:color-mix(in srgb,var(--membership-tone) 12%,var(--color-surface))!important}
+.entUi[data-view="subscriptions"] .customerAvatar{color:var(--membership-tone);background:color-mix(in srgb,var(--membership-tone) 12%,var(--color-surface))}
+.entUi[data-view="subscriptions"] .subscriptionPlan svg{color:var(--color-primary)}
+.entUi[data-view="subscriptions"] .creditBalance b>span>svg{color:var(--color-success)}
+.entUi[data-view="subscriptions"] .creditBalance small{display:block;margin-top:6px;font-size:.75rem;color:var(--color-text-muted)}
+.entUi[data-view="subscriptions"] .subscriptionRow time svg{width:16px;height:16px;color:var(--color-primary)}
+.entUi[data-view="subscriptions"] .subscriptionRow time:last-of-type svg{color:var(--color-warning)}
+@media(max-width:960px){
+  .entUi[data-view="subscriptions"] .subscriptionChips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));overflow:visible;gap:8px}
+  .entUi[data-view="subscriptions"] .subscriptionChips button{display:grid;grid-template-columns:1fr auto;gap:8px;min-height:72px;padding:10px 12px;text-align:left}
+  .entUi[data-view="subscriptions"] .subscriptionChips button>svg{grid-row:1;grid-column:1;width:21px;height:21px}
+  .entUi[data-view="subscriptions"] .subscriptionChips button>span{grid-row:2;grid-column:1/-1;font-size:.75rem}
+  .entUi[data-view="subscriptions"] .subscriptionChips button>b{grid-row:1;grid-column:2}
+  .entUi[data-view="subscriptions"] .subscriptionRow .subscriptionCustomer{grid-column:1;grid-row:1;padding:0;border:0;gap:9px;min-width:0}
+  .entUi[data-view="subscriptions"] .subscriptionRow .customerAvatar{width:38px;height:38px;flex-shrink:0;border-radius:12px}
+  .entUi[data-view="subscriptions"] .subscriptionRow .subscriptionStatus{grid-column:2!important;grid-row:1;justify-self:end;min-height:32px;padding:7px 9px!important;font-size:.7rem!important}
+  .entUi[data-view="subscriptions"] .subscriptionRow .subscriptionPlan{grid-column:1/-1;grid-row:2;padding:2px 0}
+  .entUi[data-view="subscriptions"] .subscriptionRow .creditBalance{grid-column:1/-1;display:grid;grid-template-columns:1fr auto;align-items:center;gap:7px;padding:14px 0;border-top:1px solid var(--color-border);border-bottom:1px solid var(--color-border)}
+  .entUi[data-view="subscriptions"] .creditBalance::before{grid-column:1/-1;margin:0}
+  .entUi[data-view="subscriptions"] .creditBalance b{font-size:1.65rem}
+  .entUi[data-view="subscriptions"] .creditBalance small{margin:0}
+  .entUi[data-view="subscriptions"] .subscriptionRow .cancellationDetail{font-size:.75rem}
+  .entUi[data-view="subscriptions"] .subscriptionRow .cancellationDetail[data-empty="true"]{display:none}
+  .entUi[data-view="subscriptions"] .subscriptionRow .subscriptionActions{padding-top:4px;border:0;display:flex;flex-wrap:wrap}
+  .entUi[data-view="subscriptions"] .subscriptionActions>details{margin-left:0}
+  .entUi[data-view="subscriptions"] .subscriptionActions .subscriptionEditor summary{width:auto;min-height:44px;padding:8px 12px;color:var(--color-primary);border-color:var(--color-border)}
 }

@@ -19,7 +19,7 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
   const studio = await readDocument(`studios/${studioId}`);
   const timezone = String(studio.data()?.timezone ?? "Asia/Kolkata");
   const today = new Intl.DateTimeFormat("en-CA", { timeZone: timezone, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
-  const period = scheduleWindow(date, today, view);
+  const period = scheduleWindow(date, today, view ?? "week");
   const [classDocs, trainerDocs, slotDocs] = await Promise.all([
     readQuery(db.collection(`studios/${studioId}/classes`).where("status", "==", "active").orderBy("createdAt", "desc")),
     readQuery(db.collection(`studios/${studioId}/members`).where("roles", "array-contains", "trainer").where("status", "==", "active")),

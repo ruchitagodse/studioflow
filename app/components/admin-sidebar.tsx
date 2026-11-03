@@ -2,7 +2,9 @@
 import { BrandLogo } from "@/app/components/brand-logo";
 
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { useState } from "react";
+import { StudioIcon } from "./studio-icon";
+import { usePathname } from "next/navigation";
 import { WorkspaceProfileMenu } from "./workspace-profile-menu";
 import styles from "./admin-sidebar.module.css";
 
@@ -11,7 +13,6 @@ type NavItem = {
   label: string;
   icon: IconName;
   href: string;
-  section?: string;
   ownerOnly?: boolean;
 };
 
@@ -42,23 +43,19 @@ const navigation: NavGroup[] = [
     { label: "Plans", href: "/studio/plans", icon: "card" },
     { label: "Subscriptions", href: "/studio/subscriptions", icon: "card" },
     { label: "Credits", href: "/studio/credits", icon: "coins" },
-    { label: "Pause Requests", href: "/studio/pause-requests", icon: "pause" },
+    { label: "Membership pauses", href: "/studio/pause-requests", icon: "pause" },
   ] },
   { label: "Operations", items: [
-    { label: "Attendance", href: "/studio/schedule?view=attendance", section: "attendance", icon: "check" },
     { label: "Incidents", href: "/studio/incidents", icon: "alert" },
+    { label: "Studio activity", href: "/studio/activity", icon: "document" },
   ] },
   { label: "Team", items: [
     { label: "Trainers", href: "/studio/trainer", icon: "user", ownerOnly: true },
     { label: "Staff", href: "/studio/staff", icon: "users", ownerOnly: true },
     { label: "Roles & Permissions", href: "/studio/roles-permissions", icon: "shield", ownerOnly: true },
   ] },
-  { label: "Communication", items: [{ label: "Notifications", href: "/studio?view=notifications", section: "notifications", icon: "bell" }] },
   { label: "Settings", items: [
-    { label: "Studio Settings", href: "/studio?view=settings", section: "settings", icon: "building", ownerOnly: true },
-    { label: "Theme", href: "/studio/theme", icon: "palette", ownerOnly: true },
-    { label: "Policies", href: "/studio/incidents?view=policy", section: "policy", icon: "document", ownerOnly: true },
-    { label: "Account & Security", href: "/studio/team?view=security", section: "security", icon: "lock", ownerOnly: true },
+    { label: "Appearance", href: "/studio/theme", icon: "palette", ownerOnly: true },
   ] },
 ];
 
@@ -77,34 +74,33 @@ function NavIcon({ name }: { name: IconName }) {
   return <svg className={styles.icon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">{paths[name]}</svg>;
 }
 
-function activeRoute(pathname: string, section: string | null, item: NavItem) {
-  if (item.section) return pathname === item.href.split("?")[0] && section === item.section;
-  if (item.href === "/studio") return pathname === "/studio" && !section;
-  if (item.href === "/studio/schedule") return pathname.startsWith(item.href) && section !== "attendance";
-  if (item.href === "/studio/incidents") return pathname.startsWith(item.href) && section !== "policy";
-  if (item.href === "/studio/classes") return pathname.startsWith(item.href);
-  return pathname.startsWith(item.href);
+function activeRoute(pathname: string, item: NavItem) {
+  if (item.href === "/studio") return pathname === "/studio";
+  if (item.href === "/studio/schedule" && pathname.startsWith("/studio/attendance/")) return true;
+  return pathname === item.href || pathname.startsWith(`${item.href}/`);
 }
 
 export function AdminSidebar({ name, role, studioName, roles, workspaceLinks, mobile = false, onNavigate, onClose }: AdminSidebarProps) {
+  const [query, setQuery] = useState("");
   const pathname = usePathname();
-  const params = useSearchParams();
-  const section = params.get("section") ?? params.get("view") ?? params.get("role");
   const isOwner = roles.includes("owner");
+  const groups = navigation.map(group => ({ ...group, items: group.items.filter(item => (!item.ownerOnly || isOwner) && `${group.label} ${item.label}`.toLowerCase().includes(query.trim().toLowerCase())) })).filter(group => group.items.length);
   return <aside id={mobile ? "studio-mobile-navigation" : undefined} className={`${styles.sidebar}${mobile ? ` ${styles.mobileSidebar}` : ""}`} aria-label="Studio administration" aria-modal={mobile || undefined} role={mobile ? "dialog" : undefined}>
-    <div className={styles.top}><Link prefetch={false} className={styles.brand} href="/studio" onClick={onNavigate} aria-label="Studio Calendar dashboard"><BrandLogo /></Link>{mobile && <button type="button" className={styles.close} onClick={onClose} aria-label="Close studio navigation">×</button>}</div>
+    <div className={styles.top}>{mobile ? <h2 className={styles.menuTitle}>Studio menu</h2> : <Link prefetch={false} className={styles.brand} href="/studio" onClick={onNavigate} aria-label="Studio Calendar dashboard"><BrandLogo /></Link>}{mobile && <button type="button" className={styles.close} onClick={onClose} aria-label="Close studio navigation"><StudioIcon name="close" /></button>}</div>
+    {mobile && <label className={styles.menuSearch}><StudioIcon name="search" /><span className="sr-only">Find a studio screen</span><input type="search" placeholder="Find a screen…" value={query} onChange={event => setQuery(event.target.value)} /></label>}
     <nav className={styles.navigation} aria-label="Studio navigation">
-      {navigation.map((group) => {
-        const items = group.items.filter((item) => !item.ownerOnly || isOwner);
+      {groups.map((group) => {
+        const items = group.items;
         if (!items.length) return null;
         return <section className={styles.group} key={group.label} aria-label={group.label}>
           <h2>{group.label}</h2>
           <ul>{items.map((item) => {
-            const active = activeRoute(pathname, section, item);
+            const active = activeRoute(pathname, item);
             return <li key={item.label}><Link prefetch={false} href={item.href} onClick={onNavigate} className={`${styles.item}${active ? ` ${styles.active}` : ""}`} aria-current={active ? "page" : undefined}><NavIcon name={item.icon}/><span>{item.label}</span></Link></li>;
           })}</ul>
         </section>;
       })}
+      {!groups.length && <div className={styles.noMatches}><StudioIcon name="search" /><p>No matching screens</p><button type="button" onClick={() => setQuery("")}>Clear search</button></div>}
     </nav>
     <div className={styles.footer}><WorkspaceProfileMenu name={name} role={role} studioName={studioName} workspaceLinks={workspaceLinks}/></div>
   </aside>;
