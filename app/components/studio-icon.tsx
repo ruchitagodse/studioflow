@@ -2,6 +2,9 @@ import type { ReactNode } from "react";
 import styles from "./studio-icon.module.css";
 
 const paths = {
+  sound: <><path d="M4 9h4l5-4v14l-5-4H4zM17 8a6 6 0 0 1 0 8M20 5a10 10 0 0 1 0 14"/></>,
+  soundOff: <><path d="M4 9h4l5-4v14l-5-4H4zM17 9l5 6M22 9l-5 6"/></>,
+  chevronDown: <path d="m6 9 6 6 6-6"/>,
   home: <><path d="m3 10 9-7 9 7v10H3z"/><path d="M9 20v-7h6v7"/></>,
   calendar: <><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4M17 3v4M3 11h18"/></>,
   clock: <><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></>,

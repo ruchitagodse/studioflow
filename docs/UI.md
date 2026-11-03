@@ -47,6 +47,10 @@ Memberships and Pauses share labelled icon navigation. Mobile status filters
 show icons and counts without horizontal scrolling; green active/ready, amber
 paused, and danger cancelled accents supplement text. Keep color on badges,
 icons, and actions rather than decorative card stripes.
+Mobile customer profiles use an icon-labelled section picker that opens a native
+modal sheet with readable rows and an explicit selected state. Escape, Close,
+and outside-sheet clicks dismiss it; selecting a section restores the trigger
+focus while keeping the customer context in place.
 Trainer home prioritizes the current/next published session and today’s assigned
 schedule. Classes, Attendance, roster and Profile share compact icon navigation
 and studio-time context. Drafts are labelled and do not link to attendance;
@@ -57,6 +61,10 @@ details with functional navigation and sign-out rather than decorative actions.
 Trainer home keeps empty schedule states compact, uses one studio-image greeting
 header, and presents daily counts and functional Classes/Attendance shortcuts
 before the schedule. Never fabricate activity when the assigned schedule is empty.
+Studio Schedule uses full-width mobile search/date controls, roomy session cards,
+and unbroken icon-tab labels. Dashboard schedule/operation panels have explicit
+vertical gaps on phones. Customer profile section navigation opens a themed
+native dialog with labelled icon choices rather than an operating-system select.
 Availability displayed on a page is a snapshot; booking decisions always use
 fresh transactional validation under BR-02 and BR-18. Paginated directories and
 histories expose explicit next/first page controls. Studio calendar navigation
@@ -202,6 +210,12 @@ navigation drawer without removing actions. Trainer flows favour the fast mobile
 roster path while retaining a desktop schedule view.
 
 ## Accessibility baseline
+
+Installed-app launch uses a vector monogram and high-resolution PNG fallbacks.
+The supplied opening sound attempts playback once after the app loads; blocked
+autoplay exposes explicit Play/Skip controls, and playback has a Stop control.
+The OS-managed splash cannot play web audio. Launch media never delays login or
+workspace access and never repeats during client-side route changes.
 
 - Meet WCAG 2.2 AA colour contrast, keyboard reachability, visible focus,
   semantic headings, labelled inputs, and error messages associated with inputs.

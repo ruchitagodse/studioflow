@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import styles from "./customers-ui.module.css";
 import mobileStyles from "./customers-mobile-polish.module.css";
+import { CustomerSectionPicker } from "./customer-section-picker";
 
 export type CustomerRow = {
   uid: string;
@@ -42,7 +43,7 @@ export function CustomerProfile({ customer }: { customer: CustomerProfile }) {
   return <main className={`${styles.page} ${mobileStyles.root} ${mobileStyles.profile}`}>
     <Link prefetch={false} className={styles.back} href="/studio/customers"><StudioAction icon="back">Customers</StudioAction></Link>
     <header className={styles.profileHeader}><div className={styles.avatar} aria-hidden="true">{customer.name.slice(0, 1).toUpperCase()}</div><div><h1>{customer.name}</h1><span>{customer.email}</span><span className={mobileStyles.profileStatus} data-status={customer.status}>{customer.status}</span></div></header>
-    <label className={mobileStyles.sectionPicker}>Profile section<select value={tab} onChange={(event) => setTab(event.target.value as (typeof tabs)[number])}>{tabs.map((item) => <option key={item}>{item}</option>)}</select></label>
+    <CustomerSectionPicker value={tab} onChange={setTab}/>
     <div className={`${styles.tabs} ${mobileStyles.tabs}`} role="tablist" aria-label="Customer profile sections">{tabs.map((item, index) => <button key={item} id={`customer-tab-${item}`} type="button" role="tab" aria-controls="customer-profile-panel" aria-selected={tab === item} tabIndex={tab === item ? 0 : -1} onClick={() => setTab(item)} onKeyDown={(event) => {
       const next = event.key === "ArrowRight" ? (index + 1) % tabs.length : event.key === "ArrowLeft" ? (index + tabs.length - 1) % tabs.length : event.key === "Home" ? 0 : event.key === "End" ? tabs.length - 1 : null;
       if (next !== null) { event.preventDefault(); setTab(tabs[next]); document.getElementById(`customer-tab-${tabs[next]}`)?.focus(); }

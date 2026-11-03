@@ -11,8 +11,11 @@ export default function manifest(): MetadataRoute.Manifest {
     background_color: "#FAF7F2",
     theme_color: "#121617",
     icons: [
-      { src: "/icons/icon.png", sizes: "512x512", type: "image/png", purpose: "any" },
-      { src: "/icons/icon-maskable.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
+      { src: "/icons/studio-calendar-v2-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
+      { src: "/icons/studio-calendar-v2-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+      { src: "/icons/studio-calendar-v2-1024.png", sizes: "1024x1024", type: "image/png", purpose: "any" },
+      { src: "/brand/studio-calendar-monogram.svg", sizes: "any", type: "image/svg+xml", purpose: "any" },
+      { src: "/icons/studio-calendar-maskable-v2.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
     ],
   };
 }

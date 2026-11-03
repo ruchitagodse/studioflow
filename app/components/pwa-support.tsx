@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import styles from "./pwa-support.module.css";
+import { OpeningSound } from "./opening-sound";
 
 type InstallPromptEvent = Event & {
   prompt: () => Promise<void>;
@@ -69,6 +70,7 @@ export function PwaSupport({ persistTheme = false }: { persistTheme?: boolean })
   };
 
   return <>
+    <OpeningSound/>
     {installEvent && <aside className={styles.install} aria-label="Install Studio Calendar">
       <span>Install Studio Calendar for quicker access.</span><button onClick={install}>Install</button><button className={styles.dismiss} onClick={dismiss} aria-label="Dismiss install prompt">Not now</button>
     </aside>}

@@ -5,6 +5,6 @@ export const size = { width: 180, height: 180 };
 export const contentType = "image/png";
 
 export default async function AppleIcon() {
-  const image = await readFile(join(process.cwd(), "public/icons/apple-touch-icon.png"));
+  const image = await readFile(join(process.cwd(), "public/icons/studio-calendar-apple-v2.png"));
   return new Response(new Uint8Array(image), { headers: { "Content-Type": contentType } });
 }
